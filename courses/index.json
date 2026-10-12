@@ -49,6 +49,30 @@
    }
   },
   {
+   "slug": "glendower-golf-club",
+   "query": "Glendower Golf Club",
+   "name": "Glendower Golf Club",
+   "place": "Glendower Golf Club, Marais Road, Essexwold, Ekurhuleni Ward 19, City of Ekurhuleni Metropolitan Municipality, Gauteng, 2145, South Africa",
+   "bbox": [
+    -26.1606403,
+    -26.1605403,
+    28.1418567,
+    28.1419567
+   ],
+   "fetched": "2026-10-12T14:08:10.579Z",
+   "census": {
+    "holeLines": 18,
+    "greens": 20,
+    "fairways": 17,
+    "tees": 22,
+    "bunkers": 65,
+    "water": 8,
+    "trees": 46,
+    "holesReady": 18,
+    "skipped": []
+   }
+  },
+  {
    "slug": "irene-country-club",
    "query": "Irene Country Club",
    "name": "Irene Country Club",
