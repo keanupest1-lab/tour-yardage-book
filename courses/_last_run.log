@@ -6,3 +6,6 @@
 2026-10-12T13:59:50.685Z   attempt 3 overpass.kumi.systems: timeout
 2026-10-12T14:00:18.903Z   overpass ok via maps.mail.ru on attempt 4
 2026-10-12T14:00:18.906Z   saved irene-country-club: 0 holes ready; OSM has 0 hole lines, 0 greens, 0 fairways
+2026-10-12T14:00:23.646Z fetch Pretoria Country Club
+2026-10-12T14:00:29.985Z   overpass ok via overpass-api.de on attempt 1
+2026-10-12T14:00:29.989Z   saved pretoria-country-club: 0 holes ready; OSM has 0 hole lines, 18 greens, 0 fairways

@@ -71,6 +71,30 @@
     "holesReady": 0,
     "skipped": []
    }
+  },
+  {
+   "slug": "pretoria-country-club",
+   "query": "Pretoria Country Club",
+   "name": "Pretoria Country Club",
+   "place": "Pretoria Country Club, Albert Street, Waterkloof, Tshwane Ward 82, Pretoria, City of Tshwane Metropolitan Municipality, Gauteng, 0181, South Africa",
+   "bbox": [
+    -25.787189,
+    -25.7777957,
+    28.249598,
+    28.2584728
+   ],
+   "fetched": "2026-10-12T14:00:29.989Z",
+   "census": {
+    "holeLines": 0,
+    "greens": 18,
+    "fairways": 0,
+    "tees": 0,
+    "bunkers": 33,
+    "water": 13,
+    "trees": 187,
+    "holesReady": 0,
+    "skipped": []
+   }
   }
  ]
 }
