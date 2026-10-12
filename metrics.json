@@ -1,0 +1,184 @@
+[
+ {
+  "epoch": 1,
+  "loss": 2.5735,
+  "iou": {
+   "background": 0.715,
+   "fairway": 0.363,
+   "green": 0.207,
+   "tee": 0.001,
+   "bunker": 0.083,
+   "water": 0.296
+  },
+  "minutes": 7.6
+ },
+ {
+  "epoch": 2,
+  "loss": 1.6373,
+  "iou": {
+   "background": 0.754,
+   "fairway": 0.386,
+   "green": 0.205,
+   "tee": 0.059,
+   "bunker": 0.254,
+   "water": 0.41
+  },
+  "minutes": 15.1
+ },
+ {
+  "epoch": 3,
+  "loss": 1.3837,
+  "iou": {
+   "background": 0.795,
+   "fairway": 0.403,
+   "green": 0.246,
+   "tee": 0.108,
+   "bunker": 0.245,
+   "water": 0.401
+  },
+  "minutes": 22.5
+ },
+ {
+  "epoch": 4,
+  "loss": 1.3105,
+  "iou": {
+   "background": 0.789,
+   "fairway": 0.325,
+   "green": 0.287,
+   "tee": 0.055,
+   "bunker": 0.255,
+   "water": 0.37
+  },
+  "minutes": 30.1
+ },
+ {
+  "epoch": 5,
+  "loss": 1.2613,
+  "iou": {
+   "background": 0.833,
+   "fairway": 0.457,
+   "green": 0.352,
+   "tee": 0.127,
+   "bunker": 0.253,
+   "water": 0.425
+  },
+  "minutes": 37.5
+ },
+ {
+  "epoch": 6,
+  "loss": 1.2039,
+  "iou": {
+   "background": 0.816,
+   "fairway": 0.453,
+   "green": 0.411,
+   "tee": 0.121,
+   "bunker": 0.271,
+   "water": 0.427
+  },
+  "minutes": 44.9
+ },
+ {
+  "epoch": 7,
+  "loss": 1.154,
+  "iou": {
+   "background": 0.793,
+   "fairway": 0.462,
+   "green": 0.38,
+   "tee": 0.129,
+   "bunker": 0.255,
+   "water": 0.422
+  },
+  "minutes": 52.4
+ },
+ {
+  "epoch": 8,
+  "loss": 1.1338,
+  "iou": {
+   "background": 0.82,
+   "fairway": 0.471,
+   "green": 0.407,
+   "tee": 0.118,
+   "bunker": 0.318,
+   "water": 0.393
+  },
+  "minutes": 60.0
+ },
+ {
+  "epoch": 9,
+  "loss": 1.0761,
+  "iou": {
+   "background": 0.82,
+   "fairway": 0.481,
+   "green": 0.448,
+   "tee": 0.149,
+   "bunker": 0.283,
+   "water": 0.445
+  },
+  "minutes": 67.5
+ },
+ {
+  "epoch": 10,
+  "loss": 1.0348,
+  "iou": {
+   "background": 0.844,
+   "fairway": 0.485,
+   "green": 0.492,
+   "tee": 0.167,
+   "bunker": 0.303,
+   "water": 0.461
+  },
+  "minutes": 75.1
+ },
+ {
+  "epoch": 11,
+  "loss": 0.9903,
+  "iou": {
+   "background": 0.839,
+   "fairway": 0.505,
+   "green": 0.462,
+   "tee": 0.165,
+   "bunker": 0.316,
+   "water": 0.461
+  },
+  "minutes": 82.7
+ },
+ {
+  "epoch": 12,
+  "loss": 0.973,
+  "iou": {
+   "background": 0.85,
+   "fairway": 0.515,
+   "green": 0.47,
+   "tee": 0.158,
+   "bunker": 0.312,
+   "water": 0.457
+  },
+  "minutes": 90.4
+ },
+ {
+  "epoch": 13,
+  "loss": 0.9456,
+  "iou": {
+   "background": 0.85,
+   "fairway": 0.522,
+   "green": 0.484,
+   "tee": 0.177,
+   "bunker": 0.309,
+   "water": 0.465
+  },
+  "minutes": 98.0
+ },
+ {
+  "epoch": 14,
+  "loss": 0.9221,
+  "iou": {
+   "background": 0.848,
+   "fairway": 0.525,
+   "green": 0.487,
+   "tee": 0.173,
+   "bunker": 0.318,
+   "water": 0.466
+  },
+  "minutes": 105.6
+ }
+]
