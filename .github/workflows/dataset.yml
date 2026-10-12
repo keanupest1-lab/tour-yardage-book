@@ -26,13 +26,19 @@ jobs:
             mkdir -p ml/data && cp -r ds/ml/data/. ml/data/ || true
           fi
       - name: Build
+        continue-on-error: true
+        timeout-minutes: 300
         env:
           MAX_CHIPS: '3000'
-        run: python3 ml/build_dataset.py | tee ml/build.log
+          PYTHONUNBUFFERED: '1'
+        run: |
+          mkdir -p ml/data
+          python3 ml/build_dataset.py 2>&1 | tee ml/build.log
       - name: Publish to dataset branch
+        if: always()
         run: |
           git config user.name "course-bot"
           git config user.email "course-bot@users.noreply.github.com"
-          rm -rf /tmp/pub && mkdir -p /tmp/pub/ml && cp -r ml/data /tmp/pub/ml/ && cp ml/build.log /tmp/pub/ml/
-          cd /tmp/pub && git init -q -b dataset && git add -A && git commit -qm "Dataset $(date -u +%FT%TZ)"
+          rm -rf /tmp/pub && mkdir -p /tmp/pub/ml && cp -r ml/data /tmp/pub/ml/ ; cp ml/build.log /tmp/pub/ml/ || echo "no log" > /tmp/pub/ml/build.log
+          cd /tmp/pub && git init -q -b dataset && git add -A && git commit -q --allow-empty -m "Dataset $(date -u +%FT%TZ)"
           git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" dataset

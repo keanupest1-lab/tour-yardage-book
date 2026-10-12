@@ -63,11 +63,15 @@ def point_in(p, poly):
 
 def rings(el):
     if el["type"] == "way" and "geometry" in el:
-        g = [(p["lon"], p["lat"]) for p in el["geometry"]]
+        g = [(p["lon"], p["lat"]) for p in el["geometry"] if p]
         return [g] if len(g) > 3 and g[0] == g[-1] else []
     if el["type"] == "relation":
-        return [[(p["lon"], p["lat"]) for p in m["geometry"]] for m in el.get("members", [])
-                if m.get("role") == "outer" and m.get("geometry") and len(m["geometry"]) > 3]
+        out = []
+        for m in el.get("members", []):
+            if m.get("role") == "outer" and m.get("geometry"):
+                g = [(p["lon"], p["lat"]) for p in m["geometry"] if p]
+                if len(g) > 3: out.append(g)
+        return out
     return []
 
 def main():
@@ -81,7 +85,7 @@ def main():
         name, bbox = [s.strip() for s in line.split("|")]
         s, w, n, e = map(float, bbox.split(","))
         b = f"{s},{w},{n},{e}"
-        print("region", name)
+        print("region", name, flush=True)
         try:
             j = overpass(f'[out:json][timeout:180];(way["leisure"="golf_course"]({b});relation["leisure"="golf_course"]({b});'
                          f'way["golf"~"^(green|fairway|tee|bunker|water_hazard|lateral_water_hazard)$"]({b});'
@@ -100,17 +104,27 @@ def main():
         print(f"  {len(courses)} courses, {len(feats)} features")
         for c in courses:
             if c["id"] in done_courses or len(index["chips"]) >= MAX_CHIPS: continue
+            try:
+                do_course(c, feats, name, index)
+            except Exception as ex:
+                print("  course failed", c.get("name"), repr(ex), flush=True)
+            json.dump(index, open(idx_path, "w"))
+    json.dump(index, open(idx_path, "w"))
+    print("total chips", len(index["chips"]), "courses", len(index["courses"]))
+
+def do_course(c, feats, name, index):
+    if True:
             ring = c["ring"]
             mine = [(k, r) for k, r in feats if point_in((sum(p[0] for p in r) / len(r), sum(p[1] for p in r) / len(r)), ring)]
             cnt = {k: sum(1 for kk, _ in mine if kk == k) for k in CLASS}
             if any(cnt.get(k, 0) < v for k, v in MIN.items()):
-                continue
+                return
             # water anywhere near the course counts (lakes often extend past the boundary)
             near = mine + [(k, r) for k, r in feats if k == "water" and (k, r) not in mine]
             pxring = [lonlat_to_px(*p) for p in ring]
             x0 = int(min(p[0] for p in pxring) // 512) * 512; x1 = int(max(p[0] for p in pxring) // 512 + 1) * 512
             y0 = int(min(p[1] for p in pxring) // 512) * 512; y1 = int(max(p[1] for p in pxring) // 512 + 1) * 512
-            if (x1 - x0) * (y1 - y0) > 512 * 512 * 120: print("  too big", c["name"]); continue
+            if (x1 - x0) * (y1 - y0) > 512 * 512 * 120: print("  too big", c["name"]); return
             made = 0
             for cy in range(y0, y1, 512):
                 for cx in range(x0, x1, 512):
@@ -140,10 +154,7 @@ def main():
                     index["chips"].append({"id": cid, "course": c["id"], "region": name})
                     made += 1
             index["courses"].append({"id": c["id"], "name": c["name"], "region": name, "counts": cnt, "chips": made})
-            print(f"  + {c['name']}: {made} chips {cnt}")
-            json.dump(index, open(idx_path, "w"))
-    json.dump(index, open(idx_path, "w"))
-    print("total chips", len(index["chips"]), "courses", len(index["courses"]))
+            print(f"  + {c['name']}: {made} chips {cnt}", flush=True)
 
 if __name__ == "__main__":
     main()
