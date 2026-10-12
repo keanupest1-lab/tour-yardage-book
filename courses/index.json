@@ -1,6 +1,30 @@
 {
  "courses": [
   {
+   "slug": "bryanston-country-club",
+   "query": "Bryanston Country Club",
+   "name": "Bryanston Country Club",
+   "place": "Bryanston Country Club, Strada Lerici, Vandia Grove, Bryanston, Randburg, City of Johannesburg Metropolitan Municipality, Gauteng, 2060, South Africa",
+   "bbox": [
+    -26.0658955,
+    -26.0543103,
+    28.0011284,
+    28.0132528
+   ],
+   "fetched": "2026-10-12T13:54:51.531Z",
+   "census": {
+    "holeLines": 0,
+    "greens": 10,
+    "fairways": 7,
+    "tees": 17,
+    "bunkers": 25,
+    "water": 10,
+    "trees": 100,
+    "holesReady": 0,
+    "skipped": []
+   }
+  },
+  {
    "slug": "dainfern-golf-estate",
    "query": "Dainfern Golf Estate",
    "name": "Dainfern Golf Estate",
