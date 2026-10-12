@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Course Editor · Tour Yardage Books</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Sans:wght@400;600&display=swap">
+<link rel="stylesheet" href="src/style.css">
+<style>
+  html, body { height: 100%; }
+  body { padding: 0; overflow: hidden; }
+  .ed { position: fixed; inset: 0; display: grid; grid-template-rows: auto 1fr auto; grid-template-columns: minmax(0, 1fr); }
+  .ed-top { display: flex; align-items: center; gap: 8px; padding: calc(env(safe-area-inset-top, 0px) + 8px) 12px 8px; background: var(--surface); border-bottom: 1px solid var(--line); min-width: 0; }
+  .ed-top a { color: var(--accent); text-decoration: none; font-weight: 600; white-space: nowrap; }
+  .ed-top h1 { font: 700 20px/1.1 var(--display); margin: 0; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #map { width: 100%; height: 100%; background: #233; }
+  .ed-panel { background: var(--surface); border-top: 1px solid var(--line); padding: 8px 12px calc(env(safe-area-inset-bottom, 0px) + 8px); display: grid; gap: 7px; min-width: 0; }
+  .ed-panel > * { min-width: 0; }
+  .row { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+  .holepick { display: flex; align-items: center; gap: 6px; }
+  .holepick strong { font: 700 22px/1 var(--display); min-width: 74px; text-align: center; font-variant-numeric: tabular-nums; }
+  .chips { display: flex; gap: 4px; overflow-x: auto; padding-bottom: 2px; }
+  .chip { min-width: 30px; height: 30px; padding: 0; border-radius: 15px; font: 600 13px/1 var(--body); font-variant-numeric: tabular-nums; }
+  .chip.done { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+  .chip.part { border-color: var(--gold); color: var(--gold); }
+  .chip.on { outline: 2px solid var(--fg); outline-offset: 1px; }
+  .tools { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 2px; }
+  .tools button { padding: 8px 10px; font-size: 14px; flex: none; }
+  .ed-top select, .ed-top button { padding: 7px 9px; font-size: 14px; flex: none; }
+  .tools button.on { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+  .hint { margin: 0; font-size: 13px; color: var(--muted); min-height: 1.3em; }
+  .hint.err { color: var(--error); } .hint.ok { color: var(--accent); }
+  .grow { flex: 1; }
+  #keyRow input { flex: 1; min-width: 0; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; font: inherit; background: var(--bg); color: var(--fg); }
+  .leaflet-container { font: inherit; }
+  .hole-label { background: rgba(0,0,0,.65); color: #fff; border: 0; border-radius: 10px; padding: 1px 6px; font: 700 12px/1.4 var(--body); box-shadow: none; }
+  .hole-label::before { display: none; }
+</style>
+</head>
+<body>
+<div class="ed">
+  <header class="ed-top">
+    <a id="back" href="index.html">&lsaquo; Book</a>
+    <h1 id="title">Course editor</h1>
+    <select id="par" aria-label="Par"><option value="3">Par 3</option><option value="4">Par 4</option><option value="5">Par 5</option></select>
+    <button id="save" type="button" class="primary">Save</button>
+  </header>
+  <div id="map" role="application" aria-label="Satellite map"></div>
+  <section class="ed-panel">
+    <div class="row">
+      <div class="holepick"><button id="prevH" type="button" aria-label="Previous hole">&lsaquo;</button><strong id="holeLbl">Hole 1</strong><button id="nextH" type="button" aria-label="Next hole">&rsaquo;</button></div>
+      <div id="chips" class="chips grow" aria-label="Holes"></div>
+    </div>
+    <div class="row tools" id="tools">
+      <button type="button" data-tool="line">Hole line</button>
+      <button type="button" data-tool="green">Green</button>
+      <button type="button" data-tool="fairway">Fairway</button>
+      <button type="button" data-tool="bunker">Bunker</button>
+      <button type="button" data-tool="water">Water</button>
+      <button type="button" data-tool="tee">Tee box</button>
+      <button type="button" data-tool="delete">Delete</button>
+    </div>
+    <p id="hint" class="hint">Pick a tool. Hole line: tap the back tee, any bends, then the middle of the green.</p>
+    <div class="row">
+      <button id="undo" type="button">Undo point</button>
+      <button id="cancel" type="button">Cancel</button>
+      <button id="done" type="button" class="primary">Done</button>
+    </div>
+    <div class="row" id="keyRow" hidden>
+      <input id="key" type="password" placeholder="Access key (from Vercel)" autocomplete="off" aria-label="Access key">
+      <button id="keyOk" type="button">Use key</button>
+    </div>
+  </section>
+</div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script type="module" src="src/editor.js"></script>
+</body>
+</html>

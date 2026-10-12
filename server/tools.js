@@ -4,6 +4,7 @@ import { searchCourses, fetchCourseData, parseOverpass } from '../src/osm.js';
 import { buildCourse } from '../src/course.js';
 import { greenPage, holePage } from '../src/render.js';
 import { sampleElevation, gridPoints } from './elevation.js';
+import { mergeEdits } from '../src/edits.js';
 
 const BBOX = z.array(z.number()).length(4).describe('Course bounding box [south, north, west, east] in degrees, as returned by find_course');
 const courseCache = new Map();
@@ -19,7 +20,10 @@ async function librarySnapshot(bbox) {
   const hit = lib.find((c) => !(c.bbox[1] < bbox[0] || c.bbox[0] > bbox[1] || c.bbox[3] < bbox[2] || c.bbox[2] > bbox[3]));
   if (!hit) return null;
   const r = await fetch(`${SITE}/courses/${hit.slug}.json`);
-  return r.ok ? r.json() : null;
+  if (!r.ok) return null;
+  const base = await r.json();
+  const e = await fetch(`${SITE}/courses/edits/${hit.slug}.json`).catch(() => null);
+  return e && e.ok ? mergeEdits(base, await e.json()) : base;
 }
 
 async function loadCourse(bbox) {

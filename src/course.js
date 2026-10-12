@@ -47,8 +47,21 @@ export function buildCourse(features) {
     try { holes.push(buildHole(h, L)); } catch (e) { skipped.push({ ref: h.tags.ref || '?', reason: e.message }); }
   }
   holes.sort((a, b) => (parseInt(a.ref) || 99) - (parseInt(b.ref) || 99));
+  // Several courses in one area (e.g. St Andrews links): group holes by the named course boundary their tee sits in
+  const named = L.boundary.filter((b) => b.tags.name);
+  const groups = [];
+  for (const b of named) {
+    const idx = holes.map((h, i) => (G.pointInPoly(h.TEE, b.geom) ? i : -1)).filter((i) => i >= 0);
+    if (idx.length) groups.push({ name: b.tags.name, holes: idx, area: G.polyArea(b.geom) });
+  }
+  // a tee inside two boundaries (outer estate + inner course) belongs to the smaller one
+  for (const g of groups) g.holes = g.holes.filter((i) => !groups.some((o) => o !== g && o.area < g.area && o.holes.includes(i)));
+  const grouped = new Set(groups.flatMap((g) => g.holes));
+  const rest = holes.map((_, i) => i).filter((i) => !grouped.has(i));
+  if (rest.length) groups.push({ name: groups.length ? 'Other holes' : 'All holes', holes: rest });
+  const usable = groups.filter((g) => g.holes.length);
   const census = { holeLines: L.hole.length, greens: L.green.length, fairways: L.fairway.length, tees: L.tee.length, bunkers: L.bunker.length, water: L.water.length, trees: L.tree.length };
-  return { proj, layers: L, holes, skipped, census, lat0, lon0 };
+  return { proj, layers: L, holes, skipped, census, groups: usable.length > 1 ? usable : [], lat0, lon0 };
 }
 
 function nearest(list, p, maxD) {
