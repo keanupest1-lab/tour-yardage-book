@@ -33,6 +33,9 @@ export function courseQuery(bbox) {
   const cLat = (s + n) / 2, cLon = (w + e) / 2;
   if (n - s > 0.04) { s = cLat - 0.02; n = cLat + 0.02; }
   if (e - w > 0.045) { w = cLon - 0.0225; e = cLon + 0.0225; }
+  // A tiny box usually means the search hit the clubhouse, not the course: widen to about 1.3 km each way
+  if (n - s < 0.008) { s = Math.min(s, cLat - 0.012); n = Math.max(n, cLat + 0.012); }
+  if (e - w < 0.009) { w = Math.min(w, cLon - 0.0135); e = Math.max(e, cLon + 0.0135); }
   const pad = 0.003;
   const b = `${(s - pad).toFixed(6)},${(w - pad).toFixed(6)},${(n + pad).toFixed(6)},${(e + pad).toFixed(6)}`;
   return `[out:json][timeout:25];
