@@ -1,12 +1,8 @@
-2026-10-12T13:51:26.014Z fetch Dainfern Golf Estate
-2026-10-12T13:51:28.146Z   overpass ok via overpass-api.de on attempt 1
-2026-10-12T13:51:28.190Z   saved dainfern-golf-estate: 18 holes ready; OSM has 18 hole lines, 1 greens, 2 fairways
-2026-10-12T13:51:32.713Z fetch Irene Country Club
-2026-10-12T13:51:35.804Z   overpass ok via overpass-api.de on attempt 1
-2026-10-12T13:51:35.804Z   saved irene-country-club: 0 holes ready; OSM has 0 hole lines, 0 greens, 0 fairways
-2026-10-12T13:51:40.202Z fetch Bryanston Country Club
-2026-10-12T13:51:47.477Z   attempt 1 overpass-api.de: HTTP 504 <?xml version="1.0" encoding="UTF-8"?>
+2026-10-12T13:56:23.752Z skip Dainfern Golf Estate (already saved)
+2026-10-12T13:56:23.752Z fetch Irene Country Club
+2026-10-12T13:56:30.667Z   attempt 1 overpass-api.de: HTTP 504 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 
-2026-10-12T13:53:27.482Z   attempt 2 overpass.private.coffee: timeout
-2026-10-12T13:54:51.528Z   overpass ok via overpass.kumi.systems on attempt 3
-2026-10-12T13:54:51.531Z   saved bryanston-country-club: 0 holes ready; OSM has 0 hole lines, 10 greens, 7 fairways
+2026-10-12T13:58:10.678Z   attempt 2 overpass.private.coffee: timeout
+2026-10-12T13:59:50.685Z   attempt 3 overpass.kumi.systems: timeout
+2026-10-12T14:00:18.903Z   overpass ok via maps.mail.ru on attempt 4
+2026-10-12T14:00:18.906Z   saved irene-country-club: 0 holes ready; OSM has 0 hole lines, 0 greens, 0 fairways
