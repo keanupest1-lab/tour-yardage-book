@@ -3,7 +3,7 @@
 
 const NOMINATIM = 'https://nominatim.openstreetmap.org/search';
 // Server calls identify themselves; browsers must not add the header (it would trigger a CORS preflight).
-const UA_HDR = typeof window === 'undefined' ? { 'User-Agent': 'TourYardageBooks/0.2 (+https://github.com/keanupest1-lab/tour-yardage-books)' } : {};
+const UA_HDR = typeof window === 'undefined' ? { 'User-Agent': 'TourYardageBooks/0.2 (+https://github.com/keanupest1-lab/tour-yardage-book)' } : {};
 const OVERPASS = [
   'https://overpass-api.de/api/interpreter',
   'https://overpass.kumi.systems/api/interpreter',
