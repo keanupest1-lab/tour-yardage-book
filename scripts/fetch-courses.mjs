@@ -2,6 +2,7 @@
 // into courses/ so the app and the Claude connector can load them instantly.
 // Runs in GitHub Actions whenever courses/requests.txt changes.
 import fs from 'node:fs';
+import { execSync } from 'node:child_process';
 import { courseQuery, parseOverpass } from '../src/osm.js';
 import { buildCourse } from '../src/course.js';
 
@@ -33,10 +34,10 @@ async function search(q) {
 
 async function overpass(bbox) {
   const q = courseQuery(bbox).replace('[timeout:25]', '[timeout:120]');
-  for (let attempt = 0; attempt < 12; attempt++) {
+  for (let attempt = 0; attempt < 8; attempt++) {
     const ep = SERVERS[attempt % SERVERS.length];
     try {
-      const res = await timed(ep, { method: 'POST', body: 'data=' + encodeURIComponent(q), headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }, 150000);
+      const res = await timed(ep, { method: 'POST', body: 'data=' + encodeURIComponent(q), headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }, 90000);
       const text = await res.text();
       if (!res.ok || !text.startsWith('{')) throw new Error(`HTTP ${res.status} ${text.slice(0, 80)}`);
       const json = JSON.parse(text);
@@ -45,7 +46,7 @@ async function overpass(bbox) {
       return json;
     } catch (e) {
       say(`  attempt ${attempt + 1} ${new URL(ep).host}: ${e.name === 'AbortError' ? 'timeout' : e.message}`);
-      await sleep(Math.min(60000, 8000 * (attempt + 1)));
+      await sleep(10000);
     }
   }
   throw new Error('all attempts failed');
@@ -74,8 +75,18 @@ for (const line of lines) {
   } catch (e) {
     say(`  FAILED ${qName}: ${e.message}`);
   }
+  save(`Course library: ${qName}`);
   await sleep(3000);
 }
-index.courses.sort((a, b) => a.name.localeCompare(b.name));
-fs.writeFileSync(indexPath, JSON.stringify(index, null, 1));
-fs.writeFileSync('courses/_last_run.log', log.join('\n') + '\n');
+save('Course library update');
+
+// Write the index and log, then commit and push straight away so progress is never lost
+function save(msg) {
+  index.courses.sort((a, b) => a.name.localeCompare(b.name));
+  fs.writeFileSync(indexPath, JSON.stringify(index, null, 1));
+  fs.writeFileSync('courses/_last_run.log', log.join('\n') + '\n');
+  if (!process.env.GITHUB_ACTIONS) return;
+  try {
+    execSync('git add courses && (git diff --cached --quiet || (git commit -qm "' + msg.replace(/"/g, '') + ' [skip ci]" && git pull -q --rebase origin main && git push -q origin HEAD:main))', { stdio: 'inherit', shell: '/bin/bash' });
+  } catch (e) { console.log('push failed', e.message); }
+}
