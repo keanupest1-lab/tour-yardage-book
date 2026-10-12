@@ -15,3 +15,7 @@
 2026-10-12T14:02:21.580Z   attempt 2 overpass.private.coffee: timeout
 2026-10-12T14:03:52.086Z   overpass ok via overpass.kumi.systems on attempt 3
 2026-10-12T14:03:52.087Z   saved wanderers-golf-club: 0 holes ready; OSM has 0 hole lines, 0 greens, 0 fairways
+2026-10-12T14:03:56.747Z skip Bryanston Country Club (already saved)
+2026-10-12T14:03:56.747Z fetch Old Course St Andrews
+2026-10-12T14:04:00.999Z   overpass ok via overpass-api.de on attempt 1
+2026-10-12T14:04:02.936Z   saved old-course-st-andrews: 88 holes ready; OSM has 88 hole lines, 90 greens, 110 fairways
