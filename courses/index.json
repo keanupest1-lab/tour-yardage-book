@@ -1,0 +1,28 @@
+{
+ "courses": [
+  {
+   "slug": "dainfern-golf-estate",
+   "query": "Dainfern Golf Estate",
+   "name": "Dainfern Golf Estate",
+   "place": "Dainfern Golf Estate, Broadacres AH, Johannesburg Ward 96, Randburg, City of Johannesburg Metropolitan Municipality, Gauteng, South Africa",
+   "bbox": [
+    -25.99345,
+    -25.9745805,
+    27.9862133,
+    28.007288
+   ],
+   "fetched": "2026-10-12T13:51:28.190Z",
+   "census": {
+    "holeLines": 18,
+    "greens": 1,
+    "fairways": 2,
+    "tees": 0,
+    "bunkers": 38,
+    "water": 36,
+    "trees": 0,
+    "holesReady": 18,
+    "skipped": []
+   }
+  }
+ ]
+}
