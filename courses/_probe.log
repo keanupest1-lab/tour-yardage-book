@@ -1,0 +1,41 @@
+probe 2026-10-12T13:49:59Z
+== https://overpass-api.de/api/status
+http 200 in 9.289154s
+Connected as: 223768109
+Current time: 2026-10-12T13:49:59Z
+Announced endpoint: lambert.openstreetmap.de/
+Rate limit: 4
+4 slots available now.
+Currently running queries (pid, space limit, time limit, start time):
+
+== https://overpass.private.coffee/api/status
+curl: (28) Operation timed out after 30000 milliseconds with 0 bytes received
+http 000 in 30.000357s
+Connected as: 223768109
+Current time: 2026-10-12T13:49:59Z
+Announced endpoint: lambert.openstreetmap.de/
+Rate limit: 4
+4 slots available now.
+Currently running queries (pid, space limit, time limit, start time):
+
+== https://overpass.kumi.systems/api/status
+curl: (28) Operation timed out after 30001 milliseconds with 0 bytes received
+http 000 in 30.001120s
+Connected as: 223768109
+Current time: 2026-10-12T13:49:59Z
+Announced endpoint: lambert.openstreetmap.de/
+Rate limit: 4
+4 slots available now.
+Currently running queries (pid, space limit, time limit, start time):
+
+== https://maps.mail.ru/osm/tools/overpass/api/status
+http 200 in 15.318733s
+Connected as: 223768109
+Current time: 2026-10-12T13:51:23Z
+Announced endpoint: none
+Rate limit: 0
+Currently running queries (pid, space limit, time limit, start time):
+
+== https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&q=Dainfern
+http 200 in 0.420671s
+[{"place_id":428306158,"licence":"Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright","osm_type":"relation","osm_id":21444399,"lat":"-25.9892121","lon":"27.9950716","category":"leisure","type":"golf_course","place_rank":30,"importance":0.14389741120638372,"addresstype":"leisure",
