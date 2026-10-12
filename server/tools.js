@@ -13,7 +13,7 @@ async function loadCourse(bbox) {
   const hit = courseCache.get(key);
   if (hit && Date.now() - hit.t < 30 * 60 * 1000) return hit.course;
   // COURSE_FIXTURE lets local tests run without network access
-  const raw = process.env.COURSE_FIXTURE ? JSON.parse((await import('node:fs')).readFileSync(process.env.COURSE_FIXTURE, 'utf8')) : await fetchCourseData(bbox);
+  const raw = process.env.COURSE_FIXTURE ? JSON.parse((await import('node:fs')).readFileSync(process.env.COURSE_FIXTURE, 'utf8')) : await fetchCourseData(bbox, () => {}, { timeoutMs: 13000 });
   const course = buildCourse(parseOverpass(raw));
   if (courseCache.size > 20) courseCache.clear();
   courseCache.set(key, { t: Date.now(), course });

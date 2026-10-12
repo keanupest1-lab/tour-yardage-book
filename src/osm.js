@@ -27,7 +27,7 @@ export async function searchCourses(q) {
   }));
 }
 
-export async function fetchCourseData(bbox, onProgress = () => {}) {
+export async function fetchCourseData(bbox, onProgress = () => {}, { timeoutMs = 40000 } = {}) {
   // Guard against a search hit that is a whole suburb or town: keep the box to about 4 km around its centre
   let [s, n, w, e] = bbox;
   const cLat = (s + n) / 2, cLon = (w + e) / 2;
@@ -49,12 +49,12 @@ export async function fetchCourseData(bbox, onProgress = () => {}) {
   way["leisure"="golf_course"](${b});
 );
 out geom;`;
-  let lastErr;
+  const errors = [];
   for (let i = 0; i < OVERPASS.length; i++) {
     const ep = OVERPASS[i];
     onProgress(`Asking map server ${i + 1} of ${OVERPASS.length}…`);
     const ctrl = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), 40000);
+    const timer = setTimeout(() => ctrl.abort(), timeoutMs);
     try {
       const res = await fetch(ep, { method: 'POST', body: 'data=' + encodeURIComponent(query), signal: ctrl.signal,
         headers: { 'Content-Type': 'application/x-www-form-urlencoded', ...UA_HDR } });
@@ -63,10 +63,24 @@ out geom;`;
       if (json.remark && /runtime error|timed out/i.test(json.remark)) throw new Error(`server ${i + 1}: ${json.remark}`);
       return json;
     } catch (err) {
-      lastErr = err.name === 'AbortError' ? new Error(`server ${i + 1} took too long`) : err;
+      errors.push(err.name === 'AbortError' ? `server ${i + 1} took too long` : `server ${i + 1}: ${err.message}`);
     } finally { clearTimeout(timer); }
   }
-  throw new Error(`The map servers didn't respond (${lastErr?.message || 'unknown error'}). Try again in a minute.`);
+  throw new Error(`The map servers didn't respond (${errors.join('; ')}). Try again in a minute.`);
+}
+
+// Prefer the app's own server route (cached, not subject to browser/network quirks); fall back to direct.
+export async function loadCourseData(bbox, onProgress = () => {}) {
+  if (typeof window !== 'undefined' && location.protocol.startsWith('http')) {
+    try {
+      onProgress('Fetching course data…');
+      const res = await fetch(`/api/course?bbox=${bbox.map((v) => v.toFixed(6)).join(',')}`);
+      const body = await res.json().catch(() => null);
+      if (res.ok && body && body.elements) return body;
+      if (body && body.error) onProgress(`Server route failed (${body.error}); trying map servers directly…`);
+    } catch { /* no server route (static hosting): go direct */ }
+  }
+  return fetchCourseData(bbox, onProgress);
 }
 
 // Turn Overpass JSON into simple features: {kind, tags, geom: [[lon,lat],...], closed, id}

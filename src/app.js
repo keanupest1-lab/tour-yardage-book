@@ -1,4 +1,4 @@
-import { searchCourses, fetchCourseData, parseOverpass } from './osm.js';
+import { searchCourses, loadCourseData, parseOverpass } from './osm.js';
 import { buildCourse } from './course.js';
 import { greenPage, holePage } from './render.js';
 
@@ -26,7 +26,7 @@ async function loadCourse(row) {
   $('#results').innerHTML = '';
   status(`Loading ${row.name} from OpenStreetMap…`);
   try {
-    const json = await fetchCourseData(row.bbox, (msg) => status(`Loading ${row.name}: ${msg}`));
+    const json = await loadCourseData(row.bbox, (msg) => status(`Loading ${row.name}: ${msg}`));
     openCourse(json, row.name);
   } catch (err) { status(err.message, 'error'); }
 }
