@@ -167,6 +167,30 @@
     "holesReady": 0,
     "skipped": []
    }
+  },
+  {
+   "slug": "royal-johannesburg-kensington-golf-club-johannesburg",
+   "query": "Royal Johannesburg & Kensington Golf Club, Johannesburg",
+   "name": "Royal Johannesburg & Kensington Golf Club",
+   "place": "Royal Johannesburg & Kensington Golf Club, 1, Fairway Avenue, Linksfield North, Johannesburg Ward 72, Johannesburg, City of Johannesburg Metropolitan Municipality, Gauteng, 2192, South Africa",
+   "bbox": [
+    -26.155491,
+    -26.1548637,
+    28.1076697,
+    28.1085716
+   ],
+   "fetched": "2026-10-12T14:19:10.863Z",
+   "census": {
+    "holeLines": 54,
+    "greens": 27,
+    "fairways": 24,
+    "tees": 82,
+    "bunkers": 71,
+    "water": 24,
+    "trees": 538,
+    "holesReady": 54,
+    "skipped": []
+   }
   }
  ]
 }
