@@ -59,9 +59,11 @@ export function buildCourse(features) {
   const grouped = new Set(groups.flatMap((g) => g.holes));
   const rest = holes.map((_, i) => i).filter((i) => !grouped.has(i));
   if (rest.length) groups.push({ name: groups.length ? 'Other holes' : 'All holes', holes: rest });
-  const usable = groups.filter((g) => g.holes.length);
+  // only split when there really are several courses (two or more named courses with 6+ holes each)
+  const real = groups.filter((g) => g.name !== 'Other holes' && g.name !== 'All holes' && g.holes.length >= 6);
+  const usable = real.length >= 2 ? groups.filter((g) => g.holes.length) : [];
   const census = { holeLines: L.hole.length, greens: L.green.length, fairways: L.fairway.length, tees: L.tee.length, bunkers: L.bunker.length, water: L.water.length, trees: L.tree.length };
-  return { proj, layers: L, holes, skipped, census, groups: usable.length > 1 ? usable : [], lat0, lon0 };
+  return { proj, layers: L, holes, skipped, census, groups: usable, lat0, lon0 };
 }
 
 function nearest(list, p, maxD) {
