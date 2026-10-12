@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Tour Yardage Books</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Sans:wght@400;600&display=swap">
+<link rel="stylesheet" href="src/style.css">
+</head>
+<body>
+<div class="wrap">
+  <header class="brand"><b>Tour Yardage Books</b><span>Tour-style yardage and green pages for any mapped course</span></header>
+  <form id="search" class="search">
+    <input id="q" type="search" placeholder="Course name, e.g. Irene Country Club" autocomplete="off" aria-label="Course name">
+    <button type="submit">Find course</button>
+  </form>
+  <p id="status" class="status" role="status"></p>
+  <ul id="results" class="results"></ul>
+
+  <main id="viewer" class="wrap" style="padding:0" hidden>
+    <div class="bar">
+      <h1 id="title"></h1>
+      <div class="controls">
+        <select id="units" aria-label="Units"><option value="m">Metres</option><option value="yd">Yards</option></select>
+        <button id="printHole" type="button">Print hole</button>
+        <button id="printAll" type="button" class="primary">Print book</button>
+      </div>
+    </div>
+    <nav class="tabs-wrap"><button id="prev" type="button" aria-label="Previous hole">&lsaquo;</button><div id="tabs" class="tabs"></div><button id="next" type="button" aria-label="Next hole">&rsaquo;</button></nav>
+    <ul id="warnings" class="warnings"></ul>
+    <section id="pages" class="pages"></section>
+    <p class="foot">Course data © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a>. Distances are computed from mapped shapes. Check them on site before competition use.</p>
+  </main>
+</div>
+<div id="print" class="print-only"></div>
+<script type="module" src="src/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,57 @@
+/* Layout: one narrow working column, like a caddie's notebook; book pages sit as paper cards on a fairway-dark desk. */
+[hidden] { display: none !important; }
+:root {
+  --bg: #eef0ea; --surface: #ffffff; --fg: #17201a; --muted: #5f6b62; --line: #d5dbd2;
+  --accent: #1f5c3a; --accent-fg: #ffffff; --gold: #a9822a; --warn: #8a5a00; --error: #b3261e;
+  --display: "Barlow Condensed", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+  --body: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --bg: #101611; --surface: #1a221c; --fg: #e8ede7; --muted: #9aa79d; --line: #2c372f;
+    --accent: #7cc497; --accent-fg: #0d1a12; --gold: #d8b25a; --warn: #e2b45c; --error: #ff8a80; color-scheme: dark; }
+}
+:root[data-theme="dark"] { --bg: #101611; --surface: #1a221c; --fg: #e8ede7; --muted: #9aa79d; --line: #2c372f;
+  --accent: #7cc497; --accent-fg: #0d1a12; --gold: #d8b25a; --warn: #e2b45c; --error: #ff8a80; color-scheme: dark; }
+
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.45 var(--body); padding-inline: 16px; }
+.wrap { max-width: 920px; margin: 0 auto; padding-block: 18px 40px; display: grid; gap: 14px; }
+.brand { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.brand b { font: 700 28px/1 var(--display); letter-spacing: .04em; text-transform: uppercase; color: var(--accent); }
+.brand span { color: var(--muted); font-size: 13px; }
+.search { display: flex; gap: 8px; }
+.search input { flex: 1; min-width: 0; padding: 12px 14px; border: 1px solid var(--line); border-radius: 8px; font: inherit; background: var(--surface); color: var(--fg); }
+button, select { font: inherit; color: var(--fg); border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 9px 14px; cursor: pointer; }
+button:focus-visible, select:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+button.primary, .search button { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); font-weight: 600; }
+.status { min-height: 1.4em; margin: 0; color: var(--muted); font-size: 14px; }
+.status.error { color: var(--error); } .status.warn { color: var(--warn); } .status.ok { color: var(--accent); }
+.results { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+.results button { width: 100%; text-align: left; display: grid; gap: 2px; }
+.results span { color: var(--muted); font-size: 13px; }
+.samples { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.samples p { margin: 0; color: var(--muted); font-size: 13px; flex-basis: 100%; }
+.bar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; }
+.bar h1 { font: 700 26px/1.1 var(--display); letter-spacing: .02em; margin: 0; text-wrap: balance; min-width: 0; }
+.controls { display: flex; gap: 8px; flex-wrap: wrap; }
+.tabs-wrap { display: flex; gap: 6px; align-items: center; }
+.tabs { display: flex; gap: 6px; overflow-x: auto; flex: 1; min-width: 0; padding-bottom: 4px; }
+.tabs button { min-width: 44px; padding: 8px 0; font: 600 18px/1 var(--display); font-variant-numeric: tabular-nums; }
+.tabs button.on { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+.warnings { margin: 0; padding-left: 18px; color: var(--warn); font-size: 14px; }
+.warnings:empty { display: none; }
+.pages { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 14px; }
+.page { background: #fff; border-radius: 10px; overflow: hidden; border: 1px solid var(--line); }
+.page svg { display: block; width: 100%; height: auto; }
+.page figcaption { font: 600 12px/1 var(--body); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); padding: 10px 12px; background: var(--surface); border-top: 1px solid var(--line); }
+.foot { color: var(--muted); font-size: 12px; margin: 0; }
+.foot a { color: inherit; }
+.print-only { display: none; }
+@page { size: 101.6mm 177.8mm; margin: 0; }
+@media print {
+  body { background: #fff; padding: 0; }
+  .wrap { display: none !important; }
+  .print-only { display: block; }
+  .pp { width: 101.6mm; height: 177.8mm; page-break-after: always; break-after: page; overflow: hidden; }
+  .pp svg { width: 101.6mm; height: 177.8mm; display: block; }
+}
