@@ -1,0 +1,27 @@
+name: Fetch imagery
+on:
+  push:
+    paths: ['courses/imagery-requests.txt', 'scripts/fetch_imagery.py']
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: fetch-imagery
+  cancel-in-progress: true
+jobs:
+  imagery:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - run: pip install pillow
+      - run: python3 scripts/fetch_imagery.py
+      - name: Save
+        run: |
+          git config user.name "course-bot"
+          git config user.email "course-bot@users.noreply.github.com"
+          git add courses/imagery
+          git diff --cached --quiet && exit 0
+          git commit -m "Course imagery [skip ci]"
+          git pull --rebase origin main
+          git push origin HEAD:main
