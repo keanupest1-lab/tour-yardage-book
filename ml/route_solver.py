@@ -59,7 +59,7 @@ def candidates(green, length, par, mask, cell, x0, y0, n_dirs=48):
         scored.append((pts, cover))
     return scored
 
-def solve(greens, mask, cell, x0, y0, card, start=None, beam=400, walk_free=60, walk_max=300, allow_shared=True, shared_penalty=35.0):
+def solve(greens, mask, cell, x0, y0, card, start=None, beam=400, walk_free=60, walk_max=300, allow_shared=True, shared_penalty=35.0, end=None, end_weight=0.5):
     cand = {}
     for gi, g in enumerate(greens):
         for hi, (par, L) in enumerate(card):
@@ -94,4 +94,6 @@ def solve(greens, mask, cell, x0, y0, card, start=None, beam=400, walk_free=60, 
             if len(states) >= beam: break
         if not states:
             print('  no states after hole', hi + 1); return None
+    if end is not None:   # the last green should come back near the clubhouse
+        states = sorted(states, key=lambda s: s[0] + end_weight * max(0.0, math.dist(greens[s[2][-1][0]], end) - 80))
     return states[0]
