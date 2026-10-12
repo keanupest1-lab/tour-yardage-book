@@ -7,13 +7,28 @@ import { sampleElevation, gridPoints } from './elevation.js';
 
 const BBOX = z.array(z.number()).length(4).describe('Course bounding box [south, north, west, east] in degrees, as returned by find_course');
 const courseCache = new Map();
+const SITE = process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : null;
+
+async function libraryIndex() {
+  if (!SITE) return [];
+  try { const r = await fetch(`${SITE}/courses/index.json`); return r.ok ? (await r.json()).courses || [] : []; } catch { return []; }
+}
+// a saved course whose box overlaps the requested one
+async function librarySnapshot(bbox) {
+  const lib = await libraryIndex();
+  const hit = lib.find((c) => !(c.bbox[1] < bbox[0] || c.bbox[0] > bbox[1] || c.bbox[3] < bbox[2] || c.bbox[2] > bbox[3]));
+  if (!hit) return null;
+  const r = await fetch(`${SITE}/courses/${hit.slug}.json`);
+  return r.ok ? r.json() : null;
+}
 
 async function loadCourse(bbox) {
   const key = bbox.map((v) => v.toFixed(5)).join(',');
   const hit = courseCache.get(key);
   if (hit && Date.now() - hit.t < 30 * 60 * 1000) return hit.course;
   // COURSE_FIXTURE lets local tests run without network access
-  const raw = process.env.COURSE_FIXTURE ? JSON.parse((await import('node:fs')).readFileSync(process.env.COURSE_FIXTURE, 'utf8')) : await fetchCourseData(bbox, () => {}, { timeoutMs: 13000 });
+  const raw = process.env.COURSE_FIXTURE ? JSON.parse((await import('node:fs')).readFileSync(process.env.COURSE_FIXTURE, 'utf8'))
+    : (await librarySnapshot(bbox)) || (await fetchCourseData(bbox, () => {}, { timeoutMs: 20000 }));
   const course = buildCourse(parseOverpass(raw));
   if (courseCache.size > 20) courseCache.clear();
   courseCache.set(key, { t: Date.now(), course });
@@ -54,8 +69,11 @@ export function registerTools(server, env) {
     description: 'Search OpenStreetMap for golf courses by name and town. Returns name, place, centre point and bounding box to pass to the other tools.',
     inputSchema: { query: z.string().min(2).describe('Course name, ideally with town or country, e.g. "Irene Country Club"') },
   }, async ({ query }) => {
-    try { return json({ results: await searchCourses(/golf/i.test(query) ? query : `${query} golf`) }); }
-    catch (e) { return fail(`Search failed: ${e.message}`); }
+    const words = query.toLowerCase().split(/\s+/).filter((w) => w.length > 1 && !['golf', 'club', 'country'].includes(w));
+    const saved = (await libraryIndex()).filter((c) => words.length && words.every((w) => `${c.name} ${c.query} ${c.place}`.toLowerCase().includes(w)))
+      .map((c) => ({ name: c.name, place: c.place, bbox: c.bbox, saved: true, holes_ready: c.census?.holesReady }));
+    try { return json({ results: [...saved, ...(await searchCourses(/golf/i.test(query) ? query : `${query} golf`))] }); }
+    catch (e) { return saved.length ? json({ results: saved, note: `Live search failed (${e.message}); showing saved courses.` }) : fail(`Search failed: ${e.message}`); }
   });
 
   server.registerTool('get_course_layout', {

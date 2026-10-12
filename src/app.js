@@ -3,7 +3,16 @@ import { buildCourse } from './course.js';
 import { greenPage, holePage } from './render.js';
 
 const $ = (s) => document.querySelector(s);
-const state = { course: null, name: '', hole: 0, units: localGet('units') || 'm' };
+const state = { course: null, name: '', hole: 0, units: localGet('units') || 'm', library: [] };
+
+// Saved course library (fetched in the background by GitHub, loads instantly)
+fetch('courses/index.json').then((r) => (r.ok ? r.json() : { courses: [] })).then((j) => { state.library = j.courses || []; }).catch(() => {});
+
+function librarySearch(q) {
+  const words = q.toLowerCase().split(/\s+/).filter((w) => w.length > 1 && w !== 'golf' && w !== 'club' && w !== 'country');
+  if (!words.length) return [];
+  return state.library.filter((c) => { const hay = `${c.name} ${c.query} ${c.place}`.toLowerCase(); return words.every((w) => hay.includes(w)); });
+}
 
 function localGet(k) { try { return localStorage.getItem(k); } catch { return null; } }
 function localSet(k, v) { try { localStorage.setItem(k, v); } catch {} }
@@ -13,17 +22,25 @@ async function onSearch(e) {
   e.preventDefault();
   const q = $('#q').value.trim(); if (!q) return;
   status('Searching…'); $('#results').innerHTML = '';
+  const saved = librarySearch(q).map((c) => ({ ...c, saved: true }));
+  let live = [];
+  try { live = await searchCourses(q.match(/golf/i) ? q : q + ' golf'); } catch (err) { if (!saved.length) return status(err.message, 'error'); }
   try {
-    const rows = await searchCourses(q.match(/golf/i) ? q : q + ' golf');
+    const rows = [...saved, ...live];
     if (!rows.length) return status('No courses found. Try the club name plus the town.', 'warn');
     status('');
-    $('#results').innerHTML = rows.map((r, i) => `<li><button data-i="${i}"><strong>${escapeHtml(r.name)}</strong><span>${escapeHtml(r.place)}</span></button></li>`).join('');
+    $('#results').innerHTML = rows.map((r, i) => `<li><button data-i="${i}"><strong>${escapeHtml(r.name)}${r.saved ? ` <em class="tag">Saved · ${r.census?.holesReady ?? '?'} holes</em>` : ''}</strong><span>${escapeHtml(r.place)}</span></button></li>`).join('');
     $('#results').querySelectorAll('button').forEach((b) => b.addEventListener('click', () => loadCourse(rows[+b.dataset.i])));
   } catch (err) { status(err.message, 'error'); }
 }
 
 async function loadCourse(row) {
   $('#results').innerHTML = '';
+  if (row.saved) {
+    status(`Opening ${row.name}…`);
+    try { const j = await (await fetch(`courses/${row.slug}.json`)).json(); return openCourse(j, row.name); }
+    catch (err) { return status(`Couldn't open the saved copy: ${err.message}`, 'error'); }
+  }
   let step = 'starting…';
   const t0 = Date.now();
   const tick = () => status(`Loading ${row.name}: ${step} (${Math.round((Date.now() - t0) / 1000)}s)`);
@@ -32,7 +49,7 @@ async function loadCourse(row) {
     const json = await loadCourseData(row.bbox, (msg) => { step = msg; tick(); });
     clearInterval(timer);
     openCourse(json, row.name);
-  } catch (err) { clearInterval(timer); status(err.message, 'error'); }
+  } catch (err) { clearInterval(timer); status(`${err.message} If this keeps happening, ask Claude to add ${row.name} to the saved course library.`, 'error'); }
 }
 
 function openCourse(json, name) {

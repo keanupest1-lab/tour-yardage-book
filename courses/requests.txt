@@ -1,0 +1,9 @@
+# One course per line. Optional bounding box: Name | south,north,west,east
+# Pushing a change here makes GitHub fetch the new courses into this folder.
+Dainfern Golf Estate
+Irene Country Club
+Bryanston Country Club
+Old Course St Andrews
+Royal Johannesburg and Kensington Golf Club
+Glendower Golf Club
+Houghton Golf Club
