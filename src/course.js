@@ -136,6 +136,7 @@ function buildHole(h, L) {
     CL, TEE, GC, GF, GB, U, V, green, tees, fairways, bunkers, water, trees, woods,
     warnings: [],
   };
+  if (h.tags.note) hole.warnings.push(h.tags.note);
   if (greenEstimated) hole.warnings.push('Green not mapped on OpenStreetMap: shown as an estimated oval at the end of the hole line. Green numbers are approximate.');
   if (!fairways.length && par > 3) hole.warnings.push('No fairway mapped on OpenStreetMap for this hole.');
   measure(hole);

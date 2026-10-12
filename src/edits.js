@@ -20,6 +20,8 @@ export function editsToElements(edits) {
     if (!h.line || h.line.length < 2) continue;
     const tags = { golf: 'hole', ref: String(ref), source: 'editor' };
     if (h.par) tags.par = String(h.par);
+    if (h.note) tags.note = String(h.note);
+    if (h.dist) tags.dist = String(h.dist);
     els.push({ type: 'way', id: id--, tags, geometry: h.line.map(([lat, lon]) => ({ lat, lon })) });
   }
   for (const s of edits.shapes || []) {
