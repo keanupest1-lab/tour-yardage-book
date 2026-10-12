@@ -1,0 +1,193 @@
+region Gauteng
+  88 courses, 4036 features
+  + Waterkloof Golf Estate: 11 chips {'fairway': 22, 'green': 19, 'tee': 79, 'bunker': 63, 'water': 7}
+  + Country Club Johannesburg - Woodmead: 23 chips {'fairway': 45, 'green': 48, 'tee': 110, 'bunker': 143, 'water': 13}
+  + Glendower: 8 chips {'fairway': 17, 'green': 20, 'tee': 22, 'bunker': 65, 'water': 7}
+  + Wanderers Golf Course: 8 chips {'fairway': 18, 'green': 20, 'tee': 35, 'bunker': 61, 'water': 7}
+  + Bryanston Country Club: 7 chips {'fairway': 7, 'green': 9, 'tee': 17, 'bunker': 24, 'water': 10}
+  + Eagle Canyon Golf Course: 13 chips {'fairway': 20, 'green': 20, 'tee': 56, 'bunker': 47, 'water': 22}
+  + Ruimsig Country Club: 9 chips {'fairway': 20, 'green': 19, 'tee': 76, 'bunker': 72, 'water': 11}
+  + Thatchfield: 2 chips {'fairway': 7, 'green': 10, 'tee': 23, 'bunker': 34, 'water': 6}
+  + ?: 8 chips {'fairway': 18, 'green': 18, 'tee': 39, 'bunker': 44, 'water': 0}
+  + Zwartkops Country Club: 9 chips {'fairway': 21, 'green': 26, 'tee': 55, 'bunker': 61, 'water': 2}
+  + Silver Lakes golf course: 5 chips {'fairway': 8, 'green': 14, 'tee': 54, 'bunker': 29, 'water': 8}
+region Cape Town
+  overpass https://overpass-api.de/api/interpreter HTTP Error 504: Gateway Timeout
+  25 courses, 1636 features
+  + Durbanville Golf Club: 10 chips {'fairway': 20, 'green': 20, 'tee': 39, 'bunker': 44, 'water': 4}
+  + Bellville Golf Club: 6 chips {'fairway': 8, 'green': 21, 'tee': 44, 'bunker': 46, 'water': 3}
+region Durban coast
+  overpass https://overpass-api.de/api/interpreter HTTP Error 504: Gateway Timeout
+  overpass https://maps.mail.ru/osm/tools/overpass/api/interpreter HTTP Error 504: Gateway Time-out
+  overpass https://overpass.kumi.systems/api/interpreter The read operation timed out
+  overpass https://overpass-api.de/api/interpreter HTTP Error 504: Gateway Timeout
+  overpass https://maps.mail.ru/osm/tools/overpass/api/interpreter HTTP Error 504: Gateway Timeout
+  overpass https://overpass.kumi.systems/api/interpreter The read operation timed out
+  skip region: overpass failed
+region Copenhagen
+  21 courses, 5963 features
+  + Furesø Golfklub: 23 chips {'fairway': 28, 'green': 23, 'tee': 88, 'bunker': 84, 'water': 22}
+  + Albertslund Golfklub: 5 chips {'fairway': 15, 'green': 12, 'tee': 11, 'bunker': 21, 'water': 1}
+  + Hjortespring Golfklub: 20 chips {'fairway': 20, 'green': 20, 'tee': 38, 'bunker': 47, 'water': 20}
+  + Værløse Golfklub: 22 chips {'fairway': 31, 'green': 25, 'tee': 48, 'bunker': 67, 'water': 8}
+  + Mølleåens Golf Klub: 16 chips {'fairway': 22, 'green': 20, 'tee': 33, 'bunker': 65, 'water': 4}
+  + Hørsholm Golf: 32 chips {'fairway': 29, 'green': 32, 'tee': 44, 'bunker': 55, 'water': 15}
+  + Københavns Golf Klub: 19 chips {'fairway': 22, 'green': 18, 'tee': 42, 'bunker': 57, 'water': 1}
+  too big The Scandinavian Golf Club
+  + Smørum Golfklub: 35 chips {'fairway': 57, 'green': 55, 'tee': 84, 'bunker': 94, 'water': 14}
+  + Hillerød Golfklub: 7 chips {'fairway': 9, 'green': 15, 'tee': 13, 'bunker': 29, 'water': 4}
+  + Nivå Golf: 19 chips {'fairway': 33, 'green': 38, 'tee': 54, 'bunker': 58, 'water': 12}
+region Surrey
+  overpass https://overpass-api.de/api/interpreter HTTP Error 504: Gateway Timeout
+  overpass https://maps.mail.ru/osm/tools/overpass/api/interpreter HTTP Error 504: Gateway Time-out
+  68 courses, 7331 features
+  + Clandon Regis Golf Club: 16 chips {'fairway': 20, 'green': 19, 'tee': 50, 'bunker': 65, 'water': 5}
+  + The Drift Golf Club: 16 chips {'fairway': 23, 'green': 21, 'tee': 38, 'bunker': 28, 'water': 11}
+  too big Wentworth Club
+  + West Byfleet Golf Club: 13 chips {'fairway': 20, 'green': 19, 'tee': 18, 'bunker': 32, 'water': 2}
+  + Worplesdon Golf Club: 17 chips {'fairway': 64, 'green': 19, 'tee': 0, 'bunker': 74, 'water': 2}
+  + Woking Golf Club: 22 chips {'fairway': 44, 'green': 20, 'tee': 40, 'bunker': 47, 'water': 19}
+  + New Zealand Golf Club: 14 chips {'fairway': 15, 'green': 19, 'tee': 25, 'bunker': 6, 'water': 3}
+  + Windlesham Golf Club: 15 chips {'fairway': 27, 'green': 18, 'tee': 46, 'bunker': 48, 'water': 11}
+  + Queenwood Golf Course: 18 chips {'fairway': 27, 'green': 23, 'tee': 72, 'bunker': 82, 'water': 10}
+  + Foxhills: 28 chips {'fairway': 43, 'green': 47, 'tee': 87, 'bunker': 125, 'water': 12}
+  + The Wisley: 25 chips {'fairway': 35, 'green': 30, 'tee': 83, 'bunker': 140, 'water': 17}
+  + Swinley Forest Golf Club: 19 chips {'fairway': 89, 'green': 20, 'tee': 0, 'bunker': 55, 'water': 1}
+  + Hersham Golf Club: 10 chips {'fairway': 22, 'green': 18, 'tee': 22, 'bunker': 17, 'water': 2}
+  + Hoebridge Golf Centre: 17 chips {'fairway': 18, 'green': 19, 'tee': 21, 'bunker': 56, 'water': 0}
+  + Burhill Golf Club: 15 chips {'fairway': 22, 'green': 20, 'tee': 40, 'bunker': 82, 'water': 6}
+  + Ashford Manor Golf Club: 10 chips {'fairway': 21, 'green': 19, 'tee': 33, 'bunker': 42, 'water': 0}
+  + Silvermere: 13 chips {'fairway': 24, 'green': 20, 'tee': 24, 'bunker': 48, 'water': 8}
+  + Hampton Court Palace Golf Club: 17 chips {'fairway': 25, 'green': 18, 'tee': 44, 'bunker': 69, 'water': 1}
+  + Mill Ride Golf & Country Club: 16 chips {'fairway': 23, 'green': 45, 'tee': 19, 'bunker': 52, 'water': 8}
+  + West Hill Golf Club: 14 chips {'fairway': 27, 'green': 20, 'tee': 45, 'bunker': 79, 'water': 51}
+  + St George's Hill Golf Club: 13 chips {'fairway': 20, 'green': 13, 'tee': 40, 'bunker': 48, 'water': 1}
+  + St George's Hill Golf Club: 12 chips {'fairway': 22, 'green': 14, 'tee': 45, 'bunker': 53, 'water': 2}
+  + Old Course: 15 chips {'fairway': 22, 'green': 20, 'tee': 40, 'bunker': 82, 'water': 6}
+  + Pyrford Golf Club: 7 chips {'fairway': 14, 'green': 10, 'tee': 21, 'bunker': 31, 'water': 13}
+  + Pyrford Golf Club: 6 chips {'fairway': 9, 'green': 10, 'tee': 21, 'bunker': 28, 'water': 8}
+  + Effingham Golf Club: 9 chips {'fairway': 10, 'green': 10, 'tee': 20, 'bunker': 41, 'water': 0}
+  + The Berkshire Golf Club: 20 chips {'fairway': 29, 'green': 23, 'tee': 66, 'bunker': 41, 'water': 0}
+  + The Berkshire Golf Club: 16 chips {'fairway': 14, 'green': 15, 'tee': 45, 'bunker': 29, 'water': 2}
+  + Beaverbrook Golf Club: 4 chips {'fairway': 7, 'green': 14, 'tee': 7, 'bunker': 25, 'water': 0}
+  + Sunningdale Golf Club: 36 chips {'fairway': 50, 'green': 58, 'tee': 95, 'bunker': 207, 'water': 3}
+  + The Leatherhead Club: 16 chips {'fairway': 32, 'green': 20, 'tee': 35, 'bunker': 62, 'water': 3}
+region Netherlands
+  overpass https://overpass-api.de/api/interpreter HTTP Error 504: Gateway Timeout
+  overpass https://maps.mail.ru/osm/tools/overpass/api/interpreter HTTP Error 504: Gateway Time-out
+  27 courses, 20252 features
+  + Noordwijkse Golfclub: 19 chips {'fairway': 22, 'green': 23, 'tee': 56, 'bunker': 27, 'water': 1}
+  + Amsterdam Old Course: 5 chips {'fairway': 8, 'green': 12, 'tee': 13, 'bunker': 18, 'water': 13}
+  + Haarlemmermeersche Golfclub: 20 chips {'fairway': 42, 'green': 37, 'tee': 141, 'bunker': 109, 'water': 37}
+  + Zaanse Golf Club: 16 chips {'fairway': 21, 'green': 21, 'tee': 27, 'bunker': 72, 'water': 40}
+  + Heemskerkse Golfclub: 19 chips {'fairway': 27, 'green': 29, 'tee': 34, 'bunker': 72, 'water': 31}
+  + Amsterdamse Golf Club: 15 chips {'fairway': 19, 'green': 20, 'tee': 40, 'bunker': 55, 'water': 14}
+  + Golfclub Houtrak: 29 chips {'fairway': 21, 'green': 18, 'tee': 48, 'bunker': 46, 'water': 22}
+  + ?: 5 chips {'fairway': 8, 'green': 11, 'tee': 8, 'bunker': 9, 'water': 8}
+  + Golf Amsteldijk: 11 chips {'fairway': 9, 'green': 9, 'tee': 27, 'bunker': 35, 'water': 31}
+  + Kennemer Golf & Country Club: 23 chips {'fairway': 29, 'green': 30, 'tee': 85, 'bunker': 59, 'water': 0}
+  + The International: 20 chips {'fairway': 57, 'green': 19, 'tee': 70, 'bunker': 82, 'water': 10}
+  + Golfbaan Spaarnwoude: 30 chips {'fairway': 39, 'green': 48, 'tee': 61, 'bunker': 62, 'water': 53}
+  + Golfbaan Spaarnwoude: 10 chips {'fairway': 11, 'green': 10, 'tee': 16, 'bunker': 26, 'water': 13}
+region Melbourne sandbelt
+  29 courses, 3282 features
+  + Riversdale Golf Club: 10 chips {'fairway': 17, 'green': 19, 'tee': 25, 'bunker': 116, 'water': 5}
+  + Woodlands Golf Club: 10 chips {'fairway': 17, 'green': 23, 'tee': 28, 'bunker': 87, 'water': 0}
+  + Huntingdale Golf Club: 8 chips {'fairway': 7, 'green': 20, 'tee': 48, 'bunker': 95, 'water': 2}
+  + Southern Golf Club: 7 chips {'fairway': 16, 'green': 21, 'tee': 0, 'bunker': 76, 'water': 10}
+  + Malvern Valley Public Golf Course: 5 chips {'fairway': 15, 'green': 18, 'tee': 4, 'bunker': 21, 'water': 3}
+  + Brighton Public Golf Course: 6 chips {'fairway': 18, 'green': 18, 'tee': 21, 'bunker': 42, 'water': 3}
+  + Victoria Golf Club: 12 chips {'fairway': 16, 'green': 20, 'tee': 20, 'bunker': 117, 'water': 1}
+  + Rossdale Golf Club: 7 chips {'fairway': 13, 'green': 21, 'tee': 34, 'bunker': 37, 'water': 8}
+  + Capital Golf Club: 14 chips {'fairway': 9, 'green': 19, 'tee': 68, 'bunker': 165, 'water': 12}
+  + Spring Valley Golf Club: 7 chips {'fairway': 12, 'green': 20, 'tee': 40, 'bunker': 75, 'water': 4}
+  + Kingston Heath Golf Club: 9 chips {'fairway': 12, 'green': 19, 'tee': 20, 'bunker': 155, 'water': 0}
+  + Cheltenham Golf Club: 2 chips {'fairway': 8, 'green': 10, 'tee': 15, 'bunker': 27, 'water': 0}
+  + Sandringham Golf Course: 8 chips {'fairway': 19, 'green': 22, 'tee': 40, 'bunker': 56, 'water': 1}
+  + Glen Waverley Golf Course: 8 chips {'fairway': 19, 'green': 20, 'tee': 21, 'bunker': 25, 'water': 2}
+  + Royal Melbourne Golf Club: 15 chips {'fairway': 21, 'green': 23, 'tee': 32, 'bunker': 122, 'water': 4}
+  + The Metropolitan Golf Club: 5 chips {'fairway': 7, 'green': 12, 'tee': 15, 'bunker': 58, 'water': 1}
+region Scottsdale
+  overpass https://overpass-api.de/api/interpreter HTTP Error 504: Gateway Timeout
+  overpass https://maps.mail.ru/osm/tools/overpass/api/interpreter HTTP Error 504: Gateway Time-out
+  overpass https://overpass.kumi.systems/api/interpreter The read operation timed out
+  overpass https://overpass-api.de/api/interpreter HTTP Error 504: Gateway Timeout
+  overpass https://maps.mail.ru/osm/tools/overpass/api/interpreter HTTP Error 504: Gateway Timeout
+  overpass https://overpass.kumi.systems/api/interpreter The read operation timed out
+  skip region: overpass failed
+region Costa del Sol
+  overpass https://overpass-api.de/api/interpreter HTTP Error 504: Gateway Timeout
+  overpass https://maps.mail.ru/osm/tools/overpass/api/interpreter HTTP Error 504: Gateway Time-out
+  overpass https://overpass.kumi.systems/api/interpreter The read operation timed out
+  63 courses, 3294 features
+  + Real Club de Golf Las Brisas: 6 chips {'fairway': 23, 'green': 18, 'tee': 69, 'bunker': 85, 'water': 7}
+  + Flamingos Golf: 8 chips {'fairway': 18, 'green': 19, 'tee': 56, 'bunker': 74, 'water': 3}
+  + Marbella Club Golf Resort: 7 chips {'fairway': 20, 'green': 18, 'tee': 18, 'bunker': 40, 'water': 6}
+  + El Paraíso Golf Club: 9 chips {'fairway': 22, 'green': 20, 'tee': 55, 'bunker': 55, 'water': 2}
+  + Santa María Golf & Country Club: 6 chips {'fairway': 15, 'green': 18, 'tee': 77, 'bunker': 63, 'water': 7}
+  + La Zagaleta Country Club - La Zagaleta Course: 7 chips {'fairway': 28, 'green': 21, 'tee': 79, 'bunker': 83, 'water': 12}
+  + Azata Golf: 5 chips {'fairway': 8, 'green': 9, 'tee': 38, 'bunker': 9, 'water': 2}
+  + Zagaleta New Course: 10 chips {'fairway': 25, 'green': 21, 'tee': 56, 'bunker': 75, 'water': 1}
+  + Club de Golf Aloha: 8 chips {'fairway': 9, 'green': 18, 'tee': 64, 'bunker': 57, 'water': 9}
+  + Marbella Golf Country Club: 5 chips {'fairway': 16, 'green': 14, 'tee': 52, 'bunker': 26, 'water': 6}
+  + Santa Clara Golf Club Marbella: 4 chips {'fairway': 10, 'green': 12, 'tee': 27, 'bunker': 17, 'water': 1}
+  + Santa Clara Golf Club Marbella: 0 chips {'fairway': 9, 'green': 9, 'tee': 26, 'bunker': 23, 'water': 4}
+  + Campo de Golf Río Real: 5 chips {'fairway': 15, 'green': 19, 'tee': 48, 'bunker': 55, 'water': 1}
+  + Los Naranjos Golf Club: 5 chips {'fairway': 9, 'green': 9, 'tee': 29, 'bunker': 29, 'water': 7}
+  + Atalaya Golf & Country Club: 14 chips {'fairway': 34, 'green': 31, 'tee': 65, 'bunker': 66, 'water': 7}
+  + Real Club de Golf Guadalmina: 3 chips {'fairway': 12, 'green': 11, 'tee': 33, 'bunker': 39, 'water': 1}
+  + La Quinta Golf & Country Club: 3 chips {'fairway': 10, 'green': 9, 'tee': 24, 'bunker': 47, 'water': 3}
+region Algarve
+  overpass https://overpass-api.de/api/interpreter HTTP Error 504: Gateway Timeout
+  overpass https://maps.mail.ru/osm/tools/overpass/api/interpreter HTTP Error 504: Gateway Time-out
+  overpass https://overpass.kumi.systems/api/interpreter HTTP Error 504: Gateway Timeout
+  36 courses, 1483 features
+  + Dom Pedro Old Course: 11 chips {'fairway': 15, 'green': 18, 'tee': 29, 'bunker': 65, 'water': 1}
+  + Pestana Vila Sol Golf Course: 9 chips {'fairway': 25, 'green': 27, 'tee': 60, 'bunker': 28, 'water': 10}
+  + Dom Pedro Victoria Golf Course: 18 chips {'fairway': 19, 'green': 18, 'tee': 73, 'bunker': 27, 'water': 7}
+  + Dom Pedro Pinhal Golf Course: 4 chips {'fairway': 16, 'green': 9, 'tee': 23, 'bunker': 18, 'water': 2}
+  + Dom Pedro Laguna Golf Course: 15 chips {'fairway': 38, 'green': 22, 'tee': 25, 'bunker': 79, 'water': 7}
+  + Pine Cliffs Golf Course: 1 chips {'fairway': 10, 'green': 9, 'tee': 23, 'bunker': 24, 'water': 0}
+  + Vale do Lobo: 7 chips {'fairway': 21, 'green': 22, 'tee': 45, 'bunker': 65, 'water': 6}
+  + Ocean Course: 7 chips {'fairway': 21, 'green': 22, 'tee': 45, 'bunker': 65, 'water': 6}
+region Orlando
+  overpass https://overpass-api.de/api/interpreter HTTP Error 504: Gateway Timeout
+  overpass https://maps.mail.ru/osm/tools/overpass/api/interpreter HTTP Error 504: Gateway Time-out
+  overpass https://overpass.kumi.systems/api/interpreter The read operation timed out
+  overpass https://overpass-api.de/api/interpreter HTTP Error 504: Gateway Timeout
+  overpass https://maps.mail.ru/osm/tools/overpass/api/interpreter HTTP Error 504: Gateway Time-out
+  overpass https://overpass.kumi.systems/api/interpreter The read operation timed out
+  skip region: overpass failed
+region Myrtle Beach
+  overpass https://overpass-api.de/api/interpreter HTTP Error 504: Gateway Timeout
+  67 courses, 6183 features
+  + The Wizard / Man O' War Golf Course: 22 chips {'fairway': 15, 'green': 42, 'tee': 149, 'bunker': 147, 'water': 0}
+  + ?: 22 chips {'fairway': 8, 'green': 17, 'tee': 75, 'bunker': 61, 'water': 16}
+  + Tupelo Bay: 3 chips {'fairway': 7, 'green': 28, 'tee': 36, 'bunker': 21, 'water': 7}
+  + World Tour Golf Links: 9 chips {'fairway': 14, 'green': 25, 'tee': 36, 'bunker': 79, 'water': 13}
+  + Arcadian Shores Golf Club: 8 chips {'fairway': 11, 'green': 20, 'tee': 51, 'bunker': 62, 'water': 5}
+  + Dunes Golf & Beach Club: 14 chips {'fairway': 22, 'green': 29, 'tee': 66, 'bunker': 80, 'water': 19}
+  + Parkland Golf Course: 8 chips {'fairway': 19, 'green': 18, 'tee': 71, 'bunker': 55, 'water': 8}
+  too big Legends Golf and Resort
+  + Blackmoor Golf Club: 16 chips {'fairway': 16, 'green': 15, 'tee': 37, 'bunker': 27, 'water': 4}
+  + Wild Wing Golf Course: 19 chips {'fairway': 8, 'green': 17, 'tee': 75, 'bunker': 61, 'water': 13}
+region Dubai
+  38 courses, 1152 features
+  + نادي الإمارات للغولف: 23 chips {'fairway': 32, 'green': 55, 'tee': 151, 'bunker': 51, 'water': 16}
+  + Arabian Ranches Golf Club: 14 chips {'fairway': 22, 'green': 18, 'tee': 72, 'bunker': 22, 'water': 2}
+  + ملاعب الجميره للغولف: 21 chips {'fairway': 30, 'green': 42, 'tee': 98, 'bunker': 109, 'water': 9}
+  + Majlis Course: 8 chips {'fairway': 13, 'green': 17, 'tee': 60, 'bunker': 40, 'water': 5}
+  + Faldo Course: 7 chips {'fairway': 17, 'green': 17, 'tee': 65, 'bunker': 7, 'water': 11}
+region Fife
+  16 courses, 2287 features
+  + New Course: 11 chips {'fairway': 11, 'green': 19, 'tee': 40, 'bunker': 76, 'water': 0}
+  + Eden Course: 10 chips {'fairway': 14, 'green': 19, 'tee': 28, 'bunker': 70, 'water': 1}
+  + Strathtyrum Course: 6 chips {'fairway': 16, 'green': 16, 'tee': 40, 'bunker': 17, 'water': 0}
+  + The Castle Course: 30 chips {'fairway': 23, 'green': 19, 'tee': 96, 'bunker': 96, 'water': 2}
+  + St Michaels Golf Club: 13 chips {'fairway': 20, 'green': 22, 'tee': 32, 'bunker': 24, 'water': 1}
+  + Craigtoun Course: 30 chips {'fairway': 21, 'green': 21, 'tee': 86, 'bunker': 129, 'water': 4}
+  + Craighead Links: 17 chips {'fairway': 21, 'green': 19, 'tee': 51, 'bunker': 87, 'water': 0}
+  + Balcomie Links: 11 chips {'fairway': 27, 'green': 19, 'tee': 37, 'bunker': 66, 'water': 0}
+  + Torrance Course: 25 chips {'fairway': 22, 'green': 19, 'tee': 75, 'bunker': 61, 'water': 3}
+  + Kittocks Course: 24 chips {'fairway': 19, 'green': 16, 'tee': 74, 'bunker': 56, 'water': 4}
+total chips 1689 courses 131
