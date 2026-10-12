@@ -19,3 +19,5 @@
 2026-10-12T14:03:56.747Z fetch Old Course St Andrews
 2026-10-12T14:04:00.999Z   overpass ok via overpass-api.de on attempt 1
 2026-10-12T14:04:02.936Z   saved old-course-st-andrews: 88 holes ready; OSM has 88 hole lines, 90 greens, 110 fairways
+2026-10-12T14:04:07.801Z fetch Royal Johannesburg and Kensington Golf Club
+2026-10-12T14:04:08.087Z   FAILED Royal Johannesburg and Kensington Golf Club: not found on OpenStreetMap search
