@@ -6,6 +6,7 @@ const NOMINATIM = 'https://nominatim.openstreetmap.org/search';
 const UA_HDR = typeof window === 'undefined' ? { 'User-Agent': 'TourYardageBooks/0.2 (+https://github.com/keanupest1-lab/tour-yardage-book)' } : {};
 const OVERPASS = [
   'https://overpass-api.de/api/interpreter',
+  'https://overpass.private.coffee/api/interpreter',
   'https://overpass.kumi.systems/api/interpreter',
   'https://maps.mail.ru/osm/tools/overpass/api/interpreter',
 ];
@@ -26,36 +27,46 @@ export async function searchCourses(q) {
   }));
 }
 
-export async function fetchCourseData(bbox) {
+export async function fetchCourseData(bbox, onProgress = () => {}) {
+  // Guard against a search hit that is a whole suburb or town: keep the box to about 4 km around its centre
+  let [s, n, w, e] = bbox;
+  const cLat = (s + n) / 2, cLon = (w + e) / 2;
+  if (n - s > 0.04) { s = cLat - 0.02; n = cLat + 0.02; }
+  if (e - w > 0.045) { w = cLon - 0.0225; e = cLon + 0.0225; }
   const pad = 0.003;
-  const [s, n, w, e] = [bbox[0] - pad, bbox[1] + pad, bbox[2] - pad, bbox[3] + pad];
-  const b = `${s},${w},${n},${e}`;
-  const query = `[out:json][timeout:90];
+  const b = `${s - pad},${w - pad},${n + pad},${e + pad}`;
+  const query = `[out:json][timeout:45];
 (
   way["golf"](${b});
   relation["golf"](${b});
   way["natural"="water"](${b});
   relation["natural"="water"](${b});
-  way["water"](${b});
   way["natural"="sand"](${b});
   way["natural"="wood"](${b});
   way["landuse"="forest"](${b});
   node["natural"="tree"](${b});
   way["natural"="tree_row"](${b});
   way["leisure"="golf_course"](${b});
-  relation["leisure"="golf_course"](${b});
 );
 out geom;`;
   let lastErr;
-  for (const ep of OVERPASS) {
+  for (let i = 0; i < OVERPASS.length; i++) {
+    const ep = OVERPASS[i];
+    onProgress(`Asking map server ${i + 1} of ${OVERPASS.length}…`);
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 40000);
     try {
-      const res = await fetch(ep, { method: 'POST', body: 'data=' + encodeURIComponent(query),
+      const res = await fetch(ep, { method: 'POST', body: 'data=' + encodeURIComponent(query), signal: ctrl.signal,
         headers: { 'Content-Type': 'application/x-www-form-urlencoded', ...UA_HDR } });
-      if (!res.ok) throw new Error(`${ep} → ${res.status}`);
-      return await res.json();
-    } catch (err) { lastErr = err; }
+      if (!res.ok) throw new Error(`server ${i + 1} answered ${res.status}`);
+      const json = await res.json();
+      if (json.remark && /runtime error|timed out/i.test(json.remark)) throw new Error(`server ${i + 1}: ${json.remark}`);
+      return json;
+    } catch (err) {
+      lastErr = err.name === 'AbortError' ? new Error(`server ${i + 1} took too long`) : err;
+    } finally { clearTimeout(timer); }
   }
-  throw new Error('Map data servers are busy, try again in a minute. ' + (lastErr?.message || ''));
+  throw new Error(`The map servers didn't respond (${lastErr?.message || 'unknown error'}). Try again in a minute.`);
 }
 
 // Turn Overpass JSON into simple features: {kind, tags, geom: [[lon,lat],...], closed, id}
