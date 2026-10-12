@@ -1,0 +1,15 @@
+# name | south,west,north,east   (golf-dense areas with different grass, climate and terrain)
+Gauteng | -26.20,27.85,-25.70,28.40
+Cape Town | -34.10,18.35,-33.80,18.70
+Durban coast | -29.95,30.90,-29.55,31.20
+Copenhagen | 55.65,12.25,55.95,12.60
+Surrey | 51.25,-0.75,51.45,-0.30
+Netherlands | 52.25,4.45,52.50,4.95
+Melbourne sandbelt | -38.05,144.98,-37.85,145.20
+Scottsdale | 33.45,-112.00,33.75,-111.75
+Costa del Sol | 36.40,-5.20,36.60,-4.75
+Algarve | 37.03,-8.35,37.15,-7.95
+Orlando | 28.30,-81.60,28.60,-81.30
+Myrtle Beach | 33.60,-79.10,33.90,-78.70
+Dubai | 24.95,55.10,25.15,55.35
+Fife | 56.25,-2.95,56.40,-2.55
