@@ -23,6 +23,30 @@
     "holesReady": 18,
     "skipped": []
    }
+  },
+  {
+   "slug": "irene-country-club",
+   "query": "Irene Country Club",
+   "name": "Irene Country Club",
+   "place": "Irene Country Club, Main Road, Tshwane Ward 65, Irene, City of Tshwane Metropolitan Municipality, Gauteng, 1675, South Africa",
+   "bbox": [
+    -25.8840843,
+    -25.8836621,
+    28.2230474,
+    28.2235139
+   ],
+   "fetched": "2026-10-12T13:51:35.804Z",
+   "census": {
+    "holeLines": 0,
+    "greens": 0,
+    "fairways": 0,
+    "tees": 0,
+    "bunkers": 0,
+    "water": 0,
+    "trees": 0,
+    "holesReady": 0,
+    "skipped": []
+   }
   }
  ]
 }
