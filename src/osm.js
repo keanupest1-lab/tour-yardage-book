@@ -27,15 +27,15 @@ export async function searchCourses(q) {
   }));
 }
 
-export async function fetchCourseData(bbox, onProgress = () => {}, { timeoutMs = 40000 } = {}) {
+export function courseQuery(bbox) {
   // Guard against a search hit that is a whole suburb or town: keep the box to about 4 km around its centre
   let [s, n, w, e] = bbox;
   const cLat = (s + n) / 2, cLon = (w + e) / 2;
   if (n - s > 0.04) { s = cLat - 0.02; n = cLat + 0.02; }
   if (e - w > 0.045) { w = cLon - 0.0225; e = cLon + 0.0225; }
   const pad = 0.003;
-  const b = `${s - pad},${w - pad},${n + pad},${e + pad}`;
-  const query = `[out:json][timeout:45];
+  const b = `${(s - pad).toFixed(6)},${(w - pad).toFixed(6)},${(n + pad).toFixed(6)},${(e + pad).toFixed(6)}`;
+  return `[out:json][timeout:25];
 (
   way["golf"](${b});
   relation["golf"](${b});
@@ -49,36 +49,56 @@ export async function fetchCourseData(bbox, onProgress = () => {}, { timeoutMs =
   way["leisure"="golf_course"](${b});
 );
 out geom;`;
-  const errors = [];
-  for (let i = 0; i < OVERPASS.length; i++) {
-    const ep = OVERPASS[i];
-    onProgress(`Asking map server ${i + 1} of ${OVERPASS.length}…`);
-    const ctrl = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), timeoutMs);
-    try {
-      const res = await fetch(ep, { method: 'POST', body: 'data=' + encodeURIComponent(query), signal: ctrl.signal,
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded', ...UA_HDR } });
-      if (!res.ok) throw new Error(`server ${i + 1} answered ${res.status}`);
-      const json = await res.json();
-      if (json.remark && /runtime error|timed out/i.test(json.remark)) throw new Error(`server ${i + 1}: ${json.remark}`);
-      return json;
-    } catch (err) {
-      errors.push(err.name === 'AbortError' ? `server ${i + 1} took too long` : `server ${i + 1}: ${err.message}`);
-    } finally { clearTimeout(timer); }
-  }
-  throw new Error(`The map servers didn't respond (${errors.join('; ')}). Try again in a minute.`);
+}
+
+async function askServer(ep, i, query, timeoutMs, outerSignal) {
+  const ctrl = new AbortController();
+  const stop = () => ctrl.abort();
+  outerSignal?.addEventListener('abort', stop);
+  const timer = setTimeout(stop, timeoutMs);
+  const t0 = Date.now();
+  try {
+    const res = await fetch(ep, { method: 'POST', body: 'data=' + encodeURIComponent(query), signal: ctrl.signal,
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded', ...UA_HDR } });
+    if (!res.ok) throw new Error(`answered ${res.status}${res.status === 429 ? ' (too many requests)' : res.status === 504 ? ' (overloaded)' : ''}`);
+    const json = await res.json();
+    if (json.remark && /runtime error|timed out|out of memory/i.test(json.remark)) throw new Error(json.remark.slice(0, 80));
+    json._source = { server: i + 1, ms: Date.now() - t0 };
+    return json;
+  } catch (err) {
+    const msg = err.name === 'AbortError' ? (outerSignal?.aborted ? 'cancelled' : `no answer in ${Math.round(timeoutMs / 1000)}s`) : err.message;
+    throw new Error(`server ${i + 1}: ${msg}`);
+  } finally { clearTimeout(timer); outerSignal?.removeEventListener('abort', stop); }
+}
+
+// Ask every map server at once and take the first good answer (bounded by timeoutMs).
+export async function fetchCourseData(bbox, onProgress = () => {}, { timeoutMs = 25000 } = {}) {
+  const query = courseQuery(bbox);
+  onProgress(`Asking ${OVERPASS.length} map servers…`);
+  const done = new AbortController();
+  try {
+    const json = await Promise.any(OVERPASS.map((ep, i) => askServer(ep, i, query, timeoutMs, done.signal)));
+    return json;
+  } catch (agg) {
+    const reasons = (agg.errors || [agg]).map((e) => e.message).join('; ');
+    throw new Error(`The map servers didn't answer (${reasons}). Try again in a minute.`);
+  } finally { done.abort(); }
 }
 
 // Prefer the app's own server route (cached, not subject to browser/network quirks); fall back to direct.
 export async function loadCourseData(bbox, onProgress = () => {}) {
   if (typeof window !== 'undefined' && location.protocol.startsWith('http')) {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 32000);
     try {
-      onProgress('Fetching course data…');
-      const res = await fetch(`/api/course?bbox=${bbox.map((v) => v.toFixed(6)).join(',')}`);
+      onProgress('Fetching course data via the app server…');
+      const res = await fetch(`/api/course?bbox=${bbox.map((v) => v.toFixed(6)).join(',')}`, { signal: ctrl.signal });
       const body = await res.json().catch(() => null);
       if (res.ok && body && body.elements) return body;
-      if (body && body.error) onProgress(`Server route failed (${body.error}); trying map servers directly…`);
-    } catch { /* no server route (static hosting): go direct */ }
+      onProgress(`App server: ${body?.error || 'HTTP ' + res.status}. Trying the map servers directly…`);
+    } catch (e) {
+      onProgress(e.name === 'AbortError' ? 'App server took too long. Trying the map servers directly…' : 'Trying the map servers directly…');
+    } finally { clearTimeout(timer); }
   }
   return fetchCourseData(bbox, onProgress);
 }

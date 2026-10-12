@@ -24,21 +24,28 @@ async function onSearch(e) {
 
 async function loadCourse(row) {
   $('#results').innerHTML = '';
-  status(`Loading ${row.name} from OpenStreetMap…`);
+  let step = 'starting…';
+  const t0 = Date.now();
+  const tick = () => status(`Loading ${row.name}: ${step} (${Math.round((Date.now() - t0) / 1000)}s)`);
+  const timer = setInterval(tick, 1000); tick();
   try {
-    const json = await loadCourseData(row.bbox, (msg) => status(`Loading ${row.name}: ${msg}`));
+    const json = await loadCourseData(row.bbox, (msg) => { step = msg; tick(); });
+    clearInterval(timer);
     openCourse(json, row.name);
-  } catch (err) { status(err.message, 'error'); }
+  } catch (err) { clearInterval(timer); status(err.message, 'error'); }
 }
 
 function openCourse(json, name) {
   const course = buildCourse(parseOverpass(json));
   if (!course.holes.length) {
-    status('This course has no holes mapped on OpenStreetMap yet (golf=hole lines). It can be added at openstreetmap.org.', 'warn');
+    const c = course.census;
+    status(`No holes could be built. On OpenStreetMap this area has ${c.holeLines} hole lines, ${c.greens} greens and ${c.fairways} fairways.`, 'warn');
     return;
   }
   state.course = course; state.name = name; state.hole = 0;
-  status(`${name}: ${course.holes.length} holes mapped.`, 'ok');
+  const c = course.census;
+  const skip = course.skipped.length ? ` Skipped: ${course.skipped.map((x) => `${x.ref} (${x.reason})`).join(', ')}.` : '';
+  status(`${name}: ${course.holes.length} holes ready. On OpenStreetMap: ${c.holeLines} hole lines, ${c.greens} greens, ${c.fairways} fairways, ${c.bunkers} bunkers.${skip}${c.holeLines < 18 ? ' Holes without a hole line can be added in the course editor (coming next).' : ''}`, course.holes.length >= 9 ? 'ok' : 'warn');
   renderTabs(); renderHole();
   $('#viewer').hidden = false;
 }

@@ -42,12 +42,13 @@ export function buildCourse(features) {
     L[k].push({ id: f.id, tags: f.tags, geom: poly });
   }
 
-  const holes = [];
+  const holes = [], skipped = [];
   for (const h of L.hole) {
-    try { holes.push(buildHole(h, L)); } catch (e) { console.warn('hole skipped', h.tags.ref, e); }
+    try { holes.push(buildHole(h, L)); } catch (e) { skipped.push({ ref: h.tags.ref || '?', reason: e.message }); }
   }
   holes.sort((a, b) => (parseInt(a.ref) || 99) - (parseInt(b.ref) || 99));
-  return { proj, layers: L, holes, lat0, lon0 };
+  const census = { holeLines: L.hole.length, greens: L.green.length, fairways: L.fairway.length, tees: L.tee.length, bunkers: L.bunker.length, water: L.water.length, trees: L.tree.length };
+  return { proj, layers: L, holes, skipped, census, lat0, lon0 };
 }
 
 function nearest(list, p, maxD) {
@@ -65,8 +66,22 @@ function buildHole(h, L) {
   const startGreen = nearest(L.green, line[0], 3), endGreen = nearest(L.green, line[line.length - 1], 3);
   if (startGreen && !endGreen) line.reverse();
 
-  const green = nearest(L.green, line[line.length - 1], 45);
-  if (!green) throw new Error('no green');
+  if (line.length < 2 || G.lineLength(line) < 60) throw new Error('hole line too short');
+  let green = nearest(L.green, line[line.length - 1], 45);
+  let greenEstimated = false;
+  if (!green) {
+    // No green mapped near the end of the hole line: assume a typical 28 x 24 m green centred 12 m past the line end
+    const end = line[line.length - 1], dirE = G.norm(G.sub(end, line[line.length - 2]));
+    const c = G.add(end, G.mul(dirE, 12)), side = G.perpR(dirE);
+    const geom = [];
+    for (let k = 0; k < 24; k++) {
+      const a = (k / 24) * Math.PI * 2;
+      geom.push(G.add(c, G.add(G.mul(dirE, 14 * Math.cos(a)), G.mul(side, 12 * Math.sin(a)))));
+    }
+    green = { id: 'est-' + (h.tags.ref || ''), tags: {}, geom, estimated: true };
+    line = line.concat([c]);
+    greenEstimated = true;
+  }
   const GC = G.centroid(green.geom);
   const CL = line.slice(0, -1).concat([GC]);
   // drop points that sit inside the green (keeps the approach direction clean)
@@ -90,7 +105,7 @@ function buildHole(h, L) {
 
   const corridor = (geom, w) => geom.some((p) => G.ptLineDist(p, CL) <= w) || G.ptPolyDist(CL[Math.floor(CL.length / 2)], geom) === 0;
   const tees = L.tee.filter((t) => G.ptPolyDist(TEE, t.geom) < 60);
-  const fairways = L.fairway.filter((f) => G.lineInside(CL, f.geom).length || f.geom.some((p) => G.ptLineDist(p, CL) < 25));
+  const fairways = L.fairway.filter((f) => G.lineInside(CL, f.geom).reduce((t, r) => t + (r.s1 - r.s0), 0) >= 25);
   const bunkers = L.bunker.filter((b) => corridor(b.geom, 45) || G.polyDist(b.geom, green.geom) < 25);
   const water = L.water.filter((w) => corridor(w.geom, 70));
   const trees = L.tree.filter((t) => G.ptLineDist(t.c, CL) < 75);
@@ -106,6 +121,7 @@ function buildHole(h, L) {
     CL, TEE, GC, GF, GB, U, V, green, tees, fairways, bunkers, water, trees, woods,
     warnings: [],
   };
+  if (greenEstimated) hole.warnings.push('Green not mapped on OpenStreetMap: shown as an estimated oval at the end of the hole line. Green numbers are approximate.');
   if (!fairways.length && par > 3) hole.warnings.push('No fairway mapped on OpenStreetMap for this hole.');
   measure(hole);
   return hole;
@@ -131,9 +147,11 @@ export function measure(H) {
     let best = null;
     for (const poly of fwPolys) {
       for (const seg of G.segmentInside(a, b, poly)) {
-        const mid = G.mul(G.add(seg[0], seg[1]), 0.5);
-        const d = G.dist(mid, p);
-        if (!best || d < best.d) best = { d, seg };
+        const along = G.dist(seg[0], p) + G.dist(p, seg[1]) - G.dist(seg[0], seg[1]);
+        const d = Math.min(G.dist(seg[0], p), G.dist(seg[1], p));
+        if (along > 1 && d > 12) continue;          // that fairway piece is beside, not under, the line of play
+        const score = along <= 1 ? 0 : d;
+        if (!best || score < best.score) best = { score, seg };
       }
     }
     if (!best) return null;

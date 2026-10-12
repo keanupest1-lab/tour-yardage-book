@@ -97,6 +97,7 @@ export function greenPage(H, course, opts = {}) {
   o.push(path(collar.map(tf), `fill="#fff" stroke="${C.fwLine}" stroke-width="2.5"`));
   for (const gr of vis(course.layers.green)) o.push(path(gr.geom.map(tf), `fill="#fff" stroke="${C.ink}" stroke-width="${gr === H.green ? 4 : 2}"`));
   for (const b of vis(course.layers.bunker)) o.push(path(b.geom.map(tf), `fill="${C.sandF}" stroke="${C.sandL}" stroke-width="2.5"`));
+  if (H.green.estimated) o.push(path(H.green.geom.map(tf), `fill="#fff" stroke="${C.ink}" stroke-width="3" stroke-dasharray="10 7"`));
   // faint grid again over the fills
   for (let x = cx % g; x < W; x += g) o.push(`<line x1="${f1(x)}" y1="0" x2="${f1(x)}" y2="${Hh}" stroke="${C.grid}" stroke-width="1.1" opacity="0.8"/>`);
   for (let y = frontY % g; y < Hh; y += g) o.push(`<line x1="0" y1="${f1(y)}" x2="${W}" y2="${f1(y)}" stroke="${C.grid}" stroke-width="1.1" opacity="0.8"/>`);
@@ -179,6 +180,7 @@ export function holePage(H, course, opts = {}) {
     o.push(path(gr.geom.map(tf), `fill="#fff" stroke="${C.ink}" stroke-width="${gr === H.green ? 2.8 : 1.4}"`));
   }
   for (const b of vis(course.layers.bunker)) o.push(path(b.geom.map(tf), `fill="${C.sandF}" stroke="${C.sandL}" stroke-width="2"`));
+  if (H.green.estimated) o.push(path(H.green.geom.map(tf), `fill="#fff" stroke="${C.ink}" stroke-width="2.4" stroke-dasharray="7 5"`));
 
   // carry rings from the back tee (par 4/5)
   const rings = H.par >= 4 ? (U.k > 1 ? [225, 250, 275, 300, 325] : [200, 225, 250, 275, 300]) : [];
