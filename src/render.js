@@ -134,6 +134,15 @@ export function greenPage(H, course, opts = {}) {
     if (y < mapTop + 10) break;
     o.push(txt(46, y + 9, j * 5, 26, '#333', 'middle', 600));
   }
+  // the view from the tee across the top of the page (the notes area), when there is one
+  if (opts.teeView) {
+    const ih = Math.round(W * 640 / 1800);
+    if (mapTop > ih + 30) {
+      o.push(`<clipPath id="tv${H.ref}"><rect x="0" y="0" width="${W}" height="${ih}"/></clipPath>`);
+      o.push(`<image href="${opts.teeView}" x="0" y="0" width="${W}" height="${ih}" preserveAspectRatio="xMidYMid slice" clip-path="url(#tv${H.ref})"/>`);
+      o.push(`<line x1="0" y1="${ih}" x2="${W}" y2="${ih}" stroke="${C.ink}" stroke-width="3"/>`);
+    }
+  }
   // header & meta
   const len = n(H.tagDist || H.toCentre);
   o.push(txt(W - 48, mapTop + 50, `Par ${H.par}`, 40, C.gold, 'end', 600));

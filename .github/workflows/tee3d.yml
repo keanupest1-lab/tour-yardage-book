@@ -1,0 +1,59 @@
+name: Tee shots in 3D
+on:
+  push:
+    paths: ['courses/tee3d-requests.txt', 'ml/tee3d.py']
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: tee3d
+  cancel-in-progress: true
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6, 7, 8]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Blender
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq libxrender1 libxi6 libxkbcommon0 libsm6 libgl1 libxxf86vm1 libxfixes3 fonts-dejavu-core >/dev/null
+          pip install -q bpy==4.2.0 "numpy<2" "scipy<1.14" pillow "opencv-python-headless<4.11"
+      - name: Render
+        env:
+          PYTHONUNBUFFERED: '1'
+          SHARD: ${{ matrix.shard }}/9
+        run: python ml/tee3d.py 2>&1 | grep -v "^Fra:" | tee render-${{ matrix.shard }}.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: shots-${{ matrix.shard }}
+          path: |
+            courses/teeview/*.jpg
+            render-*.log
+          if-no-files-found: ignore
+  save:
+    needs: render
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: shots
+      - name: Save
+        run: |
+          mkdir -p courses/teeview
+          find shots -name '*.jpg' -exec cp {} courses/teeview/ \;
+          cat shots/*/render-*.log > courses/tee3d-last-run.log 2>/dev/null || true
+          git config --global user.name "course-bot"; git config --global user.email "course-bot@users.noreply.github.com"
+          git add courses/teeview courses/tee3d-last-run.log
+          git diff --cached --quiet && exit 0
+          git commit -m "Tee shots in 3D [skip ci]"
+          for i in 1 2 3; do git pull --rebase origin main && git push origin HEAD:main && break; sleep 5; done

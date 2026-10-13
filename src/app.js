@@ -222,7 +222,7 @@ function renderHole(dir = 0) {
     const fig = document.createElement('figure');
     fig.className = 'teeview'; fig.hidden = true;
     const CAP = { '-photo': 'AI-rendered photo of the real layout: shapes and distances are from the course, fine detail is generated.',
-      '': 'Rendered from satellite imagery and terrain data.', '-high': 'Raised view, rendered from satellite imagery and terrain data.' };
+      '': '3D render from satellite imagery, measured trees and terrain.', '-high': 'Raised view: 3D render from satellite imagery, measured trees and terrain.' };
     fig.innerHTML = `<img alt="Hole ${escapeHtml(h.ref)} from the tee">
       <div class="seg tv-seg" role="group" aria-label="Viewpoint"><button type="button" data-tv="-photo" hidden>Photo</button><button type="button" data-tv="">3D</button><button type="button" data-tv="-high">Raised</button></div>
       <figcaption></figcaption>`;
@@ -365,8 +365,18 @@ async function downloadBook(btn) {
     document.body.appendChild(box);
     const opts = { units: state.units };
     let n = 0; const total = holes.length * 2;
+    // the tee shot for each hole goes across the top of its green page
+    const teeView = async (h) => {
+      if (!state.meta?.slug) return null;
+      try {
+        const r = await fetch(`courses/teeview/${state.meta.slug}-${encodeURIComponent(h.ref)}.jpg`); if (!r.ok) return null;
+        const b = await r.blob();
+        return await new Promise((res) => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.onerror = () => res(null); fr.readAsDataURL(b); });
+      } catch { return null; }
+    };
     for (const h of holes) {
-      for (const page of [holePage(h, state.course, opts), greenPage(h, state.course, opts)]) {
+      const tv = await teeView(h);
+      for (const page of [holePage(h, state.course, opts), greenPage(h, state.course, { ...opts, teeView: tv })]) {
         say(`Page ${++n} of ${total}…`);
         box.innerHTML = page;
         const svg = box.querySelector('svg');
