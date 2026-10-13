@@ -140,7 +140,7 @@ function selectHole(r) {
 
 // ---------- tools ----------
 const HINTS = {
-  line: 'Tap the back tee, then any bends, then the middle of the green. Tap Done when finished.',
+  line: 'Tap the back tee box, then any bends on a dogleg, then the green. It snaps to the tee box and the middle of the green, and saves when you tap the green.',
   green: 'Tap around the edge of the green, then Done.', fairway: 'Tap around the fairway edge, then Done.',
   bunker: 'Tap around the bunker, then Done.', water: 'Tap around the water, then Done.', tee: 'Tap the corners of the tee box, then Done.',
   delete: 'Tap a shape or hole line you added to delete it.',
@@ -152,10 +152,35 @@ function setTool(t) {
 }
 function cancelDraft() { S.pending = []; drawDraft(); }
 
+// tee boxes and greens to snap to (map data + shapes added in the editor or by the AI)
+function shapesOf(kind) {
+  const out = [];
+  for (const e of S.base.elements || []) if (e.tags?.golf === kind && e.geometry) out.push(e.geometry.map((q) => [q.lat, q.lon]));
+  for (const sh of S.edits.shapes) if (sh.kind === kind) out.push(sh.coords);
+  return out;
+}
+function centreOf(poly) { const n = poly.length; return [poly.reduce((a, q) => a + q[0], 0) / n, poly.reduce((a, q) => a + q[1], 0) / n]; }
+function snapTo(kind, p, maxM) {
+  let best = null, bd = Infinity;
+  for (const poly of shapesOf(kind)) {
+    const c = centreOf(poly), d = pointInPoly(p, poly) ? 0 : distM(p, c);
+    if (d < bd) { bd = d; best = c; }
+  }
+  return bd <= maxM ? best.map((v) => +v.toFixed(7)) : null;
+}
+
 map.on('click', (ev) => {
-  const p = [+ev.latlng.lat.toFixed(7), +ev.latlng.lng.toFixed(7)];
+  let p = [+ev.latlng.lat.toFixed(7), +ev.latlng.lng.toFixed(7)];
   if (!S.tool) return hint('Pick a tool first: Hole line, Green, Fairway…');
   if (S.tool === 'delete') return deleteAt(p);
+  if (S.tool === 'line') {
+    // first tap: onto the tee box; a tap on a green after that: the middle of the green, and the hole is done
+    if (!S.pending.length) { const t = snapTo('tee', p, 25); if (t) p = t; }
+    else {
+      const g = snapTo('green', p, 18);
+      if (g) { S.pending.push(g); drawDraft(); return finish(); }
+    }
+  }
   S.pending.push(p); drawDraft();
   if (S.tool === 'line') hint(`Hole ${S.hole}: ${S.pending.length} point${S.pending.length > 1 ? 's' : ''} · ${Math.round(lineLen(S.pending))} m. Last tap = middle of green. Then Done.`);
   else hint(`${S.pending.length} points. ${S.pending.length >= 3 ? 'Tap Done to finish.' : ''}`);

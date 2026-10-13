@@ -327,11 +327,69 @@ $('#mapItem').addEventListener('click', () => {
   openMap({ name: state.name, bbox: state.meta?.bbox, place: state.meta?.place, holes });
 });
 
+// ---------- download the book as a PDF (built on the device, vector pages) ----------
+function loadScript(src) {
+  return new Promise((res, rej) => { const el = document.createElement('script'); el.src = src; el.onload = res; el.onerror = () => rej(new Error(`Couldn't load ${src}`)); document.head.appendChild(el); });
+}
+async function downloadBook(btn) {
+  if (!state.course) return;
+  const label = btn?.querySelector('span')?.firstChild || btn;
+  const was = label?.textContent;
+  const say = (t) => { if (label) label.textContent = t; };
+  try {
+    say('Preparing…');
+    if (!window.jspdf) await loadScript('src/vendor/jspdf.umd.min.js');
+    if (!window.svg2pdf) await loadScript('src/vendor/svg2pdf.umd.min.js');
+    const { jsPDF } = window.jspdf;
+    const W = 101.6, H = 177.8;
+    const doc = new jsPDF({ unit: 'mm', format: [W, H], orientation: 'portrait', compress: true });
+    // cover
+    doc.setFillColor(15, 42, 32); doc.rect(0, 0, W, H, 'F');
+    doc.setTextColor(210, 174, 98); doc.setFont('helvetica', 'bold'); doc.setFontSize(22);
+    doc.text(doc.splitTextToSize(state.name.toUpperCase(), W - 20), 10, 40);
+    doc.setFontSize(11); doc.setTextColor(236, 233, 222); doc.setFont('helvetica', 'normal');
+    const gname = state.group != null ? state.course.groups[state.group].name : '';
+    doc.text([gname && gname !== state.name ? gname : '', 'Yardage book', `Distances in ${state.units === 'yd' ? 'yards' : 'metres'}`].filter(Boolean), 10, 70);
+    doc.setFontSize(7); doc.setTextColor(170, 180, 172);
+    doc.text(doc.splitTextToSize(`Made ${new Date().toISOString().slice(0, 10)} with Tour Yardage Books. Course data © OpenStreetMap contributors; shapes partly traced by AI from satellite imagery. Check distances on site before competition use.`, W - 20), 10, H - 22);
+    const holes = visibleHoles().map((i) => state.course.holes[i]);
+    const box = document.createElement('div');
+    box.style.cssText = 'position:fixed;left:-20000px;top:0;width:500px;pointer-events:none';
+    document.body.appendChild(box);
+    const opts = { units: state.units };
+    let n = 0; const total = holes.length * 2;
+    for (const h of holes) {
+      for (const page of [holePage(h, state.course, opts), greenPage(h, state.course, opts)]) {
+        say(`Page ${++n} of ${total}…`);
+        box.innerHTML = page;
+        const svg = box.querySelector('svg');
+        // PDF built-in fonts: Helvetica regular and bold only
+        svg.querySelectorAll('[font-weight]').forEach((el) => el.setAttribute('font-weight', parseInt(el.getAttribute('font-weight')) >= 600 || el.getAttribute('font-weight') === 'bold' ? 'bold' : 'normal'));
+        svg.querySelectorAll('[font-family]').forEach((el) => el.setAttribute('font-family', 'helvetica'));
+        // the PDF library doesn't scale outline widths on text to the page: do it here (keeps the white halos thin)
+        const vbW = svg.viewBox?.baseVal?.width || parseFloat(svg.getAttribute('width')) || 1000;
+        svg.querySelectorAll('text[stroke]').forEach((el) => el.setAttribute('stroke-width', String(parseFloat(el.getAttribute('stroke-width') || '1') * (W / vbW))));
+        doc.addPage([W, H], 'portrait');
+        await doc.svg(svg, { x: 0, y: 0, width: W, height: H });
+        await new Promise((r) => setTimeout(r, 0));     // keep the page responsive
+      }
+    }
+    box.remove();
+    const file = `${slugify(state.name)}${gname && gname !== state.name ? '-' + slugify(gname) : ''}-yardage-book.pdf`;
+    doc.save(file);
+    say('Downloaded');
+    setTimeout(() => say(was), 2500);
+  } catch (err) {
+    say(was); alert(`Couldn't build the PDF: ${err.message}`);
+  }
+}
+
 // ---------- wiring ----------
 $('#search').addEventListener('submit', onSearch);
 document.querySelectorAll('[data-units]').forEach((b) => b.addEventListener('click', () => setUnits(b.dataset.units)));
 setUnits(state.units);
-$('#printHole').addEventListener('click', () => printBook(false));
+$('#pdfAll').addEventListener('click', (e) => downloadBook(e.currentTarget));
+$('#pdfAll2').addEventListener('click', (e) => downloadBook(e.currentTarget));
 $('#printAll').addEventListener('click', () => printBook(true));
 $('#printHole2').addEventListener('click', () => printBook(false));
 $('#printAll2').addEventListener('click', () => printBook(true));
@@ -389,7 +447,7 @@ if (cslug) {
 // Demo build (no live map access): sample courses only, no printing
 const demo = document.querySelector('[data-demo]');
 if (demo) {
-  for (const id of ['#search', '#printHole', '#printAll', '#printHole2', '#printAll2']) { const el = $(id); if (el) el.hidden = true; }
+  for (const id of ['#search', '#printAll', '#printHole2', '#printAll2']) { const el = $(id); if (el) el.hidden = true; }
   demo.querySelectorAll('[data-sample]').forEach((b) => b.addEventListener('click', () => loadFixture(b.dataset.sample)));
   loadFixture(demo.dataset.demo);
 } else if (!fx && !cslug) showLibrary();

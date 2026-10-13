@@ -62,6 +62,15 @@ export function buildCourse(features) {
   // only split when there really are several courses (two or more named courses with 6+ holes each)
   const real = groups.filter((g) => g.name !== 'Other holes' && g.name !== 'All holes' && g.holes.length >= 6);
   const usable = real.length >= 2 ? groups.filter((g) => g.holes.length) : [];
+  // two holes of the same course finishing on one green: usually one of them is routed to the wrong green
+  for (const g of (usable.length ? usable : [{ holes: holes.map((_, i) => i) }])) {
+    for (const i of g.holes) {
+      const h = holes[i];
+      if (h.green.estimated) continue;
+      const other = g.holes.filter((j) => j !== i && holes[j].green === h.green).map((j) => holes[j].ref);
+      if (other.length) h.warnings.push(`Hole ${other.join(', ')} also finishes on this green. Unless it is a double green, one of them is going to the wrong green: fix it in the editor.`);
+    }
+  }
   const census = { holeLines: L.hole.length, greens: L.green.length, fairways: L.fairway.length, tees: L.tee.length, bunkers: L.bunker.length, water: L.water.length, trees: L.tree.length };
   return { proj, layers: L, holes, skipped, census, groups: usable, lat0, lon0 };
 }
