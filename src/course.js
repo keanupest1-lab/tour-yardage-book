@@ -112,7 +112,7 @@ function buildHole(h, L) {
   while (CL.length > 2 && G.pointInPoly(CL[CL.length - 2], green.geom)) CL.splice(CL.length - 2, 1);
 
   // Start on a real tee box. Hole lines are often drawn from a forward tee or a rough guess, so look for tee
-  // boxes in line with the start of the hole (up to 150 m behind it, 70 m in front) and use the back one -
+  // boxes in line with the start of the hole (up to 80 m behind it) and use the back one -
   // or, when the scorecard length is known, the one that makes the hole that long.
   const tagLen = parseFloat(h.tags.dist);
   const d0 = G.norm(G.sub(CL[1], CL[0]));
@@ -125,10 +125,12 @@ function buildHole(h, L) {
     if (home && !G.pointInPoly(c, home.geom)) continue;
     const v = G.sub(c, CL[0]);
     const along = G.dot(v, d0), lat = Math.abs(v[0] * d0[1] - v[1] * d0[0]);
-    if (along < -150 || along > 70 || lat > 22 + 0.15 * Math.abs(along)) continue;
+    // never move the tee forward (that shortens the hole); back tees sit within ~80 m behind, in line with the hole
+    if (along < -80 || along > 40 || lat > 15 + 0.12 * Math.abs(along)) continue;
     if (G.dist(c, GC) < 60) continue;                          // that's beside the green, not this tee
     const len = G.lineLength(CL) - along;
-    const score = isFinite(tagLen) ? Math.abs(len - tagLen) : along;
+    // with a scorecard: the tee that makes the hole its card length; without: the back one (a move forward costs extra)
+    const score = isFinite(tagLen) ? Math.abs(len - tagLen) : along + (along > 0 ? 200 : 0);
     if (score < bestScore) { bestScore = score; teeBox = t; }
   }
   let teeFound = !!teeBox || L.tee.some((t) => G.ptPolyDist(CL[0], t.geom) < 6);
