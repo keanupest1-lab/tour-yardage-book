@@ -1,0 +1,18 @@
+== glendower-golf-club
+  FAILED <HTTPError 403: 'Forbidden'>
+== dainfern-golf-estate
+  FAILED <HTTPError 403: 'Forbidden'>
+== royal-johannesburg-kensington-east
+  FAILED <HTTPError 403: 'Forbidden'>
+== royal-johannesburg-kensington-west
+  FAILED <HTTPError 403: 'Forbidden'>
+== pretoria-country-club
+  FAILED <HTTPError 403: 'Forbidden'>
+== bryanston-country-club
+  FAILED <HTTPError 403: 'Forbidden'>
+== irene-country-club
+  FAILED <HTTPError 403: 'Forbidden'>
+== houghton-golf-club
+  FAILED <HTTPError 403: 'Forbidden'>
+== old-course-st-andrews
+  no GolfPass page found
