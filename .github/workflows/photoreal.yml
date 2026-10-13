@@ -1,0 +1,39 @@
+name: Photo-real tee shots
+on:
+  push:
+    paths: ['courses/photo-requests.txt', 'ml/photoreal.py']
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: photoreal
+  cancel-in-progress: false
+jobs:
+  photo:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/huggingface
+          key: hf-photoreal-v1
+      - run: |
+          pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+          pip install diffusers==0.31.0 transformers==4.46.3 accelerate==1.1.1 huggingface_hub==0.26.2 safetensors numpy scipy pillow
+      - name: Photos
+        env:
+          PYTHONUNBUFFERED: '1'
+          HF_HUB_DISABLE_PROGRESS_BARS: '1'
+        run: python3 ml/photoreal.py 2>&1 | tee courses/photo-last-run.log
+      - name: Save
+        if: always()
+        run: |
+          git config --global user.name "course-bot"; git config --global user.email "course-bot@users.noreply.github.com"
+          git add courses/teeview courses/photo-last-run.log
+          git diff --cached --quiet && exit 0
+          git commit -m "Photo-real tee shots"
+          for i in 1 2 3; do git pull --rebase origin main && git push origin HEAD:main && break; sleep 5; done

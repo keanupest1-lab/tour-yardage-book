@@ -116,6 +116,7 @@ def render(tex, H, mpp, cam, look, eye=1.8, W=1800, Hpx=640, hfov=56.0, maxd=700
     # front-to-back: a row is drawn by the first (nearest) sample whose top reaches it
     run = np.minimum.accumulate(ys, axis=0)
     out = np.zeros((Hpx, W, 3), np.float32)
+    depth = np.full((Hpx, W), np.inf, np.float32)
     wall_mask = np.zeros((Hpx, W), bool)
     rows = np.arange(Hpx) + .5
     sky_top, sky_hor = np.array([104, 148, 196], np.float32), np.array([214, 226, 236], np.float32)
@@ -131,6 +132,7 @@ def render(tex, H, mpp, cam, look, eye=1.8, W=1800, Hpx=640, hfov=56.0, maxd=700
         shade = np.where(wall, 0.95 - 0.5 * rel, 1.0)
         cc = cc * shade[:, None]
         out[:, c] = np.where(hit[:, None], cc, 0)
+        depth[:, c] = np.where(hit, zs[k], np.inf)
         wall_mask[:, c] = wall
         t = np.clip(rows / max(horizon, 1), 0, 1)[:, None]
         out[~hit, c] = (sky_top * (1 - t) + sky_hor * t)[~hit]
@@ -150,6 +152,7 @@ def render(tex, H, mpp, cam, look, eye=1.8, W=1800, Hpx=640, hfov=56.0, maxd=700
         c = int(np.clip(sx, 0, W - 1)); k = int(np.searchsorted(zs, z)) - 3
         visible = k <= 0 or sy <= run[k, c] + 3          # nothing nearer rises above it
         return sx, sy, z, bool(visible)
+    project.depth = depth
     return img, project
 
 
@@ -177,79 +180,86 @@ def along(line, s):
     return line[-1]
 
 
-def overlays(img, project, line_px, mpp, bunkers_px, hole, par, length_m, units="m"):
+def overlays(img, project, line_px, mpp, bunkers_px, hole, par, length_m, units="m", S=1.0,
+             note="rendered from satellite imagery and terrain data"):
+    """yardage-book marks on the view. S = output size / render size (project() works in render pixels)."""
     d = ImageDraw.Draw(img, "RGBA"); W, Hh = img.size
     k = 1.0936133 if units == "yd" else 1.0
+    q = lambda v: v * S
+    def P(p):
+        r = project(p)
+        return None if r is None else (r[0] * S, r[1] * S, r[2], r[3])
     L = sum(math.dist(a, b) for a, b in zip(line_px[:-1], line_px[1:])) * mpp
-    # carry marks on the line of play: a dot on the ground, a dashed post, the number stacked above
     boxes = []                       # drawn label boxes, so later labels can step around them
     def free(b):
-        return not any(b[0] < o[2] + 6 and o[0] < b[2] + 6 and b[1] < o[3] + 6 and o[1] < b[3] + 6 for o in boxes)
+        m = q(6)
+        return not any(b[0] < o[2] + m and o[0] < b[2] + m and b[1] < o[3] + m and o[1] < b[3] + m for o in boxes)
+    # carry marks on the line of play: a dot on the ground, a dashed post, the number stacked above
     marks = []
     for dist, colr in RING.items():
         if dist > L - 20: continue
-        p = project(along(line_px, dist / mpp))
+        p = P(along(line_px, dist / mpp))
         if p: marks.append((dist, colr, p))
     top = None
     for i, (dist, colr, (x, y, z, vis)) in enumerate(marks):
-        ty = y - 70 if top is None else min(y - 70, top - 34)
+        ty = y - q(70) if top is None else min(y - q(70), top - q(34))
         top = ty
         side = -1 if i % 2 else 1
-        lx = x + side * 26
-        dashed(d, x, ty + 14, y, (255, 255, 255, 230), width=2, dash=7, gap=5)
-        d.line([(x, ty + 14), (lx, ty + 14)], fill=(255, 255, 255, 230), width=2)
-        if vis: d.ellipse((x - 7, y - 7, x + 7, y + 7), fill=colr + (255,), outline=(255, 255, 255, 255), width=2)
-        else: d.ellipse((x - 7, y - 7, x + 7, y + 7), outline=colr + (255,), width=3)   # over the crest: blind
-        lab = str(round(dist * k)) + ("" if vis else " blind"); fz = font(22)
-        tw = d.textlength(lab, font=fz); bx = lx if side > 0 else lx - tw - 14
-        d.rounded_rectangle((bx, ty, bx + tw + 14, ty + 28), 6, fill=colr + (235,)); boxes.append((bx, ty, bx + tw + 14, ty + 28))
-        d.text((bx + 7, ty + 2), lab, fill=(255, 255, 255), font=fz)
+        lx = x + side * q(26)
+        dashed(d, x, ty + q(14), y, (255, 255, 255, 230), width=max(1, round(q(2))), dash=q(7), gap=q(5))
+        d.line([(x, ty + q(14)), (lx, ty + q(14))], fill=(255, 255, 255, 230), width=max(1, round(q(2))))
+        r = q(7)
+        if vis: d.ellipse((x - r, y - r, x + r, y + r), fill=colr + (255,), outline=(255, 255, 255, 255), width=max(1, round(q(2))))
+        else: d.ellipse((x - r, y - r, x + r, y + r), outline=colr + (255,), width=max(1, round(q(3))))   # over the crest: blind
+        lab = str(round(dist * k)) + ("" if vis else " blind"); fz = font(round(q(22)))
+        tw = d.textlength(lab, font=fz); bx = lx if side > 0 else lx - tw - q(14)
+        box = (bx, ty, bx + tw + q(14), ty + q(28))
+        d.rounded_rectangle(box, round(q(6)), fill=colr + (235,)); boxes.append(box)
+        d.text((bx + q(7), ty + q(2)), lab, fill=(255, 255, 255), font=fz)
     # bunker carries
     for poly in bunkers_px:
         best = None
-        for q in poly:
-            # carry = distance from the tee along the line direction
-            s = math.dist(line_px[0], q) * mpp
-            if best is None or s > best[0]: best = (s, q)
+        for pt in poly:
+            sd = math.dist(line_px[0], pt) * mpp
+            if best is None or sd > best[0]: best = (sd, pt)
         near = min(math.dist(along(line_px, t / mpp), best[1]) * mpp for t in range(0, int(L), 10))
         if not (150 <= best[0] <= 340 and near <= 45): continue
-        c = (sum(q[0] for q in poly) / len(poly), sum(q[1] for q in poly) / len(poly))
-        p = project(c)
+        c = (sum(pt[0] for pt in poly) / len(poly), sum(pt[1] for pt in poly) / len(poly))
+        p = P(c)
         if not p: continue
         x, y, z, vis = p
-        lab = f"Trap carry {round(best[0] * k)}"; fz = font(19)
+        lab = f"Trap carry {round(best[0] * k)}"; fz = font(round(q(19)))
         tw = d.textlength(lab, font=fz)
-        ly = y - 88
+        ly = y - q(88)
         for _ in range(12):
-            if free((x - tw / 2 - 4, ly - 2, x + tw / 2 + 4, ly + 24)): break
-            ly += 26
-        boxes.append((x - tw / 2 - 4, ly - 2, x + tw / 2 + 4, ly + 24))
-        dashed(d, x, min(ly + 26, y - 6), y - 6, (255, 255, 255, 210), width=2, dash=6, gap=5)
-        d.text((x - tw / 2, ly), lab, fill=(255, 255, 255), font=fz, stroke_width=3, stroke_fill=(0, 0, 0, 160))
+            if free((x - tw / 2 - q(4), ly - q(2), x + tw / 2 + q(4), ly + q(24))): break
+            ly += q(26)
+        boxes.append((x - tw / 2 - q(4), ly - q(2), x + tw / 2 + q(4), ly + q(24)))
+        dashed(d, x, min(ly + q(26), y - q(6)), y - q(6), (255, 255, 255, 210), width=max(1, round(q(2))), dash=q(6), gap=q(5))
+        d.text((x - tw / 2, ly), lab, fill=(255, 255, 255), font=fz, stroke_width=round(q(3)), stroke_fill=(0, 0, 0, 160))
     # hole badge, like the book
-    R = 38; cx, cy = W - 30 - R, Hh - 26 - R
-    d.ellipse((cx - R - 3, cy - R - 3, cx + R + 3, cy + R + 3), fill=(255, 255, 255, 255))
+    R = q(38); cx, cy = W - q(30) - R, Hh - q(26) - R
+    d.ellipse((cx - R - q(3), cy - R - q(3), cx + R + q(3), cy + R + q(3)), fill=(255, 255, 255, 255))
     d.ellipse((cx - R, cy - R, cx + R, cy + R), fill=(200, 160, 60, 255))
-    fz = font(40); t = str(hole); tw = d.textlength(t, font=fz)
-    d.text((cx - tw / 2, cy - 25), t, fill=(255, 255, 255), font=fz)
-    d.text((24, Hh - 40), f"Par {par} · {round(length_m * k)} {'yds' if units == 'yd' else 'm'} · rendered from satellite imagery and terrain data",
-           fill=(255, 255, 255), font=font(17, False), stroke_width=2, stroke_fill=(0, 0, 0, 140))
+    fz = font(round(q(40))); t = str(hole); tw = d.textlength(t, font=fz)
+    d.text((cx - tw / 2, cy - q(25)), t, fill=(255, 255, 255), font=fz)
+    d.text((q(24), Hh - q(40)), f"Par {par} · {round(length_m * k)} {'yds' if units == 'yd' else 'm'}" + (f" · {note}" if note else ""),
+           fill=(255, 255, 255), font=font(round(q(17)), False), stroke_width=round(q(2)), stroke_fill=(0, 0, 0, 140))
     return img
 
 
 # ---------------------------------------------------------------- driver
-def view(slug, hole, eye=1.8, z=19, model_mask=True, log=print, out_dir="courses/teeview", local_mosaic=None, local_terrain=None):
+def scene(slug, hole, z=19, log=print, local_mosaic=None, local_terrain=None):
+    """everything needed to render a hole: textures, heights, the line of play, bunkers, camera direction"""
     e = json.load(open(f"courses/edits/{slug}.json"))
     h = e["holes"][str(hole)]
     line = h["line"]
     lats = [p[0] for p in line]; lons = [p[1] for p in line]
-    # area: the hole plus room to the sides and beyond the green
-    pad = 0.0022
+    pad = 0.0022   # the hole plus room to the sides and beyond the green
     s, n, w, ee = min(lats) - pad, max(lats) + pad, min(lons) - pad * 1.1, max(lons) + pad * 1.1
     m = local_mosaic or A.fetch_mosaic(s, w, n, ee, z=z, pad_m=80, log=log)
     mpp = m.mpp
     Hter = local_terrain(m) if local_terrain else terrain(m, log=log)
-    # shapes the model drew (not trees) from the course edits
     W, Hh = m.img.size
     notree = Image.new("L", (W, Hh), 0); dn = ImageDraw.Draw(notree)
     bunkers = []
@@ -257,33 +267,41 @@ def view(slug, hole, eye=1.8, z=19, model_mask=True, log=print, out_dir="courses
         poly = [m.ll2px(*p) for p in sh["coords"]]
         if sh["kind"] in ("fairway", "green", "bunker", "water", "tee"): dn.polygon(poly, fill=1)
         if sh["kind"] == "bunker": bunkers.append(poly)
-    notree = np.asarray(notree).astype(bool)
-    notree = ndimage.binary_dilation(notree, iterations=int(3 / mpp))
+    notree = ndimage.binary_dilation(np.asarray(notree).astype(bool), iterations=int(3 / mpp))
     trees = canopy(m.img, mpp, notree)
     line_px = [m.ll2px(*p) for p in line]
     # tees are open ground: keep the tee and the first stretch of the line of play clear of canopy
     yy, xx = np.mgrid[0:Hh, 0:W]
     clear = np.hypot(xx - line_px[0][0], yy - line_px[0][1]) * mpp < 28
     for t in range(0, 90, 5):
-        q = along(line_px, t / mpp); clear |= np.hypot(xx - q[0], yy - q[1]) * mpp < 14
+        qq = along(line_px, t / mpp); clear |= np.hypot(xx - qq[0], yy - qq[1]) * mpp < 14
     trees[clear] = 0
     Htot = Hter + trees
-    tex = np.asarray(m.img.convert("RGB"), np.float32)
-    tex = np.asarray(Image.fromarray(tex.astype(np.uint8)).filter(ImageFilter.GaussianBlur(0.6)), np.float32)
+    tex = np.asarray(m.img.convert("RGB").filter(ImageFilter.GaussianBlur(0.6)), np.float32)
     sun = hillshade(ndimage.gaussian_filter(Htot, 0.6), mpp)
     tee = line_px[0]
-    # look at the point 230 m down the line (where the drive lands), like a photographer on the tee would
-    look = along(line_px, min(230, sum(math.dist(a, b) for a, b in zip(line_px[:-1], line_px[1:])) * mpp * 0.6) / mpp)
-    # stand a couple of metres behind the tee marker
+    L = sum(math.dist(a, b) for a, b in zip(line_px[:-1], line_px[1:])) * mpp
+    # look at the landing area (~230 m), like a photographer on the tee would
+    look = along(line_px, min(230, L * 0.6) / mpp)
     v = np.array(look) - np.array(tee); v /= np.linalg.norm(v)
-    cam = (tee[0] - v[0] * 4 / mpp, tee[1] - v[1] * 4 / mpp)
+    return {"edits": e, "hole": h, "m": m, "mpp": mpp, "Hter": Hter, "Htot": Htot, "tex": tex, "sun": sun,
+            "line_px": line_px, "bunkers": bunkers, "tee": tee, "look": look, "v": v}
+
+
+def shot(S, eye=1.8, back=4.0, pitch=-1.0, maxd=700.0, W=1800, Hpx=640, hfov=56.0):
+    c = (S["tee"][0] - S["v"][0] * back / S["mpp"], S["tee"][1] - S["v"][1] * back / S["mpp"])
+    return render(S["tex"], S["Htot"], S["mpp"], c, S["look"], eye=eye, pitch=pitch, sun=S["sun"], ground=S["Hter"], maxd=maxd, W=W, Hpx=Hpx, hfov=hfov)
+
+
+def view(slug, hole, eye=1.8, z=19, log=print, out_dir="courses/teeview", local_mosaic=None, local_terrain=None):
+    S = scene(slug, hole, z=z, log=log, local_mosaic=local_mosaic, local_terrain=local_terrain)
+    h = S["hole"]
     os.makedirs(out_dir, exist_ok=True)
     outs = []
     for tag, e_h, back, pitch, maxd in (("", eye, 4, -1.0, 700.0), ("-high", 14.0, 30, -6.0, 1800.0)):
-        c = (tee[0] - v[0] * back / mpp, tee[1] - v[1] * back / mpp)
         t0 = time.time()
-        img, proj = render(tex, Htot, mpp, c, look, eye=e_h, pitch=pitch, sun=sun, ground=Hter, maxd=maxd)
-        img = overlays(img, proj, line_px, mpp, bunkers, hole, h.get("par", 4), h.get("dist", 0))
+        img, proj = shot(S, eye=e_h, back=back, pitch=pitch, maxd=maxd)
+        img = overlays(img, proj, S["line_px"], S["mpp"], S["bunkers"], hole, h.get("par", 4), h.get("dist", 0))
         path = f"{out_dir}/{slug}-{hole}{tag}.jpg"; img.save(path, quality=88); outs.append(path)
         log(f"  rendered {path} in {time.time() - t0:.0f}s")
     return outs

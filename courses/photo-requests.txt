@@ -1,0 +1,2 @@
+# slug | hole [| seeds]
+bryanston-country-club | 1 | 11,22,33
