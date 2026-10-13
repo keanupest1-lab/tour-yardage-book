@@ -1,6 +1,2 @@
 # library slugs to add missing greens and tee boxes to (AI, conservative)
 bryanston-country-club
-irene-country-club
-dainfern-golf-estate
-glendower-golf-club
-royal-johannesburg-kensington-golf-club-johannesburg
