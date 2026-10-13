@@ -1,7 +1,7 @@
 name: Tee shots in 3D
 on:
   push:
-    paths: ['courses/tee3d-requests.txt', 'ml/tee3d.py']
+    paths: ['courses/tee3d-requests.txt', 'ml/tee3d.py', '.github/workflows/tee3d.yml']
   workflow_dispatch:
 permissions:
   contents: write
@@ -29,13 +29,13 @@ jobs:
         env:
           PYTHONUNBUFFERED: '1'
           SHARD: ${{ matrix.shard }}/9
-        run: python ml/tee3d.py 2>&1 | grep -v "^Fra:" | tee render-${{ matrix.shard }}.log
+        run: python ml/tee3d.py --out=shots-out 2>&1 | grep -v "^Fra:" | tee render-${{ matrix.shard }}.log
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: shots-${{ matrix.shard }}
           path: |
-            courses/teeview/*.jpg
+            shots-out/*.jpg
             render-*.log
           if-no-files-found: ignore
   save:
