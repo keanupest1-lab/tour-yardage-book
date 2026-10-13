@@ -16,6 +16,10 @@ import math
 import numpy as np
 from scipy import ndimage
 
+# tunable weights (eval_local.py can override them with RS_PARAMS)
+FALLBACK_BASE = 70.0    # a par 4/5 that follows no detected fairway starts at this cost
+FALLBACK_SLOPE = 60.0   # ...plus this times the share of its line that is off fairway
+
 
 def fairway_lines(fairway, cell, min_area=1500.0, step=12.0):
     """each fairway blob -> centre line (list of points from one end to the other) and its area"""
@@ -185,7 +189,7 @@ def candidates_for(green, par, length, fairways, fw_mask, cell, near_green=95.0,
         if par == 3:
             cost = cover * 40     # a par 3 should not play down someone else's fairway
         else:
-            cost = 70 + (1 - _frac_on(fw_mask, cell, pts, 0.3, 0.92)) * 60
+            cost = FALLBACK_BASE + (1 - _frac_on(fw_mask, cell, pts, 0.3, 0.92)) * FALLBACK_SLOPE
         pts, dc = _snap_tee(pts, length, tees, radius=25.0)
         out.append((pts, None, cost + dc))
     if par == 3 and tees:

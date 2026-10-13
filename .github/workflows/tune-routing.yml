@@ -1,0 +1,69 @@
+name: Tune routing
+on:
+  push:
+    paths: ['ml/tune.json']
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: ml-tune
+  cancel-in-progress: true
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      configs: ${{ steps.c.outputs.configs }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: c
+        run: echo "configs=$(python3 -c 'import json;print(json.dumps([c["name"] for c in json.load(open("ml/tune.json"))["configs"]]))')" >> $GITHUB_OUTPUT
+  run:
+    needs: setup
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        config: ${{ fromJson(needs.setup.outputs.configs) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install numpy scipy pillow
+      - name: Cases
+        run: git fetch --depth 1 origin eval && git worktree add ev FETCH_HEAD
+      - name: Score
+        env:
+          CFG: ${{ matrix.config }}
+          PYTHONUNBUFFERED: '1'
+        run: |
+          python3 - <<'PY'
+          import json, os, subprocess, sys
+          cfg = next(c for c in json.load(open("ml/tune.json"))["configs"] if c["name"] == os.environ["CFG"])
+          env = dict(os.environ, RS_PARAMS=json.dumps(cfg.get("rs", {})), ROUTE_KW=json.dumps(cfg.get("kw", {})))
+          out = subprocess.run([sys.executable, "-W", "ignore", "ml/eval_local.py", "ev"], env=env, capture_output=True, text=True)
+          print(out.stdout[-4000:], out.stderr[-2000:])
+          os.makedirs("res", exist_ok=True)
+          open(f"res/{cfg['name']}.txt", "w").write(json.dumps(cfg) + "\n" + out.stdout + out.stderr[-1500:])
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: res-${{ matrix.config }}
+          path: res/
+  collect:
+    needs: run
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: all
+          merge-multiple: true
+      - name: Publish
+        run: |
+          git config --global user.name "course-bot"; git config --global user.email "course-bot@users.noreply.github.com"
+          mkdir -p /tmp/pub && cp all/*.txt /tmp/pub/ && cd /tmp/pub
+          for f in *.txt; do echo "$f: $(grep TOTAL $f)"; done > summary.txt; cat summary.txt
+          git init -q -b tune && git add -A && git commit -qm "Routing tune $(date -u +%FT%TZ)"
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" tune

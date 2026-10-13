@@ -168,7 +168,13 @@ def route_from_mask(lab, mpp, card, start_px=None, end_px=None, turn_px=None, be
         greens = greens + guesses; gcost += [guess_cost] * len(guesses)
         greens_px = list(greens_px) + [(x / mpp, y / mpp) for x, y in guesses]
     if n_real < len(card): log(f"  only {n_real} greens found for {len(card)} holes")
-    res = RS.solve_dp(greens, small, cell, card, start=to_m(start_px), end=to_m(end_px), tee_mask=tees, turn=turn, beam=beam, green_cost=gcost)
+    args = dict(start=to_m(start_px), end=to_m(end_px), tee_mask=tees, turn=turn, beam=beam, green_cost=gcost)
+    res = RS.solve_dp(greens, small, cell, card, **args)
+    if res is None or res["cost"] > 45 * len(card):
+        # courses split by roads or housing have long walks between holes: allow them (at a price) and keep the better answer
+        wide = RS.solve_dp(greens, small, cell, card, walk_max=700.0, **args)
+        if wide is not None and (res is None or wide["cost"] < res["cost"]):
+            log(f"  long walks allowed: cost {res and res['cost']} -> {wide['cost']}"); res = wide
     if res is None: return None
     holes = []
     for k, h in enumerate(res["holes"]):

@@ -1,0 +1,8 @@
+{"configs": [
+  {"name": "base", "rs": {}, "kw": {}},
+  {"name": "no-guess", "rs": {}, "kw": {"guess_greens": false}},
+  {"name": "fb30", "rs": {"FALLBACK_BASE": 30, "FALLBACK_SLOPE": 70}, "kw": {}},
+  {"name": "fb45", "rs": {"FALLBACK_BASE": 45, "FALLBACK_SLOPE": 60}, "kw": {}},
+  {"name": "fb30-noguess", "rs": {"FALLBACK_BASE": 30, "FALLBACK_SLOPE": 70}, "kw": {"guess_greens": false}},
+  {"name": "guess25", "rs": {}, "kw": {"guess_cost": 25}}
+]}
