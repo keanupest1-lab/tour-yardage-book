@@ -14,7 +14,7 @@ OUT = "out"; os.makedirs(OUT, exist_ok=True)
 EPOCHS = int(os.environ.get("EPOCHS", "14"))
 CROP = 256
 BATCH = int(os.environ.get("BATCH", "12"))
-TIME_BUDGET = float(os.environ.get("TIME_BUDGET_MIN", "250")) * 60
+TIME_BUDGET = float(os.environ.get("TIME_BUDGET_MIN", "270")) * 60
 NAMES = ["background", "fairway", "green", "tee", "bunker", "water"]
 dev = "cuda" if torch.cuda.is_available() else "cpu"
 torch.set_num_threads(os.cpu_count() or 4)
@@ -61,11 +61,15 @@ freq = cnt / cnt.sum(); w = 1 / np.sqrt(freq + 1e-4); w = w / w.mean()
 print("pixel share", dict(zip(NAMES, np.round(freq, 3))), "weights", np.round(w, 2), flush=True)
 
 model = smp.Unet("resnet34", encoder_weights="imagenet", classes=6).to(dev)
+if os.path.exists("init.pt"):   # continue from an earlier run
+    model.load_state_dict({k: v.float() for k, v in torch.load("init.pt", map_location=dev).items()})
+    print("continuing from init.pt", flush=True)
 ce = nn.CrossEntropyLoss(weight=torch.tensor(w, dtype=torch.float32, device=dev))
 dice = smp.losses.DiceLoss("multiclass")
 opt = torch.optim.AdamW(model.parameters(), lr=4e-4, weight_decay=1e-4)
 tl = torch.utils.data.DataLoader(DS(train_ids, True), batch_size=BATCH, shuffle=True, num_workers=2, drop_last=True)
-sched = torch.optim.lr_scheduler.OneCycleLR(opt, max_lr=6e-4, total_steps=EPOCHS * len(tl))
+MAX_LR = float(os.environ.get("MAX_LR", "6e-4"))
+sched = torch.optim.lr_scheduler.OneCycleLR(opt, max_lr=MAX_LR, total_steps=EPOCHS * len(tl))
 
 def evaluate():
     model.eval(); inter = np.zeros(6); union = np.zeros(6)

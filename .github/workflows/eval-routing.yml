@@ -1,0 +1,39 @@
+name: Evaluate routing on unseen courses
+on:
+  push:
+    paths: ['ml/eval.trigger', 'ml/eval_routing.py', 'ml/eval_regions.txt']
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: ml-eval
+  cancel-in-progress: true
+jobs:
+  eval:
+    runs-on: ubuntu-latest
+    timeout-minutes: 200
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu && pip install segmentation-models-pytorch==0.3.4 pillow numpy scipy
+      - name: Get model
+        run: |
+          git fetch --depth 1 origin ${MODEL_BRANCH:-models}
+          mkdir -p models && git show FETCH_HEAD:model.pt > models/model.pt && ls -la models
+      - name: Evaluate
+        continue-on-error: true
+        timeout-minutes: 170
+        env:
+          PYTHONUNBUFFERED: '1'
+          BUDGET_MIN: '150'
+        run: python3 ml/eval_routing.py 2>&1 | tee eval_stdout.log
+      - name: Publish results
+        if: always()
+        run: |
+          git config --global user.name "course-bot"
+          git config --global user.email "course-bot@users.noreply.github.com"
+          rm -rf /tmp/pub && mkdir -p /tmp/pub && cp -r out_eval/. /tmp/pub/ 2>/dev/null || true; cp eval_stdout.log /tmp/pub/ || true
+          cd /tmp/pub && git init -q -b eval && git add -A && git commit -q --allow-empty -m "Routing eval $(date -u +%FT%TZ)"
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" eval

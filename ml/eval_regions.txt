@@ -1,0 +1,8 @@
+# Regions the model never trained on.  name | south,west,north,east
+Durban coast | -29.95,30.90,-29.55,31.20
+Scottsdale | 33.45,-112.00,33.75,-111.75
+Orlando | 28.30,-81.60,28.60,-81.30
+Sydney | -33.98,151.05,-33.75,151.30
+Hilton Head | 32.10,-80.85,32.25,-80.65
+Kent coast | 51.20,1.25,51.40,1.45
+Bangkok | 13.60,100.45,13.95,100.75

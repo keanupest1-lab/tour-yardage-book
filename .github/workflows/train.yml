@@ -21,14 +21,19 @@ jobs:
         with:
           python-version: '3.11'
       - run: pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu && pip install segmentation-models-pytorch==0.3.4 pillow numpy
+      - name: Settings
+        run: |
+          if [ -f ml/train.trigger ]; then grep -E '^[A-Z_]+=' ml/train.trigger >> $GITHUB_ENV || true; fi
       - name: Get dataset
         run: |
           git fetch --depth 1 origin dataset && git worktree add ds origin/dataset
           n=$(python3 -c "import json;print(len(json.load(open('ds/ml/data/index.json'))['chips']))")
           echo "chips: $n"; test "$n" -ge 200
+      - name: Starting weights
+        if: env.INIT_FROM != ''
+        run: git fetch --depth 1 origin $INIT_FROM && git show FETCH_HEAD:model.pt > init.pt && ls -la init.pt
       - name: Train
         env:
-          TIME_BUDGET_MIN: '270'
           PYTHONUNBUFFERED: '1'
         run: python3 ml/train.py 2>&1 | tee train.log
       - name: Publish model and results
@@ -38,4 +43,4 @@ jobs:
           git config --global user.email "course-bot@users.noreply.github.com"
           rm -rf /tmp/pub && mkdir -p /tmp/pub && cp -r out/. /tmp/pub/ 2>/dev/null || true; cp train.log /tmp/pub/ || true
           cd /tmp/pub && git init -q -b models && git add -A && git commit -q --allow-empty -m "Model $(date -u +%FT%TZ)"
-          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" models
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" HEAD:${OUT_BRANCH:-models}
