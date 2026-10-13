@@ -1,0 +1,53 @@
+[
+ {
+  "type": "way",
+  "id": 24382469,
+  "name": "Krugersdorp Golf Course",
+  "tags": {
+   "leisure": "golf_course",
+   "name": "Krugersdorp Golf Course",
+   "wikidata": "Q15613334"
+  },
+  "bounds": {
+   "minlat": -26.0873913,
+   "minlon": 27.7798691,
+   "maxlat": -26.0768639,
+   "maxlon": 27.7907112
+  },
+  "holes": [],
+  "greens": 0
+ },
+ {
+  "type": "way",
+  "id": 213730086,
+  "name": null,
+  "tags": {
+   "leisure": "golf_course"
+  },
+  "bounds": {
+   "minlat": -26.1644321,
+   "minlon": 27.7061302,
+   "maxlat": -26.1481138,
+   "maxlon": 27.7145858
+  },
+  "holes": [],
+  "greens": 0
+ },
+ {
+  "type": "way",
+  "id": 864570503,
+  "name": "Ruimsig Country Club",
+  "tags": {
+   "leisure": "golf_course",
+   "name": "Ruimsig Country Club"
+  },
+  "bounds": {
+   "minlat": -26.089034,
+   "minlon": 27.8618342,
+   "maxlat": -26.0742214,
+   "maxlon": 27.8749072
+  },
+  "holes": [],
+  "greens": 19
+ }
+]
