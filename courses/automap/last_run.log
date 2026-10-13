@@ -1,9 +1,6 @@
 == Bryanston Country Club (bryanston-country-club) box -26.06760,27.99884,-26.05260,28.01554
   overpass overpass-api.de: HTTP Error 504: Gateway Timeout
-  overpass overpass.private.coffee: HTTP Error 504: Gateway Timeout
-  overpass maps.mail.ru: HTTP Error 504: Gateway Time-out
-  overpass overpass.kumi.systems: HTTP Error 504: Gateway Timeout
   mosaic 3584x3584, 0 tiles missing
-  shapes found in 56s
-  routed: cost 279.7, next-best routing 6.7 worse, 24 greens, 17 fairways
+  shapes found in 58s
+  routed: cost 245.2, next-best routing 9.4 worse, 24 greens, 17 fairways
   saved 18 holes, 128 shapes -> courses/edits/bryanston-country-club.json
