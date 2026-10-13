@@ -31,7 +31,7 @@ export function buildCourse(features) {
   for (const f of features) {
     const k = classify(f);
     if (!k) continue;
-    if (k === 'tree') { L.tree.push({ c: proj.fwd(f.point), r: 5 }); continue; }
+    if (k === 'tree') { L.tree.push({ c: proj.fwd(f.point), r: parseFloat(f.tags.crown_radius) || 5 }); continue; }
     if (k === 'treerow') {
       const line = f.line.map(proj.fwd); const len = G.lineLength(line);
       for (let s = 0; s <= len; s += 8) L.tree.push({ c: G.pointAlong(line, s), r: 4.5 });

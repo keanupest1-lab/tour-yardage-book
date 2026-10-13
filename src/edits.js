@@ -1,6 +1,7 @@
 // Course edits made in the editor, stored separately from the OpenStreetMap snapshot and merged on load.
 // Edits format: { version: 1, slug, name, updated, holes: { "1": { par, line: [[lat, lon], ...] } },
-//                 shapes: [{ id, kind: green|fairway|bunker|water|tee, coords: [[lat, lon], ...] }] }
+//                 shapes: [{ id, kind: green|fairway|bunker|water|tee, coords: [[lat, lon], ...] }],
+//                 trees: [[lat, lon, crown radius m], ...] }
 
 export const slugify = (s) => String(s).toLowerCase().normalize('NFKD').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 60);
 
@@ -23,6 +24,7 @@ export function editsToElements(edits) {
     if (h.note) tags.note = String(h.note);
     if (h.dist) tags.dist = String(h.dist);
     if (h.name) tags.name = String(h.name);
+    if (h.si) tags.handicap = String(h.si);
     els.push({ type: 'way', id: id--, tags, geometry: h.line.map(([lat, lon]) => ({ lat, lon })) });
   }
   for (const s of edits.shapes || []) {
@@ -31,6 +33,8 @@ export function editsToElements(edits) {
     ring.push({ ...ring[0] });
     els.push({ type: 'way', id: id--, tags: { ...SHAPE_TAGS[s.kind], source: 'editor' }, geometry: ring });
   }
+  // tree crowns found in the imagery: [lat, lon, crown radius m]
+  for (const [lat, lon, r] of edits.trees || []) els.push({ type: 'node', id: id--, lat, lon, tags: { natural: 'tree', crown_radius: String(r), source: 'imagery' } });
   return els;
 }
 

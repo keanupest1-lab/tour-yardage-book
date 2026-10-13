@@ -69,6 +69,25 @@ def canopy(img, mpp, not_tree=None):
     return ndimage.gaussian_filter(h, 0.5 / mpp)
 
 
+def domes(tree_list, m, mpp):
+    """tree crowns measured from the imagery ([lat, lon, crown radius m]) raised as rounded crowns on a skirt,
+    so each tree reads as a tree from the tee instead of a spike"""
+    W, H = m.img.size
+    h = np.zeros((H, W), np.float32)
+    for lat, lon, r in tree_list:
+        x, y = m.ll2px(lat, lon)
+        R = r / mpp
+        if x < -R or y < -R or x > W + R or y > H + R: continue
+        top = float(np.clip(2.1 * r + 3.0, 6.0, 19.0))
+        x0, x1 = int(max(0, x - R - 1)), int(min(W, x + R + 2)); y0, y1 = int(max(0, y - R - 1)), int(min(H, y + R + 2))
+        if x1 <= x0 or y1 <= y0: continue
+        yy, xx = np.mgrid[y0:y1, x0:x1]
+        d = np.hypot(xx - x, yy - y) / R
+        cap = np.where(d < 1, top * (0.42 + 0.58 * np.sqrt(np.clip(1 - d * d, 0, 1))), 0)
+        h[y0:y1, x0:x1] = np.maximum(h[y0:y1, x0:x1], cap)
+    return ndimage.gaussian_filter(h, 0.35 / mpp)
+
+
 def hillshade(H, mpp, az=20, alt=42):
     gy, gx = np.gradient(H, mpp)
     az, alt = math.radians(az), math.radians(alt)
@@ -277,7 +296,7 @@ def scene(slug, hole, z=19, log=print, local_mosaic=None, local_terrain=None):
             dn.polygon(poly, fill=1); dc.polygon(poly, fill=order[kind])
             if kind == "bunker": bunkers.append(poly)
     notree = ndimage.binary_dilation(np.asarray(notree).astype(bool), iterations=int(3 / mpp))
-    trees = canopy(m.img, mpp, notree)
+    trees = domes(e["trees"], m, mpp) if e.get("trees") else canopy(m.img, mpp, notree)
     line_px = [m.ll2px(*p) for p in line]
     # tees are open ground: keep the tee and the first stretch of the line of play clear of canopy
     yy, xx = np.mgrid[0:Hh, 0:W]

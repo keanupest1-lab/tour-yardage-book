@@ -1,0 +1,32 @@
+name: Terrain heights
+on:
+  push:
+    paths: ['courses/terrain-requests.txt', 'ml/terrain.py']
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: terrain
+  cancel-in-progress: false
+jobs:
+  terrain:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install numpy scipy pillow
+      - name: Fetch
+        env:
+          PYTHONUNBUFFERED: '1'
+        run: python3 ml/terrain.py 2>&1 | tee courses/terrain-last-run.log
+      - name: Save
+        if: always()
+        run: |
+          git config --global user.name "course-bot"; git config --global user.email "course-bot@users.noreply.github.com"
+          git add courses/terrain courses/terrain-last-run.log
+          git diff --cached --quiet && exit 0
+          git commit -m "Terrain heights [skip ci]"
+          for i in 1 2 3; do git pull --rebase origin main && git push origin HEAD:main && break; sleep 5; done
