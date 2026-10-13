@@ -203,6 +203,23 @@ function renderHole(dir = 0) {
   $('#holeName').textContent = [h.name, gname && gname !== state.name ? gname : ''].filter(Boolean).join(', ');
   const pages = $('#pages');
   pages.innerHTML = `<figure class="page" aria-label="Hole ${escapeHtml(h.ref)} hole page">${holePage(h, state.course, opts)}</figure><figure class="page" aria-label="Hole ${escapeHtml(h.ref)} green page">${greenPage(h, state.course, opts)}</figure>`;
+  // the view from the tee, when one has been rendered for this hole
+  if (state.meta?.slug) {
+    const base = `courses/teeview/${state.meta.slug}-${encodeURIComponent(h.ref)}`;
+    const fig = document.createElement('figure');
+    fig.className = 'teeview'; fig.hidden = true;
+    fig.innerHTML = `<img alt="Hole ${escapeHtml(h.ref)} from the tee" src="${base}.jpg">
+      <div class="seg tv-seg" role="group" aria-label="Viewpoint"><button type="button" aria-pressed="true" data-tv="">From the tee</button><button type="button" aria-pressed="false" data-tv="-high">Raised</button></div>
+      <figcaption>Rendered from satellite imagery and terrain data, not a photograph.</figcaption>`;
+    const img = fig.querySelector('img');
+    img.addEventListener('load', () => { fig.hidden = false; });
+    img.addEventListener('error', () => { fig.hidden = true; });
+    fig.querySelectorAll('[data-tv]').forEach((b) => b.addEventListener('click', () => {
+      img.src = `${base}${b.dataset.tv}.jpg`;
+      fig.querySelectorAll('[data-tv]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+    }));
+    pages.appendChild(fig);
+  }
   if (dir) { pages.style.setProperty('--dir', `${dir * 14}px`); pages.classList.remove('swapping'); void pages.offsetWidth; pages.classList.add('swapping'); }
   const WARN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 3 2 20h20z"/><path d="M12 10v4M12 17h.01"/></svg>';
   $('#warnings').innerHTML = h.warnings.map((w) => `<li>${WARN}<span>${escapeHtml(w)}</span></li>`).join('');

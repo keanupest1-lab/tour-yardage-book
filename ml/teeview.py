@@ -182,6 +182,9 @@ def overlays(img, project, line_px, mpp, bunkers_px, hole, par, length_m, units=
     k = 1.0936133 if units == "yd" else 1.0
     L = sum(math.dist(a, b) for a, b in zip(line_px[:-1], line_px[1:])) * mpp
     # carry marks on the line of play: a dot on the ground, a dashed post, the number stacked above
+    boxes = []                       # drawn label boxes, so later labels can step around them
+    def free(b):
+        return not any(b[0] < o[2] and o[0] < b[2] and b[1] < o[3] and o[1] < b[3] for o in boxes)
     marks = []
     for dist, colr in RING.items():
         if dist > L - 20: continue
@@ -199,7 +202,7 @@ def overlays(img, project, line_px, mpp, bunkers_px, hole, par, length_m, units=
         else: d.ellipse((x - 7, y - 7, x + 7, y + 7), outline=colr + (255,), width=3)   # over the crest: blind
         lab = str(round(dist * k)) + ("" if vis else " blind"); fz = font(22)
         tw = d.textlength(lab, font=fz); bx = lx if side > 0 else lx - tw - 14
-        d.rounded_rectangle((bx, ty, bx + tw + 14, ty + 28), 6, fill=colr + (235,))
+        d.rounded_rectangle((bx, ty, bx + tw + 14, ty + 28), 6, fill=colr + (235,)); boxes.append((bx, ty, bx + tw + 14, ty + 28))
         d.text((bx + 7, ty + 2), lab, fill=(255, 255, 255), font=fz)
     # bunker carries
     for poly in bunkers_px:
@@ -214,10 +217,15 @@ def overlays(img, project, line_px, mpp, bunkers_px, hole, par, length_m, units=
         p = project(c)
         if not p: continue
         x, y, z, vis = p
-        dashed(d, x, y - 60, y - 6, (255, 255, 255, 210), width=2, dash=6, gap=5)
         lab = f"Trap carry {round(best[0] * k)}"; fz = font(19)
         tw = d.textlength(lab, font=fz)
-        d.text((x - tw / 2, y - 88), lab, fill=(255, 255, 255), font=fz, stroke_width=3, stroke_fill=(0, 0, 0, 160))
+        ly = y - 88
+        for _ in range(12):
+            if free((x - tw / 2 - 4, ly - 2, x + tw / 2 + 4, ly + 24)): break
+            ly += 26
+        boxes.append((x - tw / 2 - 4, ly - 2, x + tw / 2 + 4, ly + 24))
+        dashed(d, x, min(ly + 26, y - 6), y - 6, (255, 255, 255, 210), width=2, dash=6, gap=5)
+        d.text((x - tw / 2, ly), lab, fill=(255, 255, 255), font=fz, stroke_width=3, stroke_fill=(0, 0, 0, 160))
     # hole badge, like the book
     R = 38; cx, cy = W - 30 - R, Hh - 26 - R
     d.ellipse((cx - R - 3, cy - R - 3, cx + R + 3, cy + R + 3), fill=(255, 255, 255, 255))
@@ -271,10 +279,10 @@ def view(slug, hole, eye=1.8, z=19, model_mask=True, log=print, out_dir="courses
     cam = (tee[0] - v[0] * 4 / mpp, tee[1] - v[1] * 4 / mpp)
     os.makedirs(out_dir, exist_ok=True)
     outs = []
-    for tag, e_h, back, pitch in (("", eye, 4, -1.0), ("-high", 14.0, 30, -6.0)):
+    for tag, e_h, back, pitch, maxd in (("", eye, 4, -1.0, 700.0), ("-high", 14.0, 30, -6.0, 1800.0)):
         c = (tee[0] - v[0] * back / mpp, tee[1] - v[1] * back / mpp)
         t0 = time.time()
-        img, proj = render(tex, Htot, mpp, c, look, eye=e_h, pitch=pitch, sun=sun, ground=Hter)
+        img, proj = render(tex, Htot, mpp, c, look, eye=e_h, pitch=pitch, sun=sun, ground=Hter, maxd=maxd)
         img = overlays(img, proj, line_px, mpp, bunkers, hole, h.get("par", 4), h.get("dist", 0))
         path = f"{out_dir}/{slug}-{hole}{tag}.jpg"; img.save(path, quality=88); outs.append(path)
         log(f"  rendered {path} in {time.time() - t0:.0f}s")

@@ -162,6 +162,14 @@ button, select, input { font: inherit; color: inherit; }
 .spread.swapping .page { animation: turn .28s ease-out; }
 @keyframes turn { from { opacity: .35; transform: translateX(var(--dir, 12px)); } to { opacity: 1; transform: none; } }
 
+/* the view from the tee, under the pages */
+.teeview { grid-column: 1 / -1; margin: 18px 0 0; position: relative; border-radius: 10px; overflow: hidden; background: var(--leather-deep);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, .42), 0 2px 6px rgba(0, 0, 0, .3); }
+.teeview img { display: block; width: 100%; height: auto; }
+.teeview .tv-seg { position: absolute; top: 10px; left: 10px; background: rgba(10, 31, 23, .72); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+.teeview .tv-seg button { height: 32px; font-size: 13px; }
+.teeview figcaption { padding: 8px 12px; font-size: 12.5px; color: var(--muted); background: var(--leather-deep); }
+
 /* thumb index: the hole tabs along the edge of the book */
 .index {
   position: fixed; left: 0; right: 0; bottom: 0; z-index: 25;
