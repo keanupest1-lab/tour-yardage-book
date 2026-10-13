@@ -152,6 +152,10 @@ def main():
                 found = A.green_centres(lab, mpp)
                 hit = sum(1 for g in gpx if found and min(math.dist(g, (x, y)) for x, y, _ in found) * mpp < 30)
                 slug = "".join(ch if ch.isalnum() else "-" for ch in c["name"].lower())[:50]
+                # keep the shape map and the answer key so routing can be tuned offline
+                Image.fromarray(lab).save(f"{OUT}/{slug}_mask.png", optimize=True)
+                json.dump({"name": c["name"], "z": m.z, "tx0": m.tx0, "ty0": m.ty0, "card": c["card"], "truth": c["truth"],
+                           "greens_osm": c["greens_osm"], "club": c["club"]}, open(f"{OUT}/{slug}_case.json", "w"))
                 draw(m, lab, res, c["truth"], f"{OUT}/{slug}.jpg", f'{c["name"]}: {s1["greens_right"]}/18 greens right (ours red, OSM cyan)')
                 r = {"name": c["name"], "region": name, "start": start_note, "card": c["card"],
                      "model_greens_found": f"{hit}/{len(gpx)}", "routing_model": s1, "routing_true_greens": s2,

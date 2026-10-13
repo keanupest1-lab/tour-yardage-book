@@ -18,6 +18,9 @@ jobs:
         with:
           python-version: '3.11'
       - run: pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu && pip install segmentation-models-pytorch==0.3.4 pillow numpy scipy
+      - name: Settings
+        run: |
+          if [ -f ml/eval.trigger ]; then grep -E '^[A-Z_]+=' ml/eval.trigger >> $GITHUB_ENV || true; fi
       - name: Get model
         run: |
           git fetch --depth 1 origin ${MODEL_BRANCH:-models}
