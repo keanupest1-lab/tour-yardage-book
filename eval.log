@@ -1,0 +1,79 @@
+region Durban coast
+  5 fully routed 18-hole courses
+  mosaic 3072x2304, 0 tiles missing
+  only 17 greens found for 18 holes
+  no routing with the detected greens: estimating missing greens at fairway ends
+  only 17 greens found for 18 holes
+   {"name": "Windsor Park Golf Course", "region": "Durban coast", "start": "hole-1 tee (no clubhouse mapped)", "card": [[4, 367], [5, 454], [4, 385], [3, 202], [4, 355], [4, 446], [5, 455], [3, 132], [4, 374], [4, 346], [3, 162], [5, 441], [4, 314], [3, 185], [5, 455], [4, 314], [4, 352], [4, 328]], "model_greens_found": "13/20", "routing_model": {"greens_right": 2, "tee_err_median": 303.1}, "routing_true_greens": {"greens_right": 10, "tee_err_median": 52.4}, "cost": 391.6, "runner_up_gap": 15.1, "seconds": 276, "image": "windsor-park-golf-course.jpg"}
+  mosaic 2304x3840, 0 tiles missing
+  only 8 greens found for 18 holes
+  no routing with the detected greens: estimating missing greens at fairway ends
+  only 8 greens found for 18 holes
+   {"name": "DCC Beachwood Golf Course", "region": "Durban coast", "start": "hole-1 tee (no clubhouse mapped)", "card": [[4, 393], [3, 143], [5, 447], [5, 421], [4, 292], [4, 393], [3, 148], [4, 309], [4, 352], [4, 382], [5, 467], [3, 138], [4, 392], [4, 274], [4, 413], [4, 332], [5, 458], [3, 179]], "model_greens_found": "8/20", "routing_model": {"greens_right": 0, "tee_err_median": null}, "routing_true_greens": {"greens_right": 2, "tee_err_median": 296.5}, "cost": null, "runner_up_gap": null, "seconds": 181, "image": "dcc-beachwood-golf-course.jpg"}
+  mosaic 1792x2304, 0 tiles missing
+   {"name": "Royal Durban Golf Club", "region": "Durban coast", "start": "clubhouse", "card": [[4, 377], [3, 134], [4, 381], [4, 376], [5, 482], [3, 170], [4, 417], [4, 362], [4, 286], [5, 483], [4, 277], [3, 170], [5, 428], [3, 160], [4, 397], [4, 379], [4, 385], [5, 431]], "model_greens_found": "17/19", "routing_model": {"greens_right": 3, "tee_err_median": 150.9}, "routing_true_greens": {"greens_right": 4, "tee_err_median": 234.5}, "cost": 847.8, "runner_up_gap": 68.7, "seconds": 261, "image": "royal-durban-golf-club.jpg"}
+region Scottsdale
+  9 fully routed 18-hole courses
+  mosaic 2048x3072, 0 tiles missing
+   {"name": "Papago Golf Club", "region": "Scottsdale", "start": "hole-1 tee (no clubhouse mapped)", "card": [[5, 490], [4, 323], [4, 400], [3, 212], [4, 356], [4, 415], [4, 416], [3, 233], [5, 444], [5, 462], [3, 165], [4, 319], [4, 366], [4, 405], [5, 537], [4, 404], [3, 217], [4, 431]], "model_greens_found": "19/20", "routing_model": {"greens_right": 18, "tee_err_median": 6.2}, "routing_true_greens": {"greens_right": 17, "tee_err_median": 6.2}, "cost": 83.7, "runner_up_gap": 39.4, "seconds": 167, "image": "papago-golf-club.jpg"}
+  mosaic 5120x3584, 0 tiles missing
+  long walks allowed: cost None -> 725.3
+  long walks allowed: cost 1120.9 -> 563.6
+   {"name": "Silverado Golf Club", "region": "Scottsdale", "start": "hole-1 tee (no clubhouse mapped)", "card": [[5, 421], [3, 160], [4, 404], [4, 377], [4, 258], [3, 191], [4, 339], [3, 182], [5, 446], [4, 369], [5, 465], [4, 325], [3, 154], [5, 472], [3, 167], [4, 328], [4, 377], [3, 139]], "model_greens_found": "17/19", "routing_model": {"greens_right": 10, "tee_err_median": 49.1}, "routing_true_greens": {"greens_right": 13, "tee_err_median": 45.9}, "cost": 725.3, "runner_up_gap": 51.0, "seconds": 226, "image": "silverado-golf-club.jpg"}
+  mosaic 1792x2560, 0 tiles missing
+   {"name": "Arizona Country Club", "region": "Scottsdale", "start": "hole-1 tee (no clubhouse mapped)", "card": [[5, 380], [4, 416], [5, 472], [3, 172], [4, 414], [4, 303], [3, 139], [5, 450], [3, 168], [5, 550], [3, 183], [4, 409], [4, 337], [4, 383], [3, 163], [4, 338], [4, 409], [4, 486]], "model_greens_found": "20/22", "routing_model": {"greens_right": 15, "tee_err_median": 24.4}, "routing_true_greens": {"greens_right": 16, "tee_err_median": 19.5}, "cost": 142.1, "runner_up_gap": 0.7, "seconds": 187, "image": "arizona-country-club.jpg"}
+region Orlando
+  overpass overpass-api.de: HTTP Error 504: Gateway Timeout
+  overpass overpass.private.coffee: The read operation timed out
+  overpass maps.mail.ru: HTTP Error 504: Gateway Timeout
+  overpass overpass.kumi.systems: HTTP Error 504: Gateway Timeout
+  overpass overpass-api.de: HTTP Error 504: Gateway Timeout
+  overpass overpass.private.coffee: HTTP Error 504: Gateway Timeout
+  5 fully routed 18-hole courses
+  mosaic 2048x2560, 0 tiles missing
+   {"name": "Waldorf Astoria Golf Course", "region": "Orlando", "start": "hole-1 tee (no clubhouse mapped)", "card": [[4, 335], [3, 159], [4, 391], [5, 510], [4, 362], [4, 438], [3, 189], [5, 462], [4, 381], [4, 342], [3, 214], [5, 568], [4, 296], [4, 391], [4, 361], [3, 154], [4, 441], [5, 483]], "model_greens_found": "16/18", "routing_model": {"greens_right": 14, "tee_err_median": 60.6}, "routing_true_greens": {"greens_right": 16, "tee_err_median": 42.6}, "cost": 275.0, "runner_up_gap": 1.9, "seconds": 128, "image": "waldorf-astoria-golf-course.jpg"}
+  mosaic 3328x4096, 0 tiles missing
+   {"name": "Disney's Palm Golf Course", "region": "Orlando", "start": "hole-1 tee (no clubhouse mapped)", "card": [[5, 457], [4, 398], [3, 171], [4, 316], [4, 383], [4, 384], [5, 453], [3, 189], [4, 348], [4, 430], [5, 519], [3, 138], [4, 305], [5, 443], [4, 390], [3, 189], [4, 379], [4, 438]], "model_greens_found": "18/19", "routing_model": {"greens_right": 18, "tee_err_median": 20.2}, "routing_true_greens": {"greens_right": 18, "tee_err_median": 20.2}, "cost": 353.9, "runner_up_gap": 12.7, "seconds": 169, "image": "disney-s-palm-golf-course.jpg"}
+  mosaic 3840x2304, 0 tiles missing
+   {"name": "Falcon's Fire Golf Club", "region": "Orlando", "start": "hole-1 tee (no clubhouse mapped)", "card": [[4, 342], [4, 301], [3, 126], [5, 396], [4, 380], [4, 276], [5, 477], [3, 155], [4, 308], [5, 455], [3, 138], [4, 383], [4, 304], [5, 456], [3, 104], [4, 296], [4, 335], [4, 391]], "model_greens_found": "20/24", "routing_model": {"greens_right": 17, "tee_err_median": 27.4}, "routing_true_greens": {"greens_right": 18, "tee_err_median": 25.6}, "cost": 278.6, "runner_up_gap": 15.6, "seconds": 149, "image": "falcon-s-fire-golf-club.jpg"}
+region Sydney
+  9 fully routed 18-hole courses
+  mosaic 1792x3328, 0 tiles missing
+   {"name": "The Australian Golf Club", "region": "Sydney", "start": "clubhouse", "card": [[5, 460], [3, 191], [4, 320], [3, 181], [5, 545], [4, 377], [4, 398], [4, 399], [4, 423], [4, 382], [3, 168], [4, 385], [4, 367], [5, 486], [3, 186], [4, 395], [4, 404], [5, 488]], "model_greens_found": "22/26", "routing_model": {"greens_right": 11, "tee_err_median": 38.5}, "routing_true_greens": {"greens_right": 12, "tee_err_median": 30.8}, "cost": 228.6, "runner_up_gap": 4.4, "seconds": 214, "image": "the-australian-golf-club.jpg"}
+  mosaic 2048x3584, 0 tiles missing
+   {"name": "Royal Sydney Golf Club", "region": "Sydney", "start": "hole-1 tee (no clubhouse mapped)", "card": [[4, 275], [5, 504], [3, 147], [4, 374], [4, 316], [3, 145], [5, 495], [4, 252], [4, 327], [4, 370], [4, 423], [4, 342], [5, 484], [3, 156], [4, 391], [5, 491], [3, 187], [4, 355]], "model_greens_found": "24/33", "routing_model": {"greens_right": 3, "tee_err_median": 422.9}, "routing_true_greens": {"greens_right": 5, "tee_err_median": 364.6}, "cost": 341.8, "runner_up_gap": 1.0, "seconds": 374, "image": "royal-sydney-golf-club.jpg"}
+  mosaic 2048x1792, 0 tiles missing
+  only 17 greens found for 18 holes
+  no routing with the detected greens: estimating missing greens at fairway ends
+  only 17 greens found for 18 holes
+   {"name": "Massey Park Golf Course", "region": "Sydney", "start": "hole-1 tee (no clubhouse mapped)", "card": [[4, 377], [3, 143], [4, 230], [4, 221], [4, 455], [3, 115], [4, 265], [4, 278], [3, 137], [4, 264], [3, 127], [3, 194], [4, 233], [3, 147], [3, 108], [4, 247], [4, 244], [4, 348]], "model_greens_found": "16/18", "routing_model": {"greens_right": 6, "tee_err_median": 206.5}, "routing_true_greens": {"greens_right": 2, "tee_err_median": 279.9}, "cost": 498.6, "runner_up_gap": 5.9, "seconds": 238, "image": "massey-park-golf-course.jpg"}
+region Hilton Head
+  overpass overpass-api.de: HTTP Error 504: Gateway Timeout
+  overpass overpass.private.coffee: HTTP Error 504: Gateway Timeout
+  overpass maps.mail.ru: HTTP Error 504: Gateway Time-out
+  overpass overpass.kumi.systems: HTTP Error 504: Gateway Timeout
+  6 fully routed 18-hole courses
+  mosaic 5376x7168, 0 tiles missing
+  long walks allowed: cost 1098.3 -> 1092.6
+   {"name": "Haig Point", "region": "Hilton Head", "start": "hole-1 tee (no clubhouse mapped)", "card": [[4, 374], [4, 395], [4, 398], [5, 567], [3, 175], [4, 416], [4, 377], [3, 159], [5, 465], [4, 414], [4, 403], [4, 407], [4, 395], [5, 569], [3, 146], [4, 353], [3, 179], [5, 474]], "model_greens_found": "19/20", "routing_model": {"greens_right": 12, "tee_err_median": 52.7}, "routing_true_greens": {"greens_right": 17, "tee_err_median": 35.6}, "cost": 1092.6, "runner_up_gap": 5.7, "seconds": 540, "image": "haig-point.jpg"}
+  mosaic 3584x3072, 0 tiles missing
+  long walks allowed: cost 1366.9 -> 1180.5
+   {"name": "Old South Golf Links", "region": "Hilton Head", "start": "hole-1 tee (no clubhouse mapped)", "card": [[4, 306], [4, 345], [5, 416], [3, 128], [5, 456], [4, 314], [4, 274], [3, 104], [4, 268], [4, 340], [3, 143], [4, 296], [4, 294], [5, 490], [4, 299], [4, 326], [3, 118], [5, 457]], "model_greens_found": "14/18", "routing_model": {"greens_right": 2, "tee_err_median": 643.1}, "routing_true_greens": {"greens_right": 15, "tee_err_median": 19.4}, "cost": 1180.5, "runner_up_gap": 20.1, "seconds": 214, "image": "old-south-golf-links.jpg"}
+| Course | Region | Greens found | Routing (AI greens) | Routing (true greens) | Tee error |
+|---|---|---|---|---|---|
+| Windsor Park Golf Course | Durban coast | 13/20 | 2/18 | 10/18 | 303.1 m |
+| DCC Beachwood Golf Course | Durban coast | 8/20 | 0/18 | 2/18 | None m |
+| Royal Durban Golf Club | Durban coast | 17/19 | 3/18 | 4/18 | 150.9 m |
+| Papago Golf Club | Scottsdale | 19/20 | 18/18 | 17/18 | 6.2 m |
+| Silverado Golf Club | Scottsdale | 17/19 | 10/18 | 13/18 | 49.1 m |
+| Arizona Country Club | Scottsdale | 20/22 | 15/18 | 16/18 | 24.4 m |
+| Waldorf Astoria Golf Course | Orlando | 16/18 | 14/18 | 16/18 | 60.6 m |
+| Disney's Palm Golf Course | Orlando | 18/19 | 18/18 | 18/18 | 20.2 m |
+| Falcon's Fire Golf Club | Orlando | 20/24 | 17/18 | 18/18 | 27.4 m |
+| The Australian Golf Club | Sydney | 22/26 | 11/18 | 12/18 | 38.5 m |
+| Royal Sydney Golf Club | Sydney | 24/33 | 3/18 | 5/18 | 422.9 m |
+| Massey Park Golf Course | Sydney | 16/18 | 6/18 | 2/18 | 206.5 m |
+| Haig Point | Hilton Head | 19/20 | 12/18 | 17/18 | 52.7 m |
+| Old South Golf Links | Hilton Head | 14/18 | 2/18 | 15/18 | 643.1 m |
+
+Overall: 52% of holes routed right from the AI alone; 65% with true green positions. 14 courses.
