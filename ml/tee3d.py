@@ -364,7 +364,7 @@ def build_scene(D, workdir, quick=False):
     heading = math.atan2(look[1], look[0])
     world = bpy.data.worlds.new("sky"); sc.world = world; world.use_nodes = True
     wn_ = world.node_tree.nodes; sky = wn_.new("ShaderNodeTexSky"); sky.sky_type = "NISHITA"
-    sun_el = math.radians(36); sun_az = heading + math.radians(180 + 35)
+    sun_el = math.radians(52); sun_az = heading + math.radians(180 + 35)
     sky.sun_elevation = sun_el; sky.sun_rotation = sun_az - math.pi / 2; sky.sun_disc = False
     sky.altitude = 1700; sky.air_density = 1.0; sky.dust_density = 0.7
     world.node_tree.links.new(sky.outputs["Color"], wn_["Background"].inputs["Color"])
@@ -432,8 +432,12 @@ def shoot(S, D, out_png, eye=1.65, back=3.0, lens=34.0, shift_y=-0.05):
         P = Vector((lx, ly, z)); u = world_to_camera_view(sc, co, P)
         if u.z < 3: return None
         o = co.location.copy(); dv = P - o; dist = dv.length; dv.normalize()
-        hit, loc, *_ = sc.ray_cast(dg, o, dv, distance=dist)
+        # blind = hidden by a tree, or by ground more than ~3 m above the line of sight (the terrain model is
+        # ~30 m data: smaller crests are within its error, so they don't count)
+        P3 = Vector((lx, ly, z + 2.0)); dv = P3 - o; dist = dv.length; dv.normalize()
+        hit, loc, _n, _i, ob, _m = sc.ray_cast(dg, o, dv, distance=dist)
         vis = (not hit) or (loc - o).length >= dist - 4.0
+        if os.environ.get("TEE3D_DEBUG"): log(f"    mark at {dist:.0f} m: hit={hit} {ob.name if ob else ''} at {(loc - o).length:.0f}")
         return u.x * W, (1 - u.y) * H, u.z, vis
     return project, W
 
