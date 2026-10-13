@@ -1,0 +1,19 @@
+  mosaic 4352x3584, 0 tiles missing
+  terrain 1460-1529 m
+  scene + layout render 24s
+The cache for model files in Transformers v4.22.0 has been updated. Migrating your old cache. This is a one-time only operation. You can interrupt this and resume the migration later on by calling `transformers.utils.move_cache()`.
+Loading pipeline components...:   0%|          | 0/6 [00:00<?, ?it/s]Loading pipeline components...:  17%|█▋        | 1/6 [00:00<00:01,  4.88it/s]/opt/hostedtoolcache/Python/3.11.17/x64/lib/python3.11/site-packages/transformers/models/clip/feature_extraction_clip.py:28: FutureWarning: The class CLIPFeatureExtractor is deprecated and will be removed in version 5 of Transformers. Please use CLIPImageProcessor instead.
+  warnings.warn(
+An error occurred while trying to fetch /home/runner/.cache/huggingface/hub/models--SG161222--Realistic_Vision_V6.0_B1_noVAE/snapshots/9a857a696b9aabbf509073e0aa55ec8200b6ef7d/unet: Error no file named diffusion_pytorch_model.safetensors found in directory /home/runner/.cache/huggingface/hub/models--SG161222--Realistic_Vision_V6.0_B1_noVAE/snapshots/9a857a696b9aabbf509073e0aa55ec8200b6ef7d/unet.
+Defaulting to unsafe serialization. Pass `allow_pickle=False` to raise an error instead.
+Loading pipeline components...: 100%|██████████| 6/6 [00:00<00:00,  8.60it/s]Loading pipeline components...: 100%|██████████| 6/6 [00:00<00:00,  8.28it/s]
+  photo model: SG161222/Realistic_Vision_V6.0_B1_noVAE
+Token indices sequence length is longer than the specified maximum sequence length for this model (115 > 77). Running this sequence through the model will result in indexing errors
+The following part of your input was truncated because CLIP can only handle sequences up to 77 tokens: ['blue sky with a few white clouds, sharp focus, high detail, natural colours, shot on canon eos r 5, 3 5 mm lens, f / 8, photorealistic, 8 k']
+  seed 11: 286s
+The following part of your input was truncated because CLIP can only handle sequences up to 77 tokens: ['blue sky with a few white clouds, sharp focus, high detail, natural colours, shot on canon eos r 5, 3 5 mm lens, f / 8, photorealistic, 8 k']
+  seed 22: 281s
+The following part of your input was truncated because CLIP can only handle sequences up to 77 tokens: ['blue sky with a few white clouds, sharp focus, high detail, natural colours, shot on canon eos r 5, 3 5 mm lens, f / 8, photorealistic, 8 k']
+  seed 33: 286s
+  4K upscale 122s -> (3840, 1620)
+  done in 1045s
