@@ -2,7 +2,7 @@
  "version": 1,
  "slug": "bryanston-country-club",
  "name": "Bryanston Country Club",
- "updated": "2026-10-13T04:37:59.223118+00:00",
+ "updated": "2026-10-13T04:53:48.187865+00:00",
  "holes": {
   "1": {
    "par": 5,
@@ -11686,8 +11686,8 @@
  "source": {
   "method": "automap",
   "model": "models",
-  "cost": 234.7,
-  "runner_up_gap": 5.7,
+  "cost": 279.7,
+  "runner_up_gap": 6.7,
   "clubhouse": [
    -26.062084444444444,
    28.010650433333332
