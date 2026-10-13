@@ -1,0 +1,21 @@
+/opt/hostedtoolcache/Python/3.11.17/x64/lib/python3.11/site-packages/torch/jit/_script.py:1491: FutureWarning: `torch.jit.script` is deprecated. Please switch to `torch.compile` or `torch.export`.
+  warnings.warn(
+/opt/hostedtoolcache/Python/3.11.17/x64/lib/python3.11/site-packages/torch/jit/_script.py:1491: FutureWarning: `torch.jit.script` is deprecated. Please switch to `torch.compile` or `torch.export`.
+  warnings.warn(
+/opt/hostedtoolcache/Python/3.11.17/x64/lib/python3.11/site-packages/torch/jit/_script.py:1643: FutureWarning: `torch.jit.interface` is deprecated. Please use `torch.compile` instead.
+  warnings.warn(
+== bryanston-country-club
+  mosaic 2816x2560, 0 tiles missing
+  added 1 greens, 12 tee boxes
+== irene-country-club
+  mosaic 2560x3072, 0 tiles missing
+  added 1 greens, 11 tee boxes
+== dainfern-golf-estate
+  mosaic 3840x3328, 0 tiles missing
+  added 17 greens, 25 tee boxes
+== glendower-golf-club
+  mosaic 3584x3072, 0 tiles missing
+  added 1 greens, 5 tee boxes
+== royal-johannesburg-kensington-golf-club-johannesburg
+  mosaic 4864x4608, 2 tiles missing
+  added 30 greens, 28 tee boxes
