@@ -1,0 +1,7 @@
+no-scorecard-ext90.txt: TOTAL 58/252 = 23%   holes found any order 30%
+no-scorecard-par3bias15.txt: TOTAL 58/252 = 23%   holes found any order 35%
+no-scorecard.txt: TOTAL 58/252 = 23%   holes found any order 34%
+summary.txt: no-scorecard-ext90.txt: TOTAL 58/252 = 23%   holes found any order 30%
+no-scorecard-par3bias15.txt: TOTAL 58/252 = 23%   holes found any order 35%
+no-scorecard.txt: TOTAL 58/252 = 23%   holes found any order 34%
+with-scorecard.txt: TOTAL 142/252 = 56%   holes found any order 50%

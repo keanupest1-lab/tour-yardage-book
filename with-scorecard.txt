@@ -1,0 +1,16 @@
+{"name": "with-scorecard", "rs": {}, "kw": {}}
+Arizona Country Club               15/18  holes found (any number) 12/18  tee 27.6  gap 0.2  65s
+DCC Beachwood Golf Course           0/18  holes found (any number)  1/18  tee 387.7  gap 1.7  132s
+Disney's Palm Golf Course          18/18  holes found (any number) 15/18  tee 21.8  gap 9.3  34s
+Falcon's Fire Golf Club            17/18  holes found (any number) 15/18  tee 23.1  gap 18.5  32s
+Haig Point                         12/18  holes found (any number) 10/18  tee 52.8  gap 2.3  127s
+Massey Park Golf Course             6/18  holes found (any number)  5/18  tee 107.7  gap 6.5  35s
+Old South Golf Links                4/18  holes found (any number)  5/18  tee 590.4  gap 5.3  133s
+Papago Golf Club                   18/18  holes found (any number) 16/18  tee 4.3  gap 10.5  71s
+Royal Durban Golf Club              3/18  holes found (any number)  4/18  tee 311.0  gap 1.1  42s
+Royal Sydney Golf Club              3/18  holes found (any number)  3/18  tee 357.4  gap 0.1  159s
+Silverado Golf Club                16/18  holes found (any number) 11/18  tee 43.1  gap 5.6  38s
+The Australian Golf Club           15/18  holes found (any number) 15/18  tee 27.9  gap 14.5  69s
+Waldorf Astoria Golf Course        15/18  holes found (any number) 13/18  tee 39.4  gap 9.5  42s
+Windsor Park Golf Course            0/18  holes found (any number)  2/18  tee 143.3  gap 7.6  129s
+TOTAL 142/252 = 56%   holes found any order 50%
