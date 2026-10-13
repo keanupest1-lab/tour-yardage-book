@@ -9,3 +9,5 @@
 2026-10-13T18:04:57.075Z skip Glendower Golf Club (already saved)
 2026-10-13T18:04:57.075Z fetch Houghton Golf Club, Johannesburg
 2026-10-13T18:04:57.365Z   FAILED Houghton Golf Club, Johannesburg: not found on OpenStreetMap search
+2026-10-13T18:05:02.203Z fetch Krugersdorp Golf Club
+2026-10-13T18:05:02.870Z   FAILED Krugersdorp Golf Club: not found on OpenStreetMap search
