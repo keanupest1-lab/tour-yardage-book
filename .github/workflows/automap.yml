@@ -1,0 +1,38 @@
+name: Map courses automatically
+on:
+  push:
+    paths: ['courses/automap-requests.txt', 'ml/automap.py']
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: automap
+  cancel-in-progress: false
+jobs:
+  automap:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu && pip install segmentation-models-pytorch==0.3.4 pillow numpy scipy opencv-python-headless
+      - name: Get model
+        run: |
+          B=$(git ls-remote --exit-code origin models-v2 >/dev/null 2>&1 && test -f ml/use-models-v2 && echo models-v2 || echo models)
+          echo "MODEL_BRANCH=$B" >> $GITHUB_ENV
+          git fetch --depth 1 origin $B && mkdir -p models && git show FETCH_HEAD:model.pt > models/model.pt && ls -la models
+      - name: Map
+        env:
+          PYTHONUNBUFFERED: '1'
+        run: python3 ml/automap.py
+      - name: Save to library
+        if: always()
+        run: |
+          git config --global user.name "course-bot"
+          git config --global user.email "course-bot@users.noreply.github.com"
+          git add courses
+          git diff --cached --quiet && exit 0
+          git commit -m "Automatic course mapping"
+          for i in 1 2 3; do git pull --rebase origin main && git push origin HEAD:main && break; sleep 5; done
