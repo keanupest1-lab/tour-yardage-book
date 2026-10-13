@@ -1,23 +1,6 @@
 {
  "courses": [
   {
-   "slug": "bryanston-country-club",
-   "query": "Bryanston Country Club",
-   "name": "Bryanston Country Club",
-   "place": "Bryanston Country Club",
-   "bbox": [
-    -26.0676029,
-    -26.0526029,
-    27.99884180937611,
-    28.015539390623893
-   ],
-   "fetched": "2026-10-13T05:02:52.754531+00:00",
-   "census": {
-    "holesReady": 18,
-    "automap": true
-   }
-  },
-  {
    "slug": "dainfern-golf-estate",
    "query": "Dainfern Golf Estate",
    "name": "Dainfern Golf Estate",
@@ -159,6 +142,23 @@
     "trees": 538,
     "holesReady": 54,
     "skipped": []
+   }
+  },
+  {
+   "slug": "bryanston-country-club",
+   "query": "Bryanston Country Club",
+   "name": "Bryanston Country Club",
+   "place": "Bryanston Country Club",
+   "bbox": [
+    -26.0676029,
+    -26.0526029,
+    27.99884180937611,
+    28.015539390623893
+   ],
+   "fetched": "2026-10-13T17:54:07.364002+00:00",
+   "census": {
+    "holesReady": 18,
+    "automap": true
    }
   }
  ]
