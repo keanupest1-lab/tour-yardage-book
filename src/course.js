@@ -51,7 +51,7 @@ export function buildCourse(features) {
   const named = L.boundary.filter((b) => b.tags.name);
   const groups = [];
   for (const b of named) {
-    const idx = holes.map((h, i) => (G.pointInPoly(h.TEE, b.geom) ? i : -1)).filter((i) => i >= 0);
+    const idx = holes.map((h, i) => (G.pointInPoly(h.START0 || h.TEE, b.geom) ? i : -1)).filter((i) => i >= 0);
     if (idx.length) groups.push({ name: b.tags.name, holes: idx, area: G.polyArea(b.geom) });
   }
   // a tee inside two boundaries (outer estate + inner course) belongs to the smaller one
@@ -101,6 +101,34 @@ function buildHole(h, L) {
   const CL = line.slice(0, -1).concat([GC]);
   // drop points that sit inside the green (keeps the approach direction clean)
   while (CL.length > 2 && G.pointInPoly(CL[CL.length - 2], green.geom)) CL.splice(CL.length - 2, 1);
+
+  // Start on a real tee box. Hole lines are often drawn from a forward tee or a rough guess, so look for tee
+  // boxes in line with the start of the hole (up to 150 m behind it, 70 m in front) and use the back one -
+  // or, when the scorecard length is known, the one that makes the hole that long.
+  const tagLen = parseFloat(h.tags.dist);
+  const d0 = G.norm(G.sub(CL[1], CL[0]));
+  const START0 = CL[0];
+  // at clubs with several courses, only use tee boxes inside the same course as the hole
+  const home = L.boundary.filter((b) => b.tags.name && G.pointInPoly(START0, b.geom)).sort((a, b) => G.polyArea(a.geom) - G.polyArea(b.geom))[0];
+  let teeBox = null, bestScore = Infinity;
+  for (const t of L.tee) {
+    const c = G.centroid(t.geom);
+    if (home && !G.pointInPoly(c, home.geom)) continue;
+    const v = G.sub(c, CL[0]);
+    const along = G.dot(v, d0), lat = Math.abs(v[0] * d0[1] - v[1] * d0[0]);
+    if (along < -150 || along > 70 || lat > 22 + 0.15 * Math.abs(along)) continue;
+    if (G.dist(c, GC) < 60) continue;                          // that's beside the green, not this tee
+    const len = G.lineLength(CL) - along;
+    const score = isFinite(tagLen) ? Math.abs(len - tagLen) : along;
+    if (score < bestScore) { bestScore = score; teeBox = t; }
+  }
+  let teeFound = !!teeBox || L.tee.some((t) => G.ptPolyDist(CL[0], t.geom) < 6);
+  if (teeBox) {
+    const c = G.centroid(teeBox.geom);
+    CL[0] = c;
+    // a bend that now sits behind the tee would make the line double back: drop it
+    while (CL.length > 2 && G.dot(G.sub(CL[1], c), G.norm(G.sub(GC, c))) < 15) CL.splice(1, 1);
+  }
   const TEE = CL[0];
 
   // front of green along the line of play, back of green along the approach axis
@@ -133,10 +161,12 @@ function buildHole(h, L) {
   const hole = {
     ref: h.tags.ref || '?', par, si: h.tags.handicap || h.tags.stroke_index || '', name: h.tags.name || '',
     lengthM, tagDist: isFinite(tagDist) ? tagDist : null,
-    CL, TEE, GC, GF, GB, U, V, green, tees, fairways, bunkers, water, trees, woods,
+    CL, TEE, START0, GC, GF, GB, U, V, green, tees, fairways, bunkers, water, trees, woods,
     warnings: [],
   };
   if (h.tags.note) hole.warnings.push(h.tags.note);
+  hole.teeFound = teeFound;
+  if (!teeFound) hole.warnings.push('No tee box mapped for this hole: distances start where the hole line starts. Check the tee on site or set it in the editor.');
   if (greenEstimated) hole.warnings.push('Green not mapped on OpenStreetMap: shown as an estimated oval at the end of the hole line. Green numbers are approximate.');
   if (!fairways.length && par > 3) hole.warnings.push('No fairway mapped on OpenStreetMap for this hole.');
   measure(hole);

@@ -184,7 +184,9 @@ def route_from_mask(lab, mpp, card, start_px=None, end_px=None, turn_px=None, be
     if res is None: return None
     holes = []
     for k, h in enumerate(res["holes"]):
-        holes.append({"hole": k + 1, "par": card[k][0], "length": card[k][1], "green_px": greens_px[h["green"]], "green_guessed": h["green"] >= n_real,
+        par = card[k][0] if card[k] is not None and card[k][0] is not None else h.get("par")
+        length = card[k][1] if card[k] is not None and card[k][1] is not None else round(h.get("length") or 0)
+        holes.append({"hole": k + 1, "par": par, "length": length, "estimated": card[k] is None or card[k][0] is None, "green_px": greens_px[h["green"]], "green_guessed": h["green"] >= n_real,
                       "points": [(x / mpp, y / mpp) for x, y in h["points"]], "fairway": h["fairway"], "walk": h["walk"]})
     return {"holes": holes, "cost": res["cost"], "runner_up_gap": res["runner_up_gap"],
             "unused_fairways": res["unused_fairways"], "n_greens": n_real, "n_guessed": len(greens) - n_real,

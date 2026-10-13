@@ -124,6 +124,50 @@ def _simplify(pts, tol=6.0):
     return [pts[0], pts[-1]]
 
 
+PAR3_BIAS = 8.0      # card-free routing: small price on par 3s so fairways get used
+FREE_EXT = 110.0     # card-free: tee distance behind the fairway start when no tee box is detected
+
+
+def candidates_free(green, fairways, fw_mask, cell, tees, near_green=95.0):
+    """no scorecard: holes are whatever the ground shows. Returns (points tee->green, fairway ids, cost, par, length)."""
+    out = []
+    for f in fairways:
+        ids = f.get("ids", frozenset([f["id"]]))
+        for line in (f["line"], f["line"][::-1]):
+            gap = math.dist(line[-1], green)
+            if gap > near_green: continue
+            path = [green] + line[::-1]
+            a = path[max(0, len(path) - 4)]; b = path[-1]
+            dl = math.dist(a, b) or 1.0; dv = ((b[0] - a[0]) / dl, (b[1] - a[1]) / dl)
+            cost = max(0.0, gap - 45) * 0.4
+            best = None
+            for t in tees or []:      # a detected tee box behind the start of the fairway, roughly in line with it
+                v = (t[0] - b[0], t[1] - b[1]); d = math.hypot(*v)
+                if not 15 <= d <= 260: continue
+                cosang = (v[0] * dv[0] + v[1] * dv[1]) / d
+                ang = math.degrees(math.acos(max(-1, min(1, cosang))))
+                if ang > 35: continue
+                sc = abs(d - FREE_EXT) * 0.05 + ang * 0.3
+                if best is None or sc < best[0]: best = (sc, t)
+            if best: tee = best[1]; cost += best[0] - 10
+            else: tee = (b[0] + dv[0] * FREE_EXT, b[1] + dv[1] * FREE_EXT); cost += 8
+            pts = _simplify((path + [tee])[::-1]); L = _length(pts)
+            if L < 230: continue
+            if L > 620: cost += (L - 620) * 0.5
+            out.append((pts, ids, cost, 4 if L < 435 else 5, L))
+    for t in tees or []:               # par 3s: a tee box 90-235 m from the green with little fairway between
+        d = math.dist(t, green)
+        if 90 <= d <= 235:
+            cover = _frac_on(fw_mask, cell, [t, green], 0.1, 0.9)
+            out.append(([t, green], None, cover * 40 + PAR3_BIAS, 3, d))
+    if not tees:
+        for k in range(12):
+            a = 2 * math.pi * k / 12; t = (green[0] + 155 * math.cos(a), green[1] + 155 * math.sin(a))
+            cover = _frac_on(fw_mask, cell, [t, green], 0.1, 0.9)
+            out.append(([t, green], None, 30 + cover * 40, 3, 155.0))
+    return out
+
+
 def tee_points(tee_mask, cell, min_area=40.0, max_area=3000.0):
     """centres of detected tee boxes"""
     lab, n = ndimage.label(tee_mask)
@@ -368,8 +412,13 @@ def solve_dp(greens, fairway, cell, card, start=None, end=None, tee_mask=None, b
     big = frozenset(f["id"] for f in fws if f["area"] >= unused_min_area and len(f["ids"]) == 1)
     cand = {}
     for gi, g in enumerate(greens):
-        for hi, (par, L) in enumerate(card):
-            cand[(gi, hi)] = candidates_for(g, par, L, fws, fairway, cell, tees=tees)
+        free = None
+        for hi, c in enumerate(card):
+            if c is None or c[0] is None:     # no scorecard for this hole: take the ground as it is
+                if free is None: free = candidates_free(g, fws, fairway, cell, tees)
+                cand[(gi, hi)] = free
+            else:
+                cand[(gi, hi)] = candidates_for(g, c[0], c[1], fws, fairway, cell, tees=tees)
     memo = {}
     def bbox(pts):
         xs = [p[0] for p in pts]; ys = [p[1] for p in pts]
@@ -386,7 +435,8 @@ def solve_dp(greens, fairway, cell, card, start=None, end=None, tee_mask=None, b
             memo[k] = v
         return v
     states = {(None, frozenset(), frozenset()): (0.0, ())}
-    for hi, (par, L) in enumerate(card):
+    for hi, c in enumerate(card):
+        L = c[1] if c is not None and c[1] is not None else 620.0
         nxt = {}
         for (last, ug, uf), (cost, holes) in states.items():
             prev = greens[last] if last is not None else start
@@ -396,7 +446,8 @@ def solve_dp(greens, fairway, cell, card, start=None, end=None, tee_mask=None, b
                 if fixed and hi in fixed and gi != fixed[hi]: continue
                 if prev is not None and math.dist(prev, g) > L + walk_max + 40: continue
                 opts = []
-                for ci, (pts, fid, c0) in enumerate(cand[(gi, hi)]):
+                for ci, cc in enumerate(cand[(gi, hi)]):
+                    pts, fid, c0 = cc[:3]
                     if fid is not None and not fid.isdisjoint(uf): continue
                     walk = math.dist(prev, pts[0]) if prev is not None else 0.0
                     if walk > walk_max: continue
@@ -427,8 +478,8 @@ def solve_dp(greens, fairway, cell, card, start=None, end=None, tee_mask=None, b
     (k, v) = ranked[0]
     holes = []; prev = start
     for hi, (gi, ci) in enumerate(v[1]):
-        pts, fid, c0 = cand[(gi, hi)][ci]
-        holes.append({"green": gi, "points": pts, "fairway": None if fid is None else "+".join(map(str, sorted(fid))), "walk": round(math.dist(prev, pts[0])) if prev is not None else 0})
+        cc = cand[(gi, hi)][ci]; pts, fid, c0 = cc[:3]
+        holes.append({"par": cc[3] if len(cc) > 3 else None, "length": cc[4] if len(cc) > 4 else None, "green": gi, "points": pts, "fairway": None if fid is None else "+".join(map(str, sorted(fid))), "walk": round(math.dist(prev, pts[0])) if prev is not None else 0})
         prev = greens[gi]
     return {"cost": round(final(k, v), 1), "holes": holes, "fairways": fws, "tees": tees,
             "unused_fairways": sorted(big - k[2]),

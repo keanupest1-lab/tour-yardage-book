@@ -1,0 +1,39 @@
+name: Add missing greens and tee boxes
+on:
+  push:
+    paths: ['courses/enrich-requests.txt', 'ml/enrich.py']
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: enrich
+  cancel-in-progress: false
+jobs:
+  enrich:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu && pip install segmentation-models-pytorch==0.3.4 pillow numpy scipy opencv-python-headless
+      - name: Get model
+        run: git fetch --depth 1 origin models-v2 && mkdir -p models && git show FETCH_HEAD:model.pt > models/model.pt
+      - name: Enrich
+        env:
+          PYTHONUNBUFFERED: '1'
+        run: python3 ml/enrich.py 2>&1 | tee courses/enrich-last-run.log
+      - name: Check every hole
+        run: node scripts/qa.mjs 2>&1 | tee courses/qa-report.txt
+      - name: Save
+        if: always()
+        run: |
+          git config --global user.name "course-bot"; git config --global user.email "course-bot@users.noreply.github.com"
+          git add courses
+          git diff --cached --quiet && exit 0
+          git commit -m "Greens and tee boxes added by AI; hole check report"
+          for i in 1 2 3; do git pull --rebase origin main && git push origin HEAD:main && break; sleep 5; done
