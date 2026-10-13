@@ -52,11 +52,10 @@ def seg_map(cls):
 def prompt_for(course, place, par):
     parts = [x.strip() for x in (place or "").split(",") if x.strip() and not any(ch.isdigit() for ch in x)]
     region = ", ".join(parts[-2:]) or "South Africa"
-    p = (f"professional golf course photography, view from the tee box looking down the fairway of a par {par} hole "
-         f"at {course}, {region}, parkland golf course, lush green kikuyu fairway with mowing stripes, light rough, "
-         "tall mature trees lining both sides of the hole, eucalyptus, pine and oak, "
-         "bright sunny day, high sun, soft natural light, clear blue sky with a few white clouds, "
-         "sharp focus, high detail, natural colours, shot on Canon EOS R5, 35mm lens, f/8, photorealistic, 8k")
+    p = (f"golf course photo from the tee box down the fairway, par {par}, {course}, {region}, parkland, "
+         "lush green kikuyu fairway, mowing stripes, light rough, "
+         "tall mature trees both sides, eucalyptus and pine, bright sunny day, blue sky, "
+         "sharp focus, photorealistic, Canon EOS R5, 35mm")
     neg = ("cartoon, cgi, 3d render, video game, painting, illustration, drawing, blurry, soft, low quality, jpeg artifacts, "
            "people, golfer, person, animal, text, watermark, logo, signature, cars, buildings, houses, power lines, "
            "oversaturated, hdr, distorted, deformed trees, duplicate, snow, fog")
@@ -146,6 +145,11 @@ def photo(slug, hole, seeds=(11, 22), strength=0.62, steps=30, out_dir="courses/
     idx = {c["slug"]: c for c in json.load(open("courses/index.json"))["courses"]}
     course = S["edits"].get("name") or idx.get(slug, {}).get("name", slug)
     p, neg = prompt_for(course, idx.get(slug, {}).get("place", ""), h.get("par", 4))
+    # forbid hazards the real hole doesn't have in this view (the model otherwise adds "typical" bunkers and ponds)
+    view = proj.cls[proj.cls != 255]
+    if (view == T.CLS_SAND).mean() < 0.002: neg = "sand, bunker, sand trap, " + neg
+    if (view == T.CLS_WATER).mean() < 0.002: neg = "water, pond, lake, stream, " + neg
+    log("  negative:", neg[:90])
     pipe = load_pipe()
     init = base.resize((GEN_W, GEN_H), Image.LANCZOS)
     ctrl = [dimg.resize((GEN_W, GEN_H), Image.BILINEAR), simg.resize((GEN_W, GEN_H), Image.NEAREST)]
