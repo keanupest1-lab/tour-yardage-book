@@ -1,11 +1,5 @@
-2026-10-13T17:18:40.101Z skip Dainfern Golf Estate (already saved)
-2026-10-13T17:18:40.101Z skip Irene Country Club (already saved)
-2026-10-13T17:18:40.101Z skip Pretoria Country Club (already saved)
-2026-10-13T17:18:40.101Z fetch Wanderers Golf Club, Johannesburg
-2026-10-13T17:18:40.517Z   FAILED Wanderers Golf Club, Johannesburg: not found on OpenStreetMap search
-2026-10-13T17:18:44.878Z skip Bryanston Country Club (already saved)
-2026-10-13T17:18:44.878Z skip Old Course St Andrews (already saved)
-2026-10-13T17:18:44.878Z skip Royal Johannesburg & Kensington Golf Club, Johannesburg (already saved)
-2026-10-13T17:18:44.878Z skip Glendower Golf Club (already saved)
-2026-10-13T17:18:44.879Z fetch Houghton Golf Club, Johannesburg
-2026-10-13T17:18:45.085Z   FAILED Houghton Golf Club, Johannesburg: not found on OpenStreetMap search
+2026-10-13T18:04:50.826Z skip Dainfern Golf Estate (already saved)
+2026-10-13T18:04:50.826Z skip Irene Country Club (already saved)
+2026-10-13T18:04:50.826Z skip Pretoria Country Club (already saved)
+2026-10-13T18:04:50.826Z fetch Wanderers Golf Club, Johannesburg
+2026-10-13T18:04:51.442Z   FAILED Wanderers Golf Club, Johannesburg: not found on OpenStreetMap search
