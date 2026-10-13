@@ -1,2 +1,2 @@
-run 2: crossing penalty + fairway chaining, saves shape maps
-MODEL_BRANCH=models
+run 3: models-v2 + tuned routing
+MODEL_BRANCH=models-v2
