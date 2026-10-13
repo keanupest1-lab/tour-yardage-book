@@ -1,0 +1,44 @@
+{
+ "z18": {
+  "zoom": 18,
+  "tile_x0": 151298,
+  "tile_y0": 150750,
+  "width": 3328,
+  "height": 3328,
+  "bounds": {
+   "north": -26.07405353250416,
+   "south": -26.09008828099274,
+   "west": 27.77618408203125,
+   "east": 27.794036865234375
+  },
+  "missing_tiles": 0,
+  "source": "Esri World Imagery",
+  "requested_bbox": [
+   -26.09,
+   -26.0745,
+   27.777,
+   27.7935
+  ]
+ },
+ "z19": {
+  "zoom": 19,
+  "tile_x0": 302597,
+  "tile_y0": 301500,
+  "width": 6400,
+  "height": 6656,
+  "bounds": {
+   "north": -26.07405353250416,
+   "south": -26.09008828099274,
+   "west": 27.776870727539062,
+   "east": 27.794036865234375
+  },
+  "missing_tiles": 0,
+  "source": "Esri World Imagery",
+  "requested_bbox": [
+   -26.09,
+   -26.0745,
+   27.777,
+   27.7935
+  ]
+ }
+}
