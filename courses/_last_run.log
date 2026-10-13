@@ -3,3 +3,9 @@
 2026-10-13T18:08:45.089Z skip Pretoria Country Club (already saved)
 2026-10-13T18:08:45.089Z fetch Wanderers Golf Club, Johannesburg
 2026-10-13T18:08:45.647Z   FAILED Wanderers Golf Club, Johannesburg: not found on OpenStreetMap search
+2026-10-13T18:08:50.481Z skip Bryanston Country Club (already saved)
+2026-10-13T18:08:50.481Z skip Old Course St Andrews (already saved)
+2026-10-13T18:08:50.482Z skip Royal Johannesburg & Kensington Golf Club, Johannesburg (already saved)
+2026-10-13T18:08:50.482Z skip Glendower Golf Club (already saved)
+2026-10-13T18:08:50.482Z fetch Houghton Golf Club, Johannesburg
+2026-10-13T18:08:51.028Z   FAILED Houghton Golf Club, Johannesburg: not found on OpenStreetMap search
