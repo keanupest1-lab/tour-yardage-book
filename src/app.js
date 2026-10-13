@@ -208,16 +208,25 @@ function renderHole(dir = 0) {
     const base = `courses/teeview/${state.meta.slug}-${encodeURIComponent(h.ref)}`;
     const fig = document.createElement('figure');
     fig.className = 'teeview'; fig.hidden = true;
-    fig.innerHTML = `<img alt="Hole ${escapeHtml(h.ref)} from the tee" src="${base}.jpg">
-      <div class="seg tv-seg" role="group" aria-label="Viewpoint"><button type="button" aria-pressed="true" data-tv="">From the tee</button><button type="button" aria-pressed="false" data-tv="-high">Raised</button></div>
-      <figcaption>Rendered from satellite imagery and terrain data, not a photograph.</figcaption>`;
+    const CAP = { '-photo': 'AI-rendered photo of the real layout: shapes and distances are from the course, fine detail is generated.',
+      '': 'Rendered from satellite imagery and terrain data.', '-high': 'Raised view, rendered from satellite imagery and terrain data.' };
+    fig.innerHTML = `<img alt="Hole ${escapeHtml(h.ref)} from the tee">
+      <div class="seg tv-seg" role="group" aria-label="Viewpoint"><button type="button" data-tv="-photo" hidden>Photo</button><button type="button" data-tv="">3D</button><button type="button" data-tv="-high">Raised</button></div>
+      <figcaption></figcaption>`;
     const img = fig.querySelector('img');
+    const show = (tag) => {
+      img.src = `${base}${tag}.jpg`;
+      fig.querySelector('figcaption').textContent = CAP[tag];
+      fig.querySelectorAll('[data-tv]').forEach((x) => x.setAttribute('aria-pressed', String(x.dataset.tv === tag)));
+    };
     img.addEventListener('load', () => { fig.hidden = false; });
-    img.addEventListener('error', () => { fig.hidden = true; });
-    fig.querySelectorAll('[data-tv]').forEach((b) => b.addEventListener('click', () => {
-      img.src = `${base}${b.dataset.tv}.jpg`;
-      fig.querySelectorAll('[data-tv]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
-    }));
+    img.addEventListener('error', () => { if (img.src.endsWith('-photo.jpg')) show(''); else fig.hidden = true; });
+    fig.querySelectorAll('[data-tv]').forEach((b) => b.addEventListener('click', () => show(b.dataset.tv)));
+    // use the photo when there is one
+    const probe = new Image();
+    probe.onload = () => { fig.querySelector('[data-tv="-photo"]').hidden = false; show('-photo'); };
+    probe.onerror = () => show('');
+    probe.src = `${base}-photo.jpg`;
     pages.appendChild(fig);
   }
   if (dir) { pages.style.setProperty('--dir', `${dir * 14}px`); pages.classList.remove('swapping'); void pages.offsetWidth; pages.classList.add('swapping'); }

@@ -19,6 +19,7 @@ TERRARIUM = "https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}
 _rng = np.random.default_rng(7)
 GRAIN = ndimage.gaussian_filter(_rng.random((512, 512)), 0.7, mode="wrap")
 GRAIN = (GRAIN - GRAIN.min()) / (GRAIN.max() - GRAIN.min())
+CLS_ROUGH, CLS_SHORT, CLS_TREE, CLS_SAND, CLS_WATER = 0, 1, 2, 3, 4
 RING = {200: (40, 110, 220), 225: (60, 160, 80), 250: (215, 50, 40), 275: (230, 175, 30), 300: (140, 80, 190)}
 
 
@@ -77,7 +78,7 @@ def hillshade(H, mpp, az=20, alt=42):
 
 
 # ---------------------------------------------------------------- render
-def render(tex, H, mpp, cam, look, eye=1.8, W=1800, Hpx=640, hfov=56.0, maxd=700.0, pitch=-1.2, sun=None, ground=None):
+def render(tex, H, mpp, cam, look, eye=1.8, W=1800, Hpx=640, hfov=56.0, maxd=700.0, pitch=-1.2, sun=None, ground=None, cls=None):
     """cam, look: mosaic pixel coords. Returns RGB image and a projector for overlays."""
     th, tw = H.shape
     f = (W / 2) / math.tan(math.radians(hfov / 2))
@@ -102,6 +103,7 @@ def render(tex, H, mpp, cam, look, eye=1.8, W=1800, Hpx=640, hfov=56.0, maxd=700
         yg = horizon + f * (ch - g0) / Z
     else:
         yg = ys
+    clsS = ndimage.map_coordinates(cls, [pyc, pxc], order=0) if cls is not None else None
     # colour of each sample
     col = np.stack([ndimage.map_coordinates(tex[..., k], [pyc, pxc], order=1) for k in range(3)], -1)
     # fine grass grain close to the camera (the photo is only ~0.3 m per pixel)
@@ -117,6 +119,7 @@ def render(tex, H, mpp, cam, look, eye=1.8, W=1800, Hpx=640, hfov=56.0, maxd=700
     run = np.minimum.accumulate(ys, axis=0)
     out = np.zeros((Hpx, W, 3), np.float32)
     depth = np.full((Hpx, W), np.inf, np.float32)
+    clsimg = np.full((Hpx, W), 255, np.uint8)            # 255 = sky
     wall_mask = np.zeros((Hpx, W), bool)
     rows = np.arange(Hpx) + .5
     sky_top, sky_hor = np.array([104, 148, 196], np.float32), np.array([214, 226, 236], np.float32)
@@ -133,6 +136,7 @@ def render(tex, H, mpp, cam, look, eye=1.8, W=1800, Hpx=640, hfov=56.0, maxd=700
         cc = cc * shade[:, None]
         out[:, c] = np.where(hit[:, None], cc, 0)
         depth[:, c] = np.where(hit, zs[k], np.inf)
+        if clsS is not None: clsimg[:, c] = np.where(hit, np.where(wall, CLS_TREE, clsS[k, c]), 255)
         wall_mask[:, c] = wall
         t = np.clip(rows / max(horizon, 1), 0, 1)[:, None]
         out[~hit, c] = (sky_top * (1 - t) + sky_hor * t)[~hit]
@@ -153,6 +157,7 @@ def render(tex, H, mpp, cam, look, eye=1.8, W=1800, Hpx=640, hfov=56.0, maxd=700
         visible = k <= 0 or sy <= run[k, c] + 3          # nothing nearer rises above it
         return sx, sy, z, bool(visible)
     project.depth = depth
+    project.cls = clsimg if cls is not None else None
     return img, project
 
 
@@ -262,21 +267,26 @@ def scene(slug, hole, z=19, log=print, local_mosaic=None, local_terrain=None):
     Hter = local_terrain(m) if local_terrain else terrain(m, log=log)
     W, Hh = m.img.size
     notree = Image.new("L", (W, Hh), 0); dn = ImageDraw.Draw(notree)
+    clsim = Image.new("L", (W, Hh), CLS_ROUGH); dc = ImageDraw.Draw(clsim)
     bunkers = []
-    for sh in e.get("shapes", []):
-        poly = [m.ll2px(*p) for p in sh["coords"]]
-        if sh["kind"] in ("fairway", "green", "bunker", "water", "tee"): dn.polygon(poly, fill=1)
-        if sh["kind"] == "bunker": bunkers.append(poly)
+    order = {"fairway": CLS_SHORT, "tee": CLS_SHORT, "green": CLS_SHORT, "water": CLS_WATER, "bunker": CLS_SAND}
+    for kind in ("fairway", "tee", "green", "water", "bunker"):
+        for sh in e.get("shapes", []):
+            if sh["kind"] != kind: continue
+            poly = [m.ll2px(*p) for p in sh["coords"]]
+            dn.polygon(poly, fill=1); dc.polygon(poly, fill=order[kind])
+            if kind == "bunker": bunkers.append(poly)
     notree = ndimage.binary_dilation(np.asarray(notree).astype(bool), iterations=int(3 / mpp))
     trees = canopy(m.img, mpp, notree)
     line_px = [m.ll2px(*p) for p in line]
     # tees are open ground: keep the tee and the first stretch of the line of play clear of canopy
     yy, xx = np.mgrid[0:Hh, 0:W]
-    clear = np.hypot(xx - line_px[0][0], yy - line_px[0][1]) * mpp < 28
+    clear = np.hypot(xx - line_px[0][0], yy - line_px[0][1]) * mpp < 40
     for t in range(0, 90, 5):
         qq = along(line_px, t / mpp); clear |= np.hypot(xx - qq[0], yy - qq[1]) * mpp < 14
     trees[clear] = 0
     Htot = Hter + trees
+    cls = np.asarray(clsim).copy(); cls[trees > 1.5] = CLS_TREE
     tex = np.asarray(m.img.convert("RGB").filter(ImageFilter.GaussianBlur(0.6)), np.float32)
     sun = hillshade(ndimage.gaussian_filter(Htot, 0.6), mpp)
     tee = line_px[0]
@@ -285,12 +295,12 @@ def scene(slug, hole, z=19, log=print, local_mosaic=None, local_terrain=None):
     look = along(line_px, min(230, L * 0.6) / mpp)
     v = np.array(look) - np.array(tee); v /= np.linalg.norm(v)
     return {"edits": e, "hole": h, "m": m, "mpp": mpp, "Hter": Hter, "Htot": Htot, "tex": tex, "sun": sun,
-            "line_px": line_px, "bunkers": bunkers, "tee": tee, "look": look, "v": v}
+            "line_px": line_px, "bunkers": bunkers, "tee": tee, "look": look, "v": v, "cls": cls}
 
 
 def shot(S, eye=1.8, back=4.0, pitch=-1.0, maxd=700.0, W=1800, Hpx=640, hfov=56.0):
     c = (S["tee"][0] - S["v"][0] * back / S["mpp"], S["tee"][1] - S["v"][1] * back / S["mpp"])
-    return render(S["tex"], S["Htot"], S["mpp"], c, S["look"], eye=eye, pitch=pitch, sun=S["sun"], ground=S["Hter"], maxd=maxd, W=W, Hpx=Hpx, hfov=hfov)
+    return render(S["tex"], S["Htot"], S["mpp"], c, S["look"], eye=eye, pitch=pitch, sun=S["sun"], ground=S["Hter"], maxd=maxd, W=W, Hpx=Hpx, hfov=hfov, cls=S.get("cls"))
 
 
 def view(slug, hole, eye=1.8, z=19, log=print, out_dir="courses/teeview", local_mosaic=None, local_terrain=None):
