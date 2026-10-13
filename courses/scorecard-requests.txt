@@ -1,0 +1,10 @@
+# slug | course name to search [| golfpass scorecard url]
+glendower-golf-club | Glendower Golf Club | https://www.golfpass.com/courses/17883-glendower-golf-club/scorecard-and-layout
+dainfern-golf-estate | Dainfern Country Club | https://www.golfpass.com/courses/17836-dainfern-country-club/scorecard-and-layout
+royal-johannesburg-kensington-east | Royal Johannesburg Kensington East | https://www.golfpass.com/courses/17848-royal-johannesburg-kensington-golf-club-east-course/scorecard-and-layout
+royal-johannesburg-kensington-west | Royal Johannesburg Kensington West | https://www.golfpass.com/courses/17851-royal-johannesburg-kensington-golf-club-west-course/scorecard-and-layout
+pretoria-country-club | Pretoria Country Club | https://www.golfpass.com/courses/17822-pretoria-country-club/scorecard-and-layout
+bryanston-country-club | Bryanston Country Club | https://www.golfpass.com/courses/17863-bryanston-country-club/scorecard-and-layout
+irene-country-club | Irene Country Club Centurion
+houghton-golf-club | Houghton Golf Club Johannesburg
+old-course-st-andrews | Old Course St Andrews

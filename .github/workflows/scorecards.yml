@@ -1,0 +1,25 @@
+name: Fetch scorecards
+on:
+  push:
+    paths: ['courses/scorecard-requests.txt', 'scripts/scorecards.py']
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: scorecards
+  cancel-in-progress: false
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 scripts/scorecards.py 2>&1 | tee courses/scorecards-last-run.log
+      - name: Save
+        if: always()
+        run: |
+          git config --global user.name "course-bot"; git config --global user.email "course-bot@users.noreply.github.com"
+          git add courses/scorecards courses/scorecards-last-run.log
+          git diff --cached --quiet && exit 0
+          git commit -m "Scorecards"
+          for i in 1 2 3; do git pull --rebase origin main && git push origin HEAD:main && break; sleep 5; done
