@@ -1,0 +1,30 @@
+/opt/hostedtoolcache/Python/3.11.17/x64/lib/python3.11/site-packages/torch/jit/_script.py:1491: FutureWarning: `torch.jit.script` is deprecated. Please switch to `torch.compile` or `torch.export`.
+  warnings.warn(
+/opt/hostedtoolcache/Python/3.11.17/x64/lib/python3.11/site-packages/torch/jit/_script.py:1491: FutureWarning: `torch.jit.script` is deprecated. Please switch to `torch.compile` or `torch.export`.
+  warnings.warn(
+/opt/hostedtoolcache/Python/3.11.17/x64/lib/python3.11/site-packages/torch/jit/_script.py:1643: FutureWarning: `torch.jit.interface` is deprecated. Please use `torch.compile` instead.
+  warnings.warn(
+1558 train chips, 131 val chips, 126 courses
+pixel share {'background': np.float64(0.804), 'fairway': np.float64(0.14), 'green': np.float64(0.014), 'tee': np.float64(0.007), 'bunker': np.float64(0.006), 'water': np.float64(0.03)} weights [0.16 0.37 1.19 1.7  1.77 0.81]
+Downloading: "https://download.pytorch.org/models/resnet34-333f7ec4.pth" to /home/runner/.cache/torch/hub/checkpoints/resnet34-333f7ec4.pth
+  0%|          | 0.00/83.3M [00:00<?, ?B/s] 40%|███▉      | 33.0M/83.3M [00:00<00:00, 346MB/s]100%|██████████| 83.3M/83.3M [00:00<00:00, 464MB/s]
+continuing from init.pt
+{'epoch': 1, 'loss': 0.9228, 'iou': {'background': 0.849, 'fairway': 0.523, 'green': 0.482, 'tee': 0.168, 'bunker': 0.316, 'water': 0.468}, 'minutes': 19.0}
+{'epoch': 2, 'loss': 0.91, 'iou': {'background': 0.853, 'fairway': 0.533, 'green': 0.497, 'tee': 0.183, 'bunker': 0.317, 'water': 0.474}, 'minutes': 38.0}
+{'epoch': 3, 'loss': 0.9153, 'iou': {'background': 0.85, 'fairway': 0.511, 'green': 0.487, 'tee': 0.195, 'bunker': 0.298, 'water': 0.456}, 'minutes': 57.2}
+{'epoch': 4, 'loss': 0.9285, 'iou': {'background': 0.837, 'fairway': 0.523, 'green': 0.468, 'tee': 0.143, 'bunker': 0.282, 'water': 0.485}, 'minutes': 76.3}
+{'epoch': 5, 'loss': 0.9486, 'iou': {'background': 0.843, 'fairway': 0.511, 'green': 0.468, 'tee': 0.176, 'bunker': 0.312, 'water': 0.448}, 'minutes': 95.3}
+{'epoch': 6, 'loss': 0.9458, 'iou': {'background': 0.841, 'fairway': 0.518, 'green': 0.454, 'tee': 0.132, 'bunker': 0.319, 'water': 0.469}, 'minutes': 114.2}
+{'epoch': 7, 'loss': 0.9509, 'iou': {'background': 0.833, 'fairway': 0.502, 'green': 0.418, 'tee': 0.143, 'bunker': 0.312, 'water': 0.456}, 'minutes': 133.2}
+{'epoch': 8, 'loss': 0.964, 'iou': {'background': 0.826, 'fairway': 0.454, 'green': 0.408, 'tee': 0.13, 'bunker': 0.31, 'water': 0.434}, 'minutes': 152.1}
+{'epoch': 9, 'loss': 0.9564, 'iou': {'background': 0.828, 'fairway': 0.5, 'green': 0.466, 'tee': 0.147, 'bunker': 0.263, 'water': 0.469}, 'minutes': 171.1}
+{'epoch': 10, 'loss': 0.9466, 'iou': {'background': 0.843, 'fairway': 0.511, 'green': 0.492, 'tee': 0.184, 'bunker': 0.293, 'water': 0.49}, 'minutes': 190.0}
+{'epoch': 11, 'loss': 0.9393, 'iou': {'background': 0.821, 'fairway': 0.481, 'green': 0.453, 'tee': 0.163, 'bunker': 0.311, 'water': 0.488}, 'minutes': 208.9}
+{'epoch': 12, 'loss': 0.9813, 'iou': {'background': 0.839, 'fairway': 0.511, 'green': 0.461, 'tee': 0.149, 'bunker': 0.289, 'water': 0.456}, 'minutes': 227.8}
+{'epoch': 13, 'loss': 0.9582, 'iou': {'background': 0.845, 'fairway': 0.522, 'green': 0.448, 'tee': 0.146, 'bunker': 0.328, 'water': 0.46}, 'minutes': 246.7}
+{'epoch': 14, 'loss': 0.9308, 'iou': {'background': 0.836, 'fairway': 0.508, 'green': 0.419, 'tee': 0.183, 'bunker': 0.24, 'water': 0.466}, 'minutes': 265.7}
+{'epoch': 15, 'loss': 0.8949, 'iou': {'background': 0.854, 'fairway': 0.535, 'green': 0.477, 'tee': 0.171, 'bunker': 0.294, 'water': 0.481}, 'minutes': 284.5}
+{'epoch': 16, 'loss': 0.8755, 'iou': {'background': 0.854, 'fairway': 0.533, 'green': 0.493, 'tee': 0.184, 'bunker': 0.315, 'water': 0.48}, 'minutes': 291.0}
+time budget reached
+irene class share {'background': 0.9089, 'fairway': 0.071, 'green': 0.0052, 'tee': 0.0065, 'bunker': 0.0025, 'water': 0.0059}
+done
