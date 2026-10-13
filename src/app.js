@@ -303,25 +303,29 @@ document.querySelectorAll('[data-mu]').forEach((b) => b.addEventListener('click'
   mapUnits = to; document.querySelectorAll('[data-mu]').forEach((x) => x.setAttribute('aria-pressed', String(x.dataset.mu === to))); cardTotals();
 }));
 $('#mapCancel').addEventListener('click', () => $('#mapSheet').close());
-$('#mapForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
+async function sendMap(withCard) {
   const msg = (t, k = '') => { $('#mapMsg').textContent = t; $('#mapMsg').className = 'status ' + k; };
-  const { pars, lens } = cardValues();
-  const m = lens.map((l) => (mapUnits === 'yd' ? l / YD : l));
-  document.querySelectorAll('#cardGrid [data-l]').forEach((el, i) => el.classList.toggle('bad', !(m[i] >= 60 && m[i] <= 700)));
-  if (m.some((l) => !(l >= 60 && l <= 700))) return msg('Fill in every hole length (between 60 and 700 metres).', 'error');
+  let pars = [], m = [];
+  if (withCard) {
+    const v = cardValues(); pars = v.pars;
+    m = v.lens.map((l) => (mapUnits === 'yd' ? l / YD : l));
+    document.querySelectorAll('#cardGrid [data-l]').forEach((el, i) => el.classList.toggle('bad', !(m[i] >= 60 && m[i] <= 700)));
+    if (m.some((l) => !(l >= 60 && l <= 700))) return msg('Fill in every hole length (between 60 and 700 metres), or map without a scorecard.', 'error');
+  }
   const key = $('#mapKey').value.trim();
   if (!key) return msg('Enter the access key first.', 'error');
   localSet('tyb-key', key);
-  msg('Sending to the mapper…', 'busy'); $('#mapGo').disabled = true;
+  msg('Sending to the mapper…', 'busy'); $('#mapGo').disabled = $('#mapNoCard').disabled = true;
   try {
     const r = await fetch(`api/automap?key=${encodeURIComponent(key)}`, { method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name: mapTarget.name, pars, lengths: m.map((l) => Math.round(l)), bbox: mapTarget.bbox }) });
     const j = await r.json().catch(() => ({}));
     if (!r.ok) throw new Error(j.error || `The mapper answered ${r.status}`);
     msg(`Queued. ${mapTarget.name} will be traced and routed in about ten minutes; open it from your library after that.`, 'ok');
-  } catch (err) { msg(err.message, 'error'); } finally { $('#mapGo').disabled = false; }
-});
+  } catch (err) { msg(err.message, 'error'); } finally { $('#mapGo').disabled = $('#mapNoCard').disabled = false; }
+}
+$('#mapForm').addEventListener('submit', (e) => { e.preventDefault(); sendMap(true); });
+$('#mapNoCard').addEventListener('click', () => sendMap(false));
 $('#mapItem').addEventListener('click', () => {
   const holes = state.course ? visibleHoles().map((i) => state.course.holes[i]).map((h) => ({ par: h.par, len: h.tagDist || h.toCentre || h.lengthM })) : [];
   openMap({ name: state.name, bbox: state.meta?.bbox, place: state.meta?.place, holes });

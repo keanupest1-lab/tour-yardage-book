@@ -76,9 +76,10 @@ def seg_dist(p, a, b):
 def map_course(line, model):
     parts = [p.strip() for p in line.split("|")]
     name = parts[0]
-    pars = [int(x) for x in parts[1].split()]
-    lens = [float(x) for x in parts[2].split()]
-    if len(pars) != len(lens) or len(pars) not in (9, 18): raise ValueError("need 9 or 18 pars and lengths")
+    # scorecard optional: "Name | auto" (or empty pars) maps from the ground alone
+    pars = [int(x) for x in parts[1].split()] if len(parts) > 1 and parts[1].strip() not in ("", "auto") else []
+    lens = [float(x) for x in parts[2].split()] if len(parts) > 2 and parts[2].strip() else []
+    if pars and (len(pars) != len(lens) or len(pars) not in (9, 18)): raise ValueError("need 9 or 18 pars and lengths")
     club = tuple(map(float, parts[3].split(","))) if len(parts) > 3 and parts[3] else None
     if len(parts) > 4 and parts[4]:
         s, w, n, e = map(float, parts[4].split(","))
@@ -100,7 +101,7 @@ def map_course(line, model):
     m = A.fetch_mosaic(s, w, n, e, log=log)
     mpp = m.mpp
     t = time.time(); lab, _ = A.predict(model, m.img); log(f"  shapes found in {time.time() - t:.0f}s")
-    card = list(zip(pars, lens))
+    card = list(zip(pars, lens)) if pars else [None] * 18
     cpx = m.ll2px(*club) if club else None
     turn = {8: cpx} if cpx and len(card) == 18 else None
     res = A.route_from_mask(lab, mpp, card, start_px=cpx, end_px=cpx, turn_px=turn, log=log)
@@ -111,8 +112,10 @@ def map_course(line, model):
             "Check against the club course map.")
     holes = {}
     for h in res["holes"]:
+        hn = note if not h.get("estimated") else (note.replace("matched to the scorecard", "worked out from the ground")
+                                                     + " No scorecard was used: par and length are estimates.")
         holes[str(h["hole"])] = {"par": h["par"], "dist": round(h["length"]), "line": [list(m.px2ll(x, y)) for x, y in h["points"]],
-                                 "note": note, "source": "model"}
+                                 "note": hn, "source": "model"}
     lines = [h["points"] for h in res["holes"]]
     def near(poly, tol_m):
         c = (sum(p[0] for p in poly) / len(poly), sum(p[1] for p in poly) / len(poly))

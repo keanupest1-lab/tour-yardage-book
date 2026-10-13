@@ -127,14 +127,14 @@
   <form id="mapForm" class="inner" novalidate>
     <div class="grab"></div>
     <h2 id="mapTitle">Map with AI</h2>
-    <p class="about lead">Enter the scorecard from the back tees. The AI traces <b id="mapName"></b> from satellite imagery and matches every hole to the card. It takes about ten minutes, then the course updates in your library.</p>
+    <p class="about lead">The AI traces <b id="mapName"></b> from satellite imagery and works out every hole: about ten minutes, then the course updates in your library. Adding the scorecard from the back tees makes it more accurate; without one, pars and lengths are estimated from the ground.</p>
     <div class="sheet-row show"><span>Lengths in</span><div class="seg" role="group" aria-label="Scorecard units">
       <button type="button" data-mu="m" aria-pressed="true">Metres</button><button type="button" data-mu="yd" aria-pressed="false">Yards</button>
     </div></div>
     <div id="cardGrid" class="card-grid"></div>
     <label class="field">Access key<input id="mapKey" type="password" autocomplete="off" placeholder="The key from your Vercel settings"></label>
     <p id="mapMsg" class="status" role="status"></p>
-    <div class="row-actions"><button type="button" id="mapCancel" class="btn">Cancel</button><button type="submit" id="mapGo" class="btn foil">Start mapping</button></div>
+    <div class="row-actions"><button type="button" id="mapCancel" class="btn">Cancel</button><button type="button" id="mapNoCard" class="btn">Map without scorecard</button><button type="submit" id="mapGo" class="btn foil">Map with this scorecard</button></div>
   </form>
 </dialog>
 

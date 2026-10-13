@@ -24,13 +24,16 @@ export default async function handler(req, res) {
   const name = String(b.name || '').replace(/[|\n\r]/g, ' ').trim().slice(0, 90);
   const pars = (b.pars || []).map(Number), lens = (b.lengths || []).map(Number);
   if (!name) return send(400, { error: 'Missing course name' });
-  if (![9, 18].includes(pars.length) || pars.length !== lens.length) return send(400, { error: 'Enter a par and a length for every hole' });
-  if (pars.some((p) => ![3, 4, 5, 6].includes(p))) return send(400, { error: 'Pars must be 3, 4, 5 or 6' });
-  if (lens.some((l) => !(l >= 60 && l <= 700))) return send(400, { error: 'Hole lengths must be between 60 and 700 metres' });
+  const noCard = pars.length === 0;          // no scorecard: map from the ground alone
+  if (!noCard) {
+    if (![9, 18].includes(pars.length) || pars.length !== lens.length) return send(400, { error: 'Enter a par and a length for every hole' });
+    if (pars.some((p) => ![3, 4, 5, 6].includes(p))) return send(400, { error: 'Pars must be 3, 4, 5 or 6' });
+    if (lens.some((l) => !(l >= 60 && l <= 700))) return send(400, { error: 'Hole lengths must be between 60 and 700 metres' });
+  }
   const club = Array.isArray(b.clubhouse) && b.clubhouse.length === 2 && b.clubhouse.every(Number.isFinite) ? b.clubhouse.map((v) => v.toFixed(6)).join(',') : '';
   // bbox arrives as the app keeps it: [south, north, west, east]; the request line wants south,west,north,east
   const bb = Array.isArray(b.bbox) && b.bbox.length === 4 && b.bbox.every(Number.isFinite) ? [b.bbox[0], b.bbox[2], b.bbox[1], b.bbox[3]].join(',') : '';
-  const line = `${name} | ${pars.join(' ')} | ${lens.map((l) => Math.round(l)).join(' ')} | ${club} | ${bb}`;
+  const line = noCard ? `${name} | auto |  | ${club} | ${bb}` : `${name} | ${pars.join(' ')} | ${lens.map((l) => Math.round(l)).join(' ')} | ${club} | ${bb}`;
   try {
     const r = await gh(`${PATH}?ref=main`);
     let sha, text = '';
