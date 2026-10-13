@@ -17,7 +17,17 @@ async function withEdits(json, slug) {
   try { const r = await fetch(`courses/edits/${slug}.json`, { cache: 'no-store' }); if (r.ok) server = await r.json(); } catch {}
   try { local = JSON.parse(localGet(`tyb-edits:${slug}`) || 'null'); } catch {}
   const edits = [server, local].filter(Boolean).sort((x, y) => String(y.updated).localeCompare(String(x.updated)))[0];
-  return { json: hasEdits(edits) ? mergeEdits(json, edits) : json, edited: hasEdits(edits) };
+  const out = hasEdits(edits) ? mergeEdits(json, edits) : json;
+  // course names at clubs with several courses: { "Other holes": "East Course", "Blue Course": null (another club) }
+  const groups = (server && server.groups) || (edits && edits.groups);
+  if (groups) Object.defineProperty(out, '__groups', { value: groups, enumerable: false, configurable: true });
+  return { json: out, edited: hasEdits(edits) };
+}
+
+function nameGroups(course, names) {
+  if (!names || !course.groups.length) return course;
+  course.groups = course.groups.filter((g) => names[g.name] !== null).map((g) => ({ ...g, name: names[g.name] || g.name }));
+  return course;
 }
 
 function librarySearch(q) {
@@ -61,14 +71,14 @@ async function fillCounts(rows) {
       if (!countCache.has(r.slug)) {
         const j = await (await fetch(`courses/${r.slug}.json`)).json();
         const m = await withEdits(j, r.slug);
-        const c = buildCourse(parseOverpass(m.json));
+        const c = nameGroups(buildCourse(parseOverpass(m.json)), m.json.__groups);
         countCache.set(r.slug, { holes: c.holes.length, groups: c.groups.length });
       }
       const { holes, groups } = countCache.get(r.slug);
       const el = document.querySelector(`[data-count="${CSS.escape(r.slug)}"]`);
       if (!el) continue;
-      el.classList.toggle('part', !groups && holes < 18);
-      el.innerHTML = groups ? `<b>${groups}</b><small>courses</small>` : holes ? `<b>${holes}</b><small>${holes === 1 ? 'hole' : 'holes'}</small>` : '<b>0</b><small>to trace</small>';
+      el.classList.toggle('part', groups < 2 && holes < 18);
+      el.innerHTML = groups > 1 ? `<b>${groups}</b><small>courses</small>` : holes ? `<b>${holes}</b><small>${holes === 1 ? 'hole' : 'holes'}</small>` : '<b>0</b><small>to trace</small>';
     } catch {}
   }
 }
@@ -127,7 +137,7 @@ function editorUrl(meta, name) {
 
 function openCourse(json, name, meta = null, { push = true } = {}) {
   state.meta = meta;
-  const course = buildCourse(parseOverpass(json));
+  const course = nameGroups(buildCourse(parseOverpass(json)), json.__groups);
   for (const id of ['#editLink', '#editLink2']) { $(id).hidden = !meta; if (meta) $(id).href = editorUrl(meta, name); }
   $('#mapItem').hidden = !meta?.bbox;
   if (!course.holes.length) {
@@ -152,7 +162,7 @@ function openCourse(json, name, meta = null, { push = true } = {}) {
     state.group = course.groups.indexOf(best);
     const html = course.groups.map((g, i) => `<option value="${i}">${escapeHtml(g.name)} (${g.holes.length} holes)</option>`).join('');
     picks.forEach((p) => { p.innerHTML = html; p.value = String(state.group); });
-    $('#groupPick').hidden = false; $('#groupWrap').hidden = false;
+    $('#groupPick').hidden = course.groups.length < 2; $('#groupWrap').hidden = course.groups.length < 2;
   } else { $('#groupPick').hidden = true; $('#groupWrap').hidden = true; }
 
   const c = course.census;

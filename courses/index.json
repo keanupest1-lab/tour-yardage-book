@@ -1,30 +1,6 @@
 {
  "courses": [
   {
-   "slug": "houghton-golf-club",
-   "query": "Houghton Golf Club",
-   "name": "Calumet Golf Club",
-   "place": "Calumet Golf Club, 54270, Golf Course Road, Calumet, Houghton County, Michigan, 49913, United States",
-   "bbox": [
-    47.2080258,
-    47.2137202,
-    -88.452354,
-    -88.4455984
-   ],
-   "fetched": "2026-10-12T14:08:21.861Z",
-   "census": {
-    "holeLines": 0,
-    "greens": 0,
-    "fairways": 0,
-    "tees": 0,
-    "bunkers": 0,
-    "water": 13,
-    "trees": 0,
-    "holesReady": 0,
-    "skipped": []
-   }
-  },
-  {
    "slug": "dainfern-golf-estate",
    "query": "Dainfern Golf Estate",
    "name": "Dainfern Golf Estate",

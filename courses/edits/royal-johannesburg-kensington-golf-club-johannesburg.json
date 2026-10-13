@@ -1,0 +1,13 @@
+{
+ "version": 1,
+ "slug": "royal-johannesburg-kensington-golf-club-johannesburg",
+ "name": "Royal Johannesburg & Kensington Golf Club",
+ "updated": null,
+ "holes": {},
+ "shapes": [],
+ "groups": {
+  "Other holes": "East Course",
+  "Blue Course": null,
+  "West Course": "West Course"
+ }
+}
