@@ -81,7 +81,11 @@ def map_course(line, model):
     if len(pars) != len(lens) or len(pars) not in (9, 18): raise ValueError("need 9 or 18 pars and lengths")
     club = tuple(map(float, parts[3].split(","))) if len(parts) > 3 and parts[3] else None
     if len(parts) > 4 and parts[4]:
-        s, w, n, e = map(float, parts[4].split(",")); meta = {"name": name, "place": name, "bbox": [s, n, w, e]}
+        s, w, n, e = map(float, parts[4].split(","))
+        old = {}
+        if os.path.exists("courses/index.json"):
+            old = next((c for c in json.load(open("courses/index.json"))["courses"] if c["slug"] == slugify(name)), {})
+        meta = {"name": name, "place": old.get("place", name), "bbox": [s, n, w, e]}
     else:
         meta = nominatim(name if "golf" in name.lower() else name + " golf")
         s, n, w, e = meta["bbox"]
@@ -148,6 +152,11 @@ def map_course(line, model):
     sc = 1800 / max(img.size)
     if sc < 1: img = img.resize((int(img.width * sc), int(img.height * sc)))
     img.save(f"courses/automap/{slug}.jpg", quality=78)
+    # the raw shape map + where it sits, so routing can be re-run and tuned without the slow steps
+    from PIL import Image
+    Image.fromarray(lab).save(f"courses/automap/{slug}_mask.png", optimize=True)
+    json.dump({"z": m.z, "tx0": m.tx0, "ty0": m.ty0, "width": m.img.width, "height": m.img.height, "card": card,
+               "clubhouse": club}, open(f"courses/automap/{slug}_mask.json", "w"))
     log(f"  saved {len(holes)} holes, {len(shapes)} shapes -> {edits_path}")
     return slug
 

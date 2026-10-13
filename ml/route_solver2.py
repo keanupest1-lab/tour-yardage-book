@@ -301,9 +301,25 @@ def refine(result, greens, fairway, cell, card, start=None, end=None, tee_mask=N
     return {**result, "cost": round(best_c, 1), "holes": holes, "unused_fairways": sorted(big - used), "start_cost": round(total(init), 1)}
 
 
+def _cross(p1, p2, q1, q2):
+    """do segments p1-p2 and q1-q2 properly intersect?"""
+    def o(a, b, c): return (b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0])
+    d1, d2, d3, d4 = o(q1, q2, p1), o(q1, q2, p2), o(p1, p2, q1), o(p1, p2, q2)
+    return (d1 * d2 < 0) and (d3 * d4 < 0)
+
+
+def _crossings(pts, others):
+    n = 0
+    for a, b in zip(pts[:-1], pts[1:]):
+        for o in others:
+            for c, d in zip(o[:-1], o[1:]):
+                if _cross(a, b, c, d): n += 1
+    return n
+
+
 def solve_dp(greens, fairway, cell, card, start=None, end=None, tee_mask=None, beam=6000, per_green=3,
              walk_free=50.0, walk_max=320.0, walk_weight=0.25, end_weight=0.4, unused_fairway_cost=25.0,
-             unused_min_area=4000.0, turn=None, fixed=None):
+             unused_min_area=4000.0, turn=None, fixed=None, cross_cost=45.0):
     """Beam search with dominance pruning: of two partial routings that end on the same green and have
     used the same greens and fairways, only the cheaper can lead to the best answer, so the other is dropped.
     This lets a much wider beam fit in the same time."""
@@ -314,11 +330,27 @@ def solve_dp(greens, fairway, cell, card, start=None, end=None, tee_mask=None, b
     for gi, g in enumerate(greens):
         for hi, (par, L) in enumerate(card):
             cand[(gi, hi)] = candidates_for(g, par, L, fws, fairway, cell, tees=tees)
+    memo = {}
+    def bbox(pts):
+        xs = [p[0] for p in pts]; ys = [p[1] for p in pts]
+        return min(xs), min(ys), max(xs), max(ys)
+    bb = {}
+    def xmemo(gi, hi, ci, g2, h2, c2):
+        k = (gi, hi, ci, g2, h2, c2)
+        v = memo.get(k)
+        if v is None:
+            a = cand[(gi, hi)][ci][0]; b = cand[(g2, h2)][c2][0]
+            ba = bb.get((gi, hi, ci)) or bb.setdefault((gi, hi, ci), bbox(a))
+            bo = bb.get((g2, h2, c2)) or bb.setdefault((g2, h2, c2), bbox(b))
+            v = 0 if (ba[2] < bo[0] or bo[2] < ba[0] or ba[3] < bo[1] or bo[3] < ba[1]) else _crossings(a, [b])
+            memo[k] = v
+        return v
     states = {(None, frozenset(), frozenset()): (0.0, ())}
     for hi, (par, L) in enumerate(card):
         nxt = {}
         for (last, ug, uf), (cost, holes) in states.items():
             prev = greens[last] if last is not None else start
+            played = [(g2, h2, c2) for h2, (g2, c2) in enumerate(holes)] if cross_cost else []
             for gi, g in enumerate(greens):
                 if gi in ug: continue
                 if fixed and hi in fixed and gi != fixed[hi]: continue
@@ -330,6 +362,8 @@ def solve_dp(greens, fairway, cell, card, start=None, end=None, tee_mask=None, b
                     if walk > walk_max: continue
                     opts.append((c0 + max(0.0, walk - walk_free) * walk_weight, ci, fid))
                 opts.sort()
+                if played:   # holes don't cross each other: charge for every crossing (checked on the best few only)
+                    opts = sorted((c + cross_cost * sum(xmemo(gi, hi, ci, *o) for o in played), ci, fid) for c, ci, fid in opts[:12])
                 extra = end_weight * max(0.0, math.dist(g, turn[hi]) - 80) if turn and hi in turn else 0.0
                 seen_f = set()
                 for c, ci, fid in opts:
