@@ -1,35 +1,35 @@
-probe 2026-10-13T18:03:41Z
+probe 2026-10-13T18:07:40Z
 == https://overpass-api.de/api/status
-http 200 in 4.638635s
-Connected as: 346645948
-Current time: 2026-10-13T18:03:42Z
-Announced endpoint: lambert.openstreetmap.de/
+http 200 in 0.702176s
+Connected as: 882981152
+Current time: 2026-10-13T18:07:41Z
+Announced endpoint: gall.openstreetmap.de/
 Rate limit: 4
 4 slots available now.
 Currently running queries (pid, space limit, time limit, start time):
 
 == https://overpass.private.coffee/api/status
-curl: (28) Operation timed out after 30002 milliseconds with 0 bytes received
-http 000 in 30.002065s
-Connected as: 346645948
-Current time: 2026-10-13T18:03:42Z
-Announced endpoint: lambert.openstreetmap.de/
+curl: (28) Operation timed out after 30001 milliseconds with 0 bytes received
+http 000 in 30.001585s
+Connected as: 882981152
+Current time: 2026-10-13T18:07:41Z
+Announced endpoint: gall.openstreetmap.de/
 Rate limit: 4
 4 slots available now.
 Currently running queries (pid, space limit, time limit, start time):
 
 == https://overpass.kumi.systems/api/status
 curl: (28) Operation timed out after 30002 milliseconds with 0 bytes received
-http 000 in 30.002500s
-Connected as: 346645948
-Current time: 2026-10-13T18:03:42Z
-Announced endpoint: lambert.openstreetmap.de/
+http 000 in 30.002217s
+Connected as: 882981152
+Current time: 2026-10-13T18:07:41Z
+Announced endpoint: gall.openstreetmap.de/
 Rate limit: 4
 4 slots available now.
 Currently running queries (pid, space limit, time limit, start time):
 
 == https://maps.mail.ru/osm/tools/overpass/api/status
-http 504 in 1.599952s
+http 504 in 1.164619s
 <html>
 <head><title>504 Gateway Time-out</title></head>
 <body>
@@ -39,5 +39,5 @@ http 504 in 1.599952s
 </html>
 
 == https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&q=Dainfern
-http 200 in 0.697714s
-[{"place_id":428869826,"licence":"Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright","osm_type":"relation","osm_id":21444399,"lat":"-25.9892121","lon":"27.9950716","category":"leisure","type":"golf_course","place_rank":30,"importance":0.14389741120638372,"addresstype":"leisure",
+http 200 in 0.505410s
+[{"place_id":429077419,"licence":"Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright","osm_type":"relation","osm_id":21444399,"lat":"-25.9892121","lon":"27.9950716","category":"leisure","type":"golf_course","place_rank":30,"importance":0.14389741120638372,"addresstype":"leisure",
