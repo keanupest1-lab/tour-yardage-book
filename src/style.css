@@ -212,6 +212,27 @@ button, select, input { font: inherit; color: inherit; }
 .sheet .about { margin: 12px 6px 0; font-size: 13px; line-height: 1.5; color: var(--muted); }
 .sheet .close { margin-top: 10px; }
 
+/* scorecard entry for automatic mapping */
+.sheet.wide { max-width: 720px; max-height: 92vh; overflow-y: auto; }
+.sheet .lead { margin: 0 6px 6px; font-size: 14.5px; }
+.sheet .lead b { color: var(--text); font-weight: 600; }
+.sheet-row.show { display: flex !important; }
+.card-grid { display: grid; grid-template-columns: 1fr; gap: 0 28px; padding: 4px 6px; }
+.card-col { display: grid; grid-template-columns: 34px 1fr 1fr; align-items: center; gap: 6px 10px; }
+.card-col .h { font-size: 12.5px; color: var(--faint); padding: 8px 0 2px; }
+.card-col .n { font-size: 22px; font-stretch: 62%; font-weight: 700; font-variant-numeric: tabular-nums; text-align: right; }
+.card-col select, .card-col input {
+  width: 100%; min-height: 42px; border-radius: var(--r-s); border: 1px solid var(--line-strong); background: var(--leather-deep);
+  color: var(--text); padding: 0 10px; font-size: 16px; font-variant-numeric: tabular-nums;
+}
+.card-col input:invalid, .card-col input.bad { border-color: var(--error); }
+.card-tot { grid-column: 1 / -1; display: flex; justify-content: space-between; padding: 8px 0 0; font-size: 14px; color: var(--muted); border-top: 1px solid var(--line); margin-top: 6px; }
+.card-tot b { color: var(--text); font-variant-numeric: tabular-nums; }
+.sheet .field { display: grid; gap: 6px; font-size: 14px; color: var(--muted); padding: 14px 6px 0; }
+.sheet .field input { min-height: 44px; border-radius: var(--r-s); border: 1px solid var(--line-strong); background: var(--leather-deep); color: var(--text); padding: 0 12px; font-size: 16px; }
+.row-actions { display: flex; justify-content: flex-end; gap: 10px; padding: 12px 6px 0; }
+@media (min-width: 560px) { .card-grid { grid-template-columns: 1fr 1fr; } }
+
 /* demo build */
 .samples { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
 .samples p { flex-basis: 100%; margin: 0; color: var(--muted); font-size: 14px; }

@@ -67,6 +67,19 @@ def chain_fairways(fws, max_gap=75.0, max_turn=40.0):
     return fws + out
 
 
+def virtual_greens(fws, greens, near=90.0, beyond=22.0):
+    """where a fairway ends with no green detected beyond it, guess one just past the end (the model missed it)"""
+    out = []
+    for f in fws:
+        L = f["line"]
+        for a, b in ((L[max(0, len(L) - 4)], L[-1]), (L[min(len(L) - 1, 3)], L[0])):
+            if any(math.dist(b, g) < near for g in greens): continue
+            d = math.dist(a, b) or 1.0
+            v = (b[0] + (b[0] - a[0]) / d * beyond, b[1] + (b[1] - a[1]) / d * beyond)
+            if all(math.dist(v, o) > 40 for o in out): out.append(v)
+    return out
+
+
 def _length(pts):
     return sum(math.dist(a, b) for a, b in zip(pts[:-1], pts[1:]))
 
@@ -342,7 +355,7 @@ def _crossings(pts, others):
 
 def solve_dp(greens, fairway, cell, card, start=None, end=None, tee_mask=None, beam=6000, per_green=3,
              walk_free=50.0, walk_max=320.0, walk_weight=0.25, end_weight=0.4, unused_fairway_cost=25.0,
-             unused_min_area=4000.0, turn=None, fixed=None, cross_cost=45.0):
+             unused_min_area=4000.0, turn=None, fixed=None, cross_cost=45.0, green_cost=None):
     """Beam search with dominance pruning: of two partial routings that end on the same green and have
     used the same greens and fairways, only the cheaper can lead to the best answer, so the other is dropped.
     This lets a much wider beam fit in the same time."""
@@ -388,6 +401,7 @@ def solve_dp(greens, fairway, cell, card, start=None, end=None, tee_mask=None, b
                 if played:   # holes don't cross each other: charge for every crossing (checked on the best few only)
                     opts = sorted((c + cross_cost * sum(xmemo(gi, hi, ci, *o) for o in played), ci, fid) for c, ci, fid in opts[:12])
                 extra = end_weight * max(0.0, math.dist(g, turn[hi]) - 80) if turn and hi in turn else 0.0
+                if green_cost: extra += green_cost[gi]
                 seen_f = set()
                 for c, ci, fid in opts:
                     if fid in seen_f: continue          # best option per fairway only

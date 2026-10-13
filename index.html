@@ -106,6 +106,9 @@
     <a id="editLink2" class="item" href="editor.html" hidden>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m13 7 4 4"/></svg>
       <span>Edit course<small>Trace or fix holes on the satellite map</small></span></a>
+    <button id="mapItem" class="item" type="button" hidden>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.2 5.3L20 9l-4.4 3.8L17 18.5 12 15.6 7 18.5l1.4-5.7L4 9l5.8-.7z"/></svg>
+      <span>Map with AI<small>Re-trace the whole course from satellite and the scorecard</small></span></button>
     <button id="printHole2" class="item" type="button">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M7 3h10v6H7zM5 9h14a2 2 0 0 1 2 2v6h-4v4H7v-4H3v-6a2 2 0 0 1 2-2z"/></svg>
       <span>Print this hole<small>Two pages, 4 × 7 inch book size</small></span></button>
@@ -115,6 +118,21 @@
     <p id="about" class="about"></p>
     <button id="sheetClose" type="button" class="btn close">Close</button>
   </div>
+</dialog>
+
+<dialog id="mapSheet" class="sheet wide" aria-labelledby="mapTitle">
+  <form id="mapForm" class="inner" novalidate>
+    <div class="grab"></div>
+    <h2 id="mapTitle">Map with AI</h2>
+    <p class="about lead">Enter the scorecard from the back tees. The AI traces <b id="mapName"></b> from satellite imagery and matches every hole to the card. It takes about ten minutes, then the course updates in your library.</p>
+    <div class="sheet-row show"><span>Lengths in</span><div class="seg" role="group" aria-label="Scorecard units">
+      <button type="button" data-mu="m" aria-pressed="true">Metres</button><button type="button" data-mu="yd" aria-pressed="false">Yards</button>
+    </div></div>
+    <div id="cardGrid" class="card-grid"></div>
+    <label class="field">Access key<input id="mapKey" type="password" autocomplete="off" placeholder="The key from your Vercel settings"></label>
+    <p id="mapMsg" class="status" role="status"></p>
+    <div class="row-actions"><button type="button" id="mapCancel" class="btn">Cancel</button><button type="submit" id="mapGo" class="btn foil">Start mapping</button></div>
+  </form>
 </dialog>
 
 <div id="print" class="print-only"></div>

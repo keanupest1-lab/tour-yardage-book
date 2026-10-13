@@ -129,10 +129,15 @@ function openCourse(json, name, meta = null, { push = true } = {}) {
   state.meta = meta;
   const course = buildCourse(parseOverpass(json));
   for (const id of ['#editLink', '#editLink2']) { $(id).hidden = !meta; if (meta) $(id).href = editorUrl(meta, name); }
+  $('#mapItem').hidden = !meta?.bbox;
   if (!course.holes.length) {
     const c = course.census;
     status(`${name} isn't mapped yet: the map has ${c.holeLines} hole lines, ${c.greens} greens and ${c.fairways} fairways.${meta ? ' Trace it in the editor to build the book.' : ''}`, 'warn');
-    if (meta) { listRows = []; $('#results').innerHTML = `<li class="row-cta"><a class="button primary" href="${editorUrl(meta, name)}">Trace ${escapeHtml(name)}</a></li>`; }
+    if (meta) {
+      listRows = [];
+      $('#results').innerHTML = `<li class="row-cta"><button type="button" id="ctaMap" class="btn foil">Map ${escapeHtml(name)} with AI</button> <a class="button" href="${editorUrl(meta, name)}">Trace it by hand</a></li>`;
+      $('#ctaMap').addEventListener('click', () => openMap({ name, bbox: meta.bbox, place: meta.place }));
+    }
     return;
   }
   status('');
@@ -224,6 +229,67 @@ function printBook(all) {
   if ($('#sheet').open) $('#sheet').close();
   window.print();
 }
+
+// ---------- map with AI: scorecard -> automatic mapping job ----------
+let mapTarget = null, mapUnits = 'm';
+function openMap(target) {
+  mapTarget = target;
+  if ($('#sheet').open) $('#sheet').close();
+  $('#mapName').textContent = target.name;
+  $('#mapKey').value = localGet('tyb-key') || '';
+  $('#mapMsg').textContent = ''; $('#mapMsg').className = 'status';
+  const known = (target.holes || []).length;
+  const holes = known === 9 || known === 18 ? target.holes : Array.from({ length: 18 }, () => ({ par: 4, len: null }));
+  const row = (h, i) => `<span class="n">${i + 1}</span>
+    <select data-p="${i}" aria-label="Hole ${i + 1} par">${[3, 4, 5].map((p) => `<option${p === h.par ? ' selected' : ''}>${p}</option>`).join('')}</select>
+    <input data-l="${i}" type="number" inputmode="numeric" min="60" max="770" aria-label="Hole ${i + 1} length" value="${h.len ? Math.round(mapUnits === 'yd' ? h.len * YD : h.len) : ''}">`;
+  const head = '<span class="h"></span><span class="h">Par</span><span class="h">Length</span>';
+  const halves = holes.length === 18 ? [holes.slice(0, 9), holes.slice(9)] : [holes];
+  $('#cardGrid').innerHTML = halves.map((hs, k) => `<div class="card-col">${head}${hs.map((h, j) => row(h, k * 9 + j)).join('')}</div>`).join('')
+    + '<div class="card-tot"><span>Par <b id="totPar"></b></span><span>Length <b id="totLen"></b></span></div>';
+  $('#cardGrid').oninput = cardTotals; cardTotals();
+  $('#mapSheet').showModal();
+}
+function cardValues() {
+  const pars = [...document.querySelectorAll('#cardGrid [data-p]')].map((e) => +e.value);
+  const lens = [...document.querySelectorAll('#cardGrid [data-l]')].map((e) => (e.value === '' ? NaN : +e.value));
+  return { pars, lens };
+}
+function cardTotals() {
+  const { pars, lens } = cardValues();
+  $('#totPar').textContent = pars.reduce((a, b) => a + b, 0);
+  const t = lens.filter(Number.isFinite).reduce((a, b) => a + b, 0);
+  $('#totLen').textContent = t ? `${Math.round(t)} ${mapUnits === 'yd' ? 'yd' : 'm'}` : '–';
+}
+document.querySelectorAll('[data-mu]').forEach((b) => b.addEventListener('click', () => {
+  const to = b.dataset.mu; if (to === mapUnits) return;
+  document.querySelectorAll('#cardGrid [data-l]').forEach((e) => { if (e.value !== '') e.value = Math.round(to === 'yd' ? +e.value * YD : +e.value / YD); });
+  mapUnits = to; document.querySelectorAll('[data-mu]').forEach((x) => x.setAttribute('aria-pressed', String(x.dataset.mu === to))); cardTotals();
+}));
+$('#mapCancel').addEventListener('click', () => $('#mapSheet').close());
+$('#mapForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const msg = (t, k = '') => { $('#mapMsg').textContent = t; $('#mapMsg').className = 'status ' + k; };
+  const { pars, lens } = cardValues();
+  const m = lens.map((l) => (mapUnits === 'yd' ? l / YD : l));
+  document.querySelectorAll('#cardGrid [data-l]').forEach((el, i) => el.classList.toggle('bad', !(m[i] >= 60 && m[i] <= 700)));
+  if (m.some((l) => !(l >= 60 && l <= 700))) return msg('Fill in every hole length (between 60 and 700 metres).', 'error');
+  const key = $('#mapKey').value.trim();
+  if (!key) return msg('Enter the access key first.', 'error');
+  localSet('tyb-key', key);
+  msg('Sending to the mapper…', 'busy'); $('#mapGo').disabled = true;
+  try {
+    const r = await fetch(`api/automap?key=${encodeURIComponent(key)}`, { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: mapTarget.name, pars, lengths: m.map((l) => Math.round(l)), bbox: mapTarget.bbox }) });
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(j.error || `The mapper answered ${r.status}`);
+    msg(`Queued. ${mapTarget.name} will be traced and routed in about ten minutes; open it from your library after that.`, 'ok');
+  } catch (err) { msg(err.message, 'error'); } finally { $('#mapGo').disabled = false; }
+});
+$('#mapItem').addEventListener('click', () => {
+  const holes = state.course ? visibleHoles().map((i) => state.course.holes[i]).map((h) => ({ par: h.par, len: h.tagDist || h.toCentre || h.lengthM })) : [];
+  openMap({ name: state.name, bbox: state.meta?.bbox, place: state.meta?.place, holes });
+});
 
 // ---------- wiring ----------
 $('#search').addEventListener('submit', onSearch);

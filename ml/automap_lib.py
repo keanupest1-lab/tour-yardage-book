@@ -150,7 +150,8 @@ def downsample(mask, K, thr):
     return mask[:H, :W].reshape(H // K, K, W // K, K).mean((1, 3)) > thr
 
 
-def route_from_mask(lab, mpp, card, start_px=None, end_px=None, turn_px=None, beam=6000, K=4, greens_px=None, log=print):
+def route_from_mask(lab, mpp, card, start_px=None, end_px=None, turn_px=None, beam=6000, K=4, greens_px=None, log=print,
+                    guess_greens=True, guess_cost=40.0):
     """returns routing in pixel coordinates: [{hole, par, length, points:[(x,y)...], green_px}] plus diagnostics"""
     import route_solver2 as RS
     if greens_px is None: greens_px = [(x, y) for x, y, _ in green_centres(lab, mpp)]
@@ -161,12 +162,18 @@ def route_from_mask(lab, mpp, card, start_px=None, end_px=None, turn_px=None, be
     greens = [(x * mpp, y * mpp) for x, y in greens_px]
     to_m = lambda p: (p[0] * mpp, p[1] * mpp) if p is not None else None
     turn = {k: to_m(v) for k, v in turn_px.items()} if turn_px else None
-    if len(greens) < len(card): log(f"  only {len(greens)} greens for {len(card)} holes")
-    res = RS.solve_dp(greens, small, cell, card, start=to_m(start_px), end=to_m(end_px), tee_mask=tees, turn=turn, beam=beam)
+    n_real = len(greens); gcost = [0.0] * n_real
+    if guess_greens:   # fairway ends with no green found: offer an estimated green there, at a price
+        guesses = RS.virtual_greens(RS.fairway_lines(small, cell), greens)
+        greens = greens + guesses; gcost += [guess_cost] * len(guesses)
+        greens_px = list(greens_px) + [(x / mpp, y / mpp) for x, y in guesses]
+    if n_real < len(card): log(f"  only {n_real} greens found for {len(card)} holes")
+    res = RS.solve_dp(greens, small, cell, card, start=to_m(start_px), end=to_m(end_px), tee_mask=tees, turn=turn, beam=beam, green_cost=gcost)
     if res is None: return None
     holes = []
     for k, h in enumerate(res["holes"]):
-        holes.append({"hole": k + 1, "par": card[k][0], "length": card[k][1], "green_px": greens_px[h["green"]],
+        holes.append({"hole": k + 1, "par": card[k][0], "length": card[k][1], "green_px": greens_px[h["green"]], "green_guessed": h["green"] >= n_real,
                       "points": [(x / mpp, y / mpp) for x, y in h["points"]], "fairway": h["fairway"], "walk": h["walk"]})
     return {"holes": holes, "cost": res["cost"], "runner_up_gap": res["runner_up_gap"],
-            "unused_fairways": res["unused_fairways"], "n_greens": len(greens), "n_fairways": len(res["fairways"])}
+            "unused_fairways": res["unused_fairways"], "n_greens": n_real, "n_guessed": len(greens) - n_real,
+            "n_fairways": len(res["fairways"])}
