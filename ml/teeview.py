@@ -96,7 +96,6 @@ def render(tex, H, mpp, cam, look, eye=1.8, W=1800, Hpx=640, hfov=56.0, maxd=700
     inside = (px >= 0) & (px < tw - 1) & (py >= 0) & (py < th - 1)
     pxc, pyc = np.clip(px, 0, tw - 1.001), np.clip(py, 0, th - 1.001)
     h = ndimage.map_coordinates(H, [pyc, pxc], order=1)
-    h = np.where(inside, h, ch - eye - 2)
     ys = horizon + f * (ch - h) / Z                       # screen row of each sample's top
     if ground is not None:   # where the ground is under each sample, for shading tree walls
         g0 = np.where(inside, ndimage.map_coordinates(ground, [pyc, pxc], order=1), h)
@@ -142,12 +141,15 @@ def render(tex, H, mpp, cam, look, eye=1.8, W=1800, Hpx=640, hfov=56.0, maxd=700
     img = Image.fromarray(np.clip(out, 0, 255).astype(np.uint8))
 
     def project(p, height=0.0):
-        """mosaic px (+ height above ground) -> screen (x, y, depth) or None"""
+        """mosaic px (+ height above ground) -> screen (x, y, depth, visible) or None"""
         d = np.array([p[0] - cam[0], p[1] - cam[1]]) * mpp
         z = d @ fwd; x = d @ right
         if z < 3: return None
         g = ndimage.map_coordinates(H, [[p[1]], [p[0]]], order=1)[0]
-        return W / 2 + f * x / z, horizon + f * (ch - g - height) / z, z
+        sx, sy = W / 2 + f * x / z, horizon + f * (ch - g - height) / z
+        c = int(np.clip(sx, 0, W - 1)); k = int(np.searchsorted(zs, z)) - 3
+        visible = k <= 0 or sy <= run[k, c] + 3          # nothing nearer rises above it
+        return sx, sy, z, bool(visible)
     return img, project
 
 
@@ -186,15 +188,16 @@ def overlays(img, project, line_px, mpp, bunkers_px, hole, par, length_m, units=
         p = project(along(line_px, dist / mpp))
         if p: marks.append((dist, colr, p))
     top = None
-    for i, (dist, colr, (x, y, z)) in enumerate(marks):
+    for i, (dist, colr, (x, y, z, vis)) in enumerate(marks):
         ty = y - 70 if top is None else min(y - 70, top - 34)
         top = ty
         side = -1 if i % 2 else 1
         lx = x + side * 26
         dashed(d, x, ty + 14, y, (255, 255, 255, 230), width=2, dash=7, gap=5)
         d.line([(x, ty + 14), (lx, ty + 14)], fill=(255, 255, 255, 230), width=2)
-        d.ellipse((x - 7, y - 7, x + 7, y + 7), fill=colr + (255,), outline=(255, 255, 255, 255), width=2)
-        lab = str(round(dist * k)); fz = font(22)
+        if vis: d.ellipse((x - 7, y - 7, x + 7, y + 7), fill=colr + (255,), outline=(255, 255, 255, 255), width=2)
+        else: d.ellipse((x - 7, y - 7, x + 7, y + 7), outline=colr + (255,), width=3)   # over the crest: blind
+        lab = str(round(dist * k)) + ("" if vis else " blind"); fz = font(22)
         tw = d.textlength(lab, font=fz); bx = lx if side > 0 else lx - tw - 14
         d.rounded_rectangle((bx, ty, bx + tw + 14, ty + 28), 6, fill=colr + (235,))
         d.text((bx + 7, ty + 2), lab, fill=(255, 255, 255), font=fz)
@@ -210,7 +213,7 @@ def overlays(img, project, line_px, mpp, bunkers_px, hole, par, length_m, units=
         c = (sum(q[0] for q in poly) / len(poly), sum(q[1] for q in poly) / len(poly))
         p = project(c)
         if not p: continue
-        x, y, z = p
+        x, y, z, vis = p
         dashed(d, x, y - 60, y - 6, (255, 255, 255, 210), width=2, dash=6, gap=5)
         lab = f"Trap carry {round(best[0] * k)}"; fz = font(19)
         tw = d.textlength(lab, font=fz)
