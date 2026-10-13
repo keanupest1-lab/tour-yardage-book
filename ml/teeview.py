@@ -184,7 +184,7 @@ def overlays(img, project, line_px, mpp, bunkers_px, hole, par, length_m, units=
     # carry marks on the line of play: a dot on the ground, a dashed post, the number stacked above
     boxes = []                       # drawn label boxes, so later labels can step around them
     def free(b):
-        return not any(b[0] < o[2] and o[0] < b[2] and b[1] < o[3] and o[1] < b[3] for o in boxes)
+        return not any(b[0] < o[2] + 6 and o[0] < b[2] + 6 and b[1] < o[3] + 6 and o[1] < b[3] + 6 for o in boxes)
     marks = []
     for dist, colr in RING.items():
         if dist > L - 20: continue

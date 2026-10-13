@@ -163,11 +163,12 @@ button, select, input { font: inherit; color: inherit; }
 @keyframes turn { from { opacity: .35; transform: translateX(var(--dir, 12px)); } to { opacity: 1; transform: none; } }
 
 /* the view from the tee, under the pages */
-.teeview { grid-column: 1 / -1; margin: 18px 0 0; position: relative; border-radius: 10px; overflow: hidden; background: var(--leather-deep);
+.teeview { grid-column: 1 / -1; order: 1; margin: 0; position: relative; border-radius: 10px; overflow: hidden; background: var(--leather-deep);
   box-shadow: 0 18px 40px rgba(0, 0, 0, .42), 0 2px 6px rgba(0, 0, 0, .3); }
-.teeview img { display: block; width: 100%; height: auto; }
+.teeview img { display: block; width: 100%; height: 300px; object-fit: cover; object-position: 50% 50%; }
+.spread .page:first-child { order: 0; } .spread .page:nth-child(2) { order: 2; }
 .teeview .tv-seg { position: absolute; top: 10px; left: 10px; background: rgba(10, 31, 23, .72); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
-.teeview .tv-seg button { height: 32px; font-size: 13px; }
+.teeview .tv-seg button { height: 30px; font-size: 12.5px; min-width: 0; padding: 0 10px; }
 .teeview figcaption { padding: 8px 12px; font-size: 12.5px; color: var(--muted); background: var(--leather-deep); }
 
 /* thumb index: the hole tabs along the edge of the book */
@@ -251,7 +252,7 @@ button, select, input { font: inherit; color: inherit; }
   .topbar #more { display: none; }
   .sheet-row { display: none; }
   .stage {
-    --pageh: max(560px, calc(100vh - 186px));
+    --pageh: max(520px, min(calc(100vh - 186px), calc((100vw - 420px) * 0.875)));
     max-width: none; padding: 26px 28px 0; display: grid; grid-template-columns: minmax(220px, 300px) auto; justify-content: center; gap: 44px; align-items: start;
   }
   .side { position: sticky; top: 172px; }
@@ -261,6 +262,8 @@ button, select, input { font: inherit; color: inherit; }
   .holehead .steps { margin-left: 0; flex-basis: 100%; margin-top: 8px; }
   .notes li { font-size: 13.5px; }
   .spread { grid-template-columns: repeat(2, calc(var(--pageh) * 4 / 7)); gap: 0; }
+  .spread .teeview { order: 3; margin-top: 18px; }
+  .teeview img { height: auto; object-fit: initial; }
   .spread .page:first-child { border-radius: 10px 2px 2px 10px; }
   .spread .page:last-child { border-radius: 2px 10px 10px 2px; }
   .spread .page:first-child::after, .spread .page:last-child::before { /* the gutter where the pages meet */
