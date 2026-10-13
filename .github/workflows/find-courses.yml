@@ -1,0 +1,20 @@
+name: Find courses in an area
+on:
+  push:
+    paths: ['courses/find-requests.txt']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  find:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - run: pip install numpy scipy pillow
+      - run: python3 scripts/find_courses.py
+      - name: Save
+        run: |
+          git config --global user.name "course-bot"; git config --global user.email "course-bot@users.noreply.github.com"
+          git add courses/found; git diff --cached --quiet && exit 0
+          git commit -m "Courses found"; for i in 1 2 3; do git pull --rebase origin main && git push origin HEAD:main && break; sleep 5; done
