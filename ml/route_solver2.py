@@ -44,6 +44,29 @@ def fairway_lines(fairway, cell, min_area=1500.0, step=12.0):
     return out
 
 
+def chain_fairways(fws, max_gap=75.0, max_turn=40.0):
+    """a fairway split by a stream, dam or trees shows up as two pieces in line: offer each such pair as one fairway"""
+    def heading(a, b): return math.atan2(b[1] - a[1], b[0] - a[0])
+    out = []
+    for f in fws: f.setdefault("ids", frozenset([f["id"]]))
+    for i, f in enumerate(fws):
+        for g in fws[i + 1:]:
+            best = None
+            for L1 in (f["line"], f["line"][::-1]):
+                for L2 in (g["line"], g["line"][::-1]):
+                    gap = math.dist(L1[-1], L2[0])
+                    if gap > max_gap: continue
+                    h1 = heading(L1[max(0, len(L1) - 4)], L1[-1]); h2 = heading(L2[0], L2[min(len(L2) - 1, 3)])
+                    hj = heading(L1[-1], L2[0]) if gap > 5 else h1
+                    turn = max(abs((h1 - h2 + math.pi) % (2 * math.pi) - math.pi), abs((h1 - hj + math.pi) % (2 * math.pi) - math.pi))
+                    if math.degrees(turn) > max_turn: continue
+                    if best is None or gap < best[0]: best = (gap, L1 + L2)
+            if best:
+                out.append({"id": f"{f['id']}+{g['id']}", "ids": frozenset([f["id"], g["id"]]), "line": best[1],
+                            "area": f["area"] + g["area"], "length": f["length"] + g["length"] + best[0], "width": (f["width"] + g["width"]) / 2})
+    return fws + out
+
+
 def _length(pts):
     return sum(math.dist(a, b) for a, b in zip(pts[:-1], pts[1:]))
 
@@ -139,7 +162,7 @@ def candidates_for(green, par, length, fairways, fw_mask, cell, near_green=95.0,
                     if ext > hi: cost += (ext - hi) * 0.4
                 pts = _simplify(path[::-1])
                 pts, dc = _snap_tee(pts, length, tees)
-                out.append((pts, f["id"], cost + dc))
+                out.append((pts, f.get("ids", frozenset([f["id"]])), cost + dc))
     # straight-line fallback (always for par 3, heavily penalised for par 4/5)
     for k in range(36):
         a = 2 * math.pi * k / 36
@@ -323,9 +346,9 @@ def solve_dp(greens, fairway, cell, card, start=None, end=None, tee_mask=None, b
     """Beam search with dominance pruning: of two partial routings that end on the same green and have
     used the same greens and fairways, only the cheaper can lead to the best answer, so the other is dropped.
     This lets a much wider beam fit in the same time."""
-    fws = fairway_lines(fairway, cell)
+    fws = chain_fairways(fairway_lines(fairway, cell))
     tees = tee_points(tee_mask, cell) if tee_mask is not None else []
-    big = frozenset(f["id"] for f in fws if f["area"] >= unused_min_area)
+    big = frozenset(f["id"] for f in fws if f["area"] >= unused_min_area and len(f["ids"]) == 1)
     cand = {}
     for gi, g in enumerate(greens):
         for hi, (par, L) in enumerate(card):
@@ -357,7 +380,7 @@ def solve_dp(greens, fairway, cell, card, start=None, end=None, tee_mask=None, b
                 if prev is not None and math.dist(prev, g) > L + walk_max + 40: continue
                 opts = []
                 for ci, (pts, fid, c0) in enumerate(cand[(gi, hi)]):
-                    if fid is not None and fid in uf: continue
+                    if fid is not None and not fid.isdisjoint(uf): continue
                     walk = math.dist(prev, pts[0]) if prev is not None else 0.0
                     if walk > walk_max: continue
                     opts.append((c0 + max(0.0, walk - walk_free) * walk_weight, ci, fid))
@@ -369,7 +392,7 @@ def solve_dp(greens, fairway, cell, card, start=None, end=None, tee_mask=None, b
                 for c, ci, fid in opts:
                     if fid in seen_f: continue          # best option per fairway only
                     seen_f.add(fid)
-                    key = (gi, ug | {gi}, uf | ({fid} if fid is not None else frozenset()))
+                    key = (gi, ug | {gi}, uf | (fid if fid is not None else frozenset()))
                     nc = cost + c + extra
                     if key not in nxt or nc < nxt[key][0]:
                         nxt[key] = (nc, holes + ((gi, ci),))
@@ -387,7 +410,7 @@ def solve_dp(greens, fairway, cell, card, start=None, end=None, tee_mask=None, b
     holes = []; prev = start
     for hi, (gi, ci) in enumerate(v[1]):
         pts, fid, c0 = cand[(gi, hi)][ci]
-        holes.append({"green": gi, "points": pts, "fairway": fid, "walk": round(math.dist(prev, pts[0])) if prev is not None else 0})
+        holes.append({"green": gi, "points": pts, "fairway": None if fid is None else "+".join(map(str, sorted(fid))), "walk": round(math.dist(prev, pts[0])) if prev is not None else 0})
         prev = greens[gi]
     return {"cost": round(final(k, v), 1), "holes": holes, "fairways": fws, "tees": tees,
             "unused_fairways": sorted(big - k[2]),
