@@ -16,9 +16,9 @@ import math
 import numpy as np
 from scipy import ndimage
 
-# tunable weights (eval_local.py can override them with RS_PARAMS)
-FALLBACK_BASE = 70.0    # a par 4/5 that follows no detected fairway starts at this cost
-FALLBACK_SLOPE = 60.0   # ...plus this times the share of its line that is off fairway
+# tunable weights (eval_local.py can override them with RS_PARAMS); tuned on 14 unseen courses, Oct 2026
+FALLBACK_BASE = 30.0    # a par 4/5 that follows no detected fairway starts at this cost
+FALLBACK_SLOPE = 70.0   # ...plus this times the share of its line that is off fairway
 
 
 def fairway_lines(fairway, cell, min_area=1500.0, step=12.0):

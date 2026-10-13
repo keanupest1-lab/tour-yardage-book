@@ -151,7 +151,7 @@ def downsample(mask, K, thr):
 
 
 def route_from_mask(lab, mpp, card, start_px=None, end_px=None, turn_px=None, beam=6000, K=4, greens_px=None, log=print,
-                    guess_greens=True, guess_cost=40.0):
+                    guess_greens="fallback", guess_cost=40.0):
     """returns routing in pixel coordinates: [{hole, par, length, points:[(x,y)...], green_px}] plus diagnostics"""
     import route_solver2 as RS
     if greens_px is None: greens_px = [(x, y) for x, y, _ in green_centres(lab, mpp)]
@@ -163,6 +163,12 @@ def route_from_mask(lab, mpp, card, start_px=None, end_px=None, turn_px=None, be
     to_m = lambda p: (p[0] * mpp, p[1] * mpp) if p is not None else None
     turn = {k: to_m(v) for k, v in turn_px.items()} if turn_px else None
     n_real = len(greens); gcost = [0.0] * n_real
+    if guess_greens == "fallback":
+        # first try with the greens the model found; only if no routing fits, estimate the missing ones
+        res = route_from_mask(lab, mpp, card, start_px, end_px, turn_px, beam, K, greens_px, log, guess_greens=False)
+        if res is not None: return res
+        log("  no routing with the detected greens: estimating missing greens at fairway ends")
+        guess_greens = True
     if guess_greens:   # fairway ends with no green found: offer an estimated green there, at a price
         guesses = RS.virtual_greens(RS.fairway_lines(small, cell), greens)
         greens = greens + guesses; gcost += [guess_cost] * len(guesses)
