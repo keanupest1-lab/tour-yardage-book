@@ -25,6 +25,7 @@ export function editsToElements(edits) {
     if (h.dist) tags.dist = String(h.dist);
     if (h.name) tags.name = String(h.name);
     if (h.si) tags.handicap = String(h.si);
+    if (h.source === 'verified') tags.verified = 'yes';
     els.push({ type: 'way', id: id--, tags, geometry: h.line.map(([lat, lon]) => ({ lat, lon })) });
   }
   for (const s of edits.shapes || []) {

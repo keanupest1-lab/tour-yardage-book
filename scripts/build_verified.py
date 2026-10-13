@@ -72,6 +72,18 @@ def crowns(img, mpp, keep, not_tree, rmax=7.5):
     return out
 
 
+def tee_like(poly, mpp, starts):
+    """tee boxes are compact mown pads; the model also marks odd patches of short grass as tee"""
+    import cv2
+    a = np.array(poly, np.float32)
+    area = cv2.contourArea(a) * mpp * mpp
+    (_, _), (w, h), _ = cv2.minAreaRect(a)
+    rect = cv2.contourArea(a) / max(w * h, 1e-6)
+    c = a.mean(0)
+    near_start = min(math.dist(c, s) for s in starts) * mpp < 45
+    return area <= (1500 if near_start else 700) and (rect >= 0.55 or near_start)
+
+
 def main(slug):
     spec = json.load(open(f"courses/verified/{slug}.json"))
     meta = json.load(open(spec["imagery"]))[spec["level"]]
@@ -95,6 +107,7 @@ def main(slug):
         back = h.get("yellow_yd") or h.get("white_yd")
         holes[str(h["hole"])] = {"par": h["par"], "si": h.get("si"), "dist": round(back * YD) if back else None,
                                  "line": [list(m.px2ll(x, y)) for x, y in P], "source": "verified"}
+    starts = [tuple(h["px"][0]) for h in spec["holes"]]
     shapes = []; n = 0
     for kind, cls, min_m2 in (("fairway", 1, 250), ("green", 2, 120), ("tee", 3, 20), ("bunker", 4, 12), ("water", 5, 40)):
         # smooth each class before tracing: the model's pixel steps become clean, book-like outlines
@@ -103,6 +116,7 @@ def main(slug):
         for p in polygons(cl, cls, mpp, min_m2, eps=0.7):
             c = (sum(q[0] for q in p) / len(p), sum(q[1] for q in p) / len(p))
             if not keep[int(min(H - 1, max(0, c[1]))), int(min(W - 1, max(0, c[0])))]: continue
+            if kind == "tee" and not tee_like(p, mpp, starts): continue
             shapes.append({"id": f"v{kind}{n}", "kind": kind, "coords": [list(m.px2ll(x, y)) for x, y in p], "source": "model"}); n += 1
     not_tree = ndimage.binary_dilation(np.isin(lab, [1, 2, 3, 4, 5]), iterations=int(2 / mpp))
     trees = [[*m.px2ll(x, y), round(float(r), 1)] for x, y, r in crowns(img, mpp, keep, not_tree)]

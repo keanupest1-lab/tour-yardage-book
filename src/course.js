@@ -120,7 +120,9 @@ function buildHole(h, L) {
   // at clubs with several courses, only use tee boxes inside the same course as the hole
   const home = L.boundary.filter((b) => b.tags.name && G.pointInPoly(START0, b.geom)).sort((a, b) => G.polyArea(a.geom) - G.polyArea(b.geom))[0];
   let teeBox = null, bestScore = Infinity;
-  for (const t of L.tee) {
+  // hole lines checked by hand on imagery already start on the back tee: keep them exactly
+  const verified = h.tags.verified === 'yes';
+  for (const t of verified ? [] : L.tee) {
     const c = G.centroid(t.geom);
     if (home && !G.pointInPoly(c, home.geom)) continue;
     const v = G.sub(c, CL[0]);
@@ -133,7 +135,7 @@ function buildHole(h, L) {
     const score = isFinite(tagLen) ? Math.abs(len - tagLen) : along + (along > 0 ? 200 : 0);
     if (score < bestScore) { bestScore = score; teeBox = t; }
   }
-  let teeFound = !!teeBox || L.tee.some((t) => G.ptPolyDist(CL[0], t.geom) < 6);
+  let teeFound = verified || !!teeBox || L.tee.some((t) => G.ptPolyDist(CL[0], t.geom) < 6);
   if (teeBox) {
     const c = G.centroid(teeBox.geom);
     CL[0] = c;
@@ -173,7 +175,7 @@ function buildHole(h, L) {
     ref: h.tags.ref || '?', par, si: h.tags.handicap || h.tags.stroke_index || '', name: h.tags.name || '',
     lengthM, tagDist: isFinite(tagDist) ? tagDist : null,
     CL, TEE, START0, GC, GF, GB, U, V, green, tees, fairways, bunkers, water, trees, woods,
-    warnings: [],
+    warnings: [], src: h, verified,
   };
   if (h.tags.note) hole.warnings.push(h.tags.note);
   hole.teeFound = teeFound;
@@ -191,6 +193,8 @@ export function measure(H) {
   const F = (p) => G.dist(p, GF);           // to front of green
   H.B = B; H.F = F;
   H.toFront = B(GF); H.toCentre = B(GC); H.toBack = B(H.GB);
+  // along the line of play (what a dogleg measures)
+  H.playCentre = G.lineLength(CL); H.playFront = H.playCentre - G.dist(GC, GF); H.playBack = H.playCentre + G.dist(GC, H.GB);
   H.onLine = (r) => G.radialHit(TEE, r, CL, false);       // point on line of play r from tee
   H.fromFront = (r) => G.radialHit(GF, r, CL, true);      // point on line of play r short of the front
 

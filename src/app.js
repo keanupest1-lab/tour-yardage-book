@@ -2,6 +2,7 @@ import { searchCourses, loadCourseData, parseOverpass } from './osm.js';
 import { buildCourse } from './course.js';
 import { greenPage, holePage } from './render.js';
 import { mergeEdits, slugify, hasEdits } from './edits.js';
+import { loadTerrain } from './terrain.js';
 
 const $ = (s) => document.querySelector(s);
 const state = { course: null, name: '', group: null, hole: 0, units: localGet('units') || 'm', library: [], meta: null, pushed: false };
@@ -172,6 +173,8 @@ function openCourse(json, name, meta = null, { push = true } = {}) {
   $('#place').textContent = shortPlace(meta?.place, name);
   document.title = `${name} · Tour Yardage Books`;
   renderTabs(); renderHole();
+  // contours and uphill/downhill numbers, when the course has terrain heights saved
+  if (meta?.slug) loadTerrain(meta.slug, course.proj).then((t) => { if (t && state.course === course) { course.terrain = t; renderHole(); } });
   $('#home').hidden = true; $('#viewer').hidden = false; window.scrollTo(0, 0);
   if (push && meta?.slug && !qs.get('fixture')) {
     history.pushState({ course: meta.slug }, '', `?course=${encodeURIComponent(meta.slug)}`); state.pushed = true;

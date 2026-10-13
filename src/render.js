@@ -3,13 +3,14 @@
 //   green page (upper)  -> notes grid + magnified green at 1:480 with 5-unit grid and depth axis
 //   hole page  (lower)  -> tee-to-green map, carry rings, centre markers, margin numbers, hazards, run-outs
 import * as G from './geo.js';
+import { contourPaths } from './terrain.js';
 
 export const PAGE_W = 1016, PAGE_H = 1778;
 const FONT = "font-family=\"'Inter','Helvetica Neue',Arial,sans-serif\"";
 const C = {
   ink: '#151515', grey: '#7a7f85', grid: '#d6dadd', blue: '#2a7fd4', gold: '#b8922c', red: '#d23b2f',
   fwLine: '#3f8f52', fwFill: '#f3f8f0', green: '#ffffff', sandF: '#efe3c8', sandL: '#b9995f',
-  water: '#ddedf9', waterL: '#4a90d0', canopy: '#f2f5ef', canopyL: '#6d7a64', rough: '#ffffff',
+  water: '#ddedf9', waterL: '#4a90d0', canopy: '#f2f5ef', canopyL: '#6d7a64', rough: '#ffffff', contour: '#b39a74',
 };
 const RING_COLS = ['#2a7fd4', '#5fae4c', '#d23b2f', '#e0ad22', '#8f5cbf'];
 
@@ -182,6 +183,20 @@ export function holePage(H, course, opts = {}) {
   for (const b of vis(course.layers.bunker)) o.push(path(b.geom.map(tf), `fill="${C.sandF}" stroke="${C.sandL}" stroke-width="2"`));
   if (H.green.estimated) o.push(path(H.green.geom.map(tf), `fill="#fff" stroke="${C.ink}" stroke-width="2.4" stroke-dasharray="7 5"`));
 
+  // terrain contours (1 m, every 5th heavier) from the course's elevation model
+  if (course.terrain) {
+    const inv = (x, y) => {
+      const r0 = (x - W / 2) / s + midX, r1 = bb.y1 - (y - TOP - 30) / s;
+      return G.add(H.TEE, [r0 * Math.cos(phi) + r1 * Math.sin(phi), -r0 * Math.sin(phi) + r1 * Math.cos(phi)]);
+    };
+    const st = 12, Z = [];
+    for (let y = TOP; y <= BOT + st; y += st) { const row = []; for (let x = 0; x <= W + st; x += st) row.push(course.terrain.at(inv(x, y))); Z.push(row); }
+    for (const { level, d } of contourPaths(Z, 0, TOP, st, 1)) {
+      const major = Math.round(level) % 5 === 0;
+      o.push(`<path d="${d}" fill="none" stroke="${C.contour}" stroke-width="${major ? 1.9 : 1.1}" opacity="${major ? 0.85 : 0.6}" stroke-linecap="round"/>`);
+    }
+  }
+
   // carry rings from the back tee (par 4/5)
   const rings = H.par >= 4 ? (U.k > 1 ? [225, 250, 275, 300, 325] : [200, 225, 250, 275, 300]) : [];
   const ringData = [];
@@ -299,17 +314,52 @@ export function holePage(H, course, opts = {}) {
   o.push(`<rect x="0" y="${y0}" width="${W}" height="${BAR}" fill="#fff"/><line x1="0" y1="${y0 + 2}" x2="${W}" y2="${y0 + 2}" stroke="${C.ink}" stroke-width="4"/>`);
   const rows = [];
   for (const r of ros) rows.push([`RUN OUT ${r.letter}`, `${r.out}`, r.letter === 'A' ? `carry to fairway ${r.carry}` : '']);
-  rows.push(['TO GREEN', `F ${n(H.toFront)}  C ${n(H.toCentre)}  B ${n(H.toBack)}`, '']);
+  // to the green along the line of play (doglegs), straight line otherwise
+  const dog = H.playCentre - H.toCentre > 10;
+  rows.push(['TO GREEN', dog ? `F ${n(H.playFront)}  C ${n(H.playCentre)}  B ${n(H.playBack)}` : `F ${n(H.toFront)}  C ${n(H.toCentre)}  B ${n(H.toBack)}`,
+    dog ? `dogleg · straight ${n(H.toCentre)}` : '']);
+  // elevation: green against back tee, and what that does to the hole
+  const el = course.terrain ? [course.terrain.at(H.TEE), course.terrain.at(H.GC)] : null;
+  if (el && el[0] != null && el[1] != null) {
+    const dz = el[1] - el[0], base = H.tagDist || (dog ? H.playCentre : H.toCentre);
+    const word = Math.abs(dz) < 1 ? 'level with tee' : `${Math.abs(dz).toFixed(0)} m ${dz > 0 ? 'above' : 'below'} tee`;
+    rows.push(['GREEN', Math.abs(dz) >= 1 ? `${word} · plays ${n(base + dz)}` : word, '']);
+  }
+  const X1 = 196, X2 = 352, X3 = 640;
   rows.forEach((row, i) => {
-    const yy = y0 + 42 + i * 36;
-    o.push(txt(22, yy, row[0], 18, C.blue, 'start', 700, false));
-    o.push(txt(250, yy, row[1], 28, C.ink, 'start', 600, false));
-    if (row[2]) o.push(txt(560, yy, row[2], 18, C.grey, 'start', 600, false));
+    const yy = y0 + 40 + i * 34;
+    o.push(txt(X1, yy, row[0], 17, C.blue, 'start', 700, false));
+    o.push(txt(X2, yy, row[1], 26, C.ink, 'start', 600, false));
+    if (row[2]) o.push(txt(X3, yy, row[2], 17, C.grey, 'start', 600, false));
   });
+  o.push(inset(H, course, 14, y0 + 14, 166, BAR - 40));
   o.push(`<circle cx="${W - 92}" cy="${y0 + 92}" r="62" fill="${C.gold}"/>` + txt(W - 92, y0 + 112, H.ref, 56, '#fff', 'middle', 700, false));
   o.push(txt(W - 172, y0 + 172, `Par ${H.par}${H.si ? ' · SI ' + H.si : ''} · ${n(H.tagDist || H.toCentre)} ${U.label}`, 20, C.ink, 'end', 600, false));
   o.push(txt(22, Hh - 10, 'Black = to front of green · Blue = from back tee · © OpenStreetMap contributors', 15, C.grey, 'start', 500, false));
   return svgDoc(o, W, Hh);
+}
+
+// small north-up plan of the hole within the course (bottom-left of the hole page)
+function inset(H, course, x, y, w, h) {
+  const own = [...H.CL, ...H.green.geom, ...H.fairways.flatMap((f) => f.geom)];
+  const bb = G.bbox(own);
+  const pad = 30, cx = (bb.x0 + bb.x1) / 2, cy = (bb.y0 + bb.y1) / 2;
+  const k = Math.min((w - 12) / (bb.x1 - bb.x0 + 2 * pad), (h - 12) / (bb.y1 - bb.y0 + 2 * pad));
+  const tf = (p) => [x + w / 2 + (p[0] - cx) * k, y + h / 2 - (p[1] - cy) * k];
+  const near = (geom) => geom.some((p) => Math.abs(p[0] - cx) * k < w && Math.abs(p[1] - cy) * k < h);
+  const id = `in${String(H.ref).replace(/\W/g, '')}`;
+  const o = [`<clipPath id="${id}"><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="6"/></clipPath>`,
+    `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="6" fill="#f6f8f4" stroke="#9aa0a5" stroke-width="1.5"/>`, `<g clip-path="url(#${id})">`];
+  for (const wv of course.layers.water.filter((q) => near(q.geom))) o.push(poly(wv.geom.map(tf), `fill="${C.water}" stroke="${C.waterL}" stroke-width="1"`));
+  for (const f of course.layers.fairway.filter((q) => near(q.geom))) o.push(poly(f.geom.map(tf), `fill="${H.fairways.includes(f) ? '#cfe6c6' : '#e7efe3'}" stroke="none"`));
+  for (const g of course.layers.green.filter((q) => near(q.geom))) o.push(poly(g.geom.map(tf), `fill="${g === H.green ? '#fff' : '#f2f2f2'}" stroke="${g === H.green ? C.ink : '#aaa'}" stroke-width="${g === H.green ? 1.4 : 0.8}"`));
+  for (const b of course.layers.bunker.filter((q) => near(q.geom))) o.push(poly(b.geom.map(tf), `fill="${C.sandF}" stroke="none"`));
+  for (const hh of course.layers.hole) if (hh !== H.src && near(hh.geom || [])) o.push(`<polyline points="${pts((hh.geom || []).map(tf))}" fill="none" stroke="#b8bcc0" stroke-width="1"/>`);
+  o.push(`<polyline points="${pts(H.CL.map(tf))}" fill="none" stroke="${C.red}" stroke-width="2.2" stroke-linejoin="round"/>`);
+  const [tx, ty] = tf(H.TEE); o.push(`<circle cx="${f1(tx)}" cy="${f1(ty)}" r="4" fill="#e0ad22" stroke="#8a6a10" stroke-width="1"/>`);
+  o.push('</g>');
+  o.push(`<path d="M${x + w - 14},${y + 22} l5,-12 l5,12 l-5,-3 z" fill="${C.ink}"/>` + txt(x + w - 9, y + 34, 'N', 11, C.ink, 'middle', 700, false));
+  return o.join('');
 }
 
 function svgDoc(parts, w, h) {
