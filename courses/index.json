@@ -90,6 +90,30 @@
    }
   },
   {
+   "slug": "krugersdorp-golf-club",
+   "query": "Krugersdorp Golf Club",
+   "name": "Krugersdorp Golf Club",
+   "place": "Krugersdorp Golf Club",
+   "bbox": [
+    -26.0884,
+    -26.0759,
+    27.7789,
+    27.7917
+   ],
+   "fetched": "2026-10-13T18:15:24.088Z",
+   "census": {
+    "holeLines": 0,
+    "greens": 0,
+    "fairways": 0,
+    "tees": 0,
+    "bunkers": 0,
+    "water": 4,
+    "trees": 0,
+    "holesReady": 0,
+    "skipped": []
+   }
+  },
+  {
    "slug": "old-course-st-andrews",
    "query": "Old Course St Andrews",
    "name": "Old Course",
