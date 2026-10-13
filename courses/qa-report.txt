@@ -1,24 +1,24 @@
-== bryanston-country-club / Bryanston Country Club: 17/18 holes start on a tee box and end on a mapped green
-   14: no tee box
-== dainfern-golf-estate / Dainfern Golf Estate: 11/18 holes start on a tee box and end on a mapped green
-   2: no tee box | 4: no tee box | 5: no tee box | 8: green estimated | 11: no tee box | 12: no tee box | 15: no tee box
+== dainfern-golf-estate / Dainfern Golf Estate: 8/18 holes start on a tee box and end on a mapped green
+   2: no tee box | 3: no tee box | 4: no tee box | 5: no tee box | 6: no tee box | 8: green estimated | 11: no tee box | 12: no tee box | 15: no tee box | 16: no tee box
 == glendower-golf-club / Glendower Golf Club: 14/18 holes start on a tee box and end on a mapped green
    3: no tee box | 8: no tee box | 10: no tee box | 11: no tee box
-== irene-country-club / Irene Country Club: 13/18 holes start on a tee box and end on a mapped green
-   1: no tee box | 6: no tee box | 7: no tee box | 9: no tee box | 17: no tee box
+== irene-country-club / Irene Country Club: 9/18 holes start on a tee box and end on a mapped green
+   1: no tee box | 3: no tee box | 4: no tee box | 5: no tee box | 6: no tee box | 7: no tee box | 8: no tee box | 9: no tee box | 17: no tee box
 == old-course-st-andrews / New Course: 16/18 holes start on a tee box and end on a mapped green
    3: green shared with 15 | 15: green shared with 3
 == old-course-st-andrews / Jubilee Course: 11/17 holes start on a tee box and end on a mapped green
    4: green shared with 14 | 8: green estimated | 10: no tee box | 11: green estimated | 12: no tee box | 14: green shared with 4
 == old-course-st-andrews / Eden Course: 10/13 holes start on a tee box and end on a mapped green
    6: green estimated | 7: no tee box | 10: no tee box
-== old-course-st-andrews / Strathtyrum Course: 5/13 holes start on a tee box and end on a mapped green
-   1: no tee box, green shared with 17 | 2: no tee box | 6: green estimated | 11: green estimated | 15: no tee box | 17: green shared with 1 | 18: no tee box | 18: no tee box
+== old-course-st-andrews / Strathtyrum Course: 4/13 holes start on a tee box and end on a mapped green
+   1: no tee box, green shared with 17 | 2: no tee box | 6: green estimated | 7: no tee box | 11: no tee box, green estimated | 15: no tee box | 17: green shared with 1 | 18: no tee box | 18: no tee box
 == old-course-st-andrews / Balgove Course: 7/9 holes start on a tee box and end on a mapped green
    2: green shared with 8 | 8: green shared with 2
 == old-course-st-andrews / Old Course: 4/18 holes start on a tee box and end on a mapped green
    2: green shared with 16 | 3: green shared with 15 | 4: green shared with 14 | 5: green shared with 13 | 6: green shared with 12 | 7: green shared with 11 | 8: green shared with 10 | 10: green shared with 8 | 11: green shared with 7 | 12: green shared with 6 | 13: green shared with 5 | 14: green shared with 4 | 15: green shared with 3 | 16: green shared with 2
 == pretoria-country-club / Pretoria Country Club: 0/0 holes start on a tee box and end on a mapped green
-== royal-johannesburg-kensington-golf-club-johannesburg / West Course: 11/18 holes start on a tee box and end on a mapped green
-   3: no tee box | 4: no tee box | 7: no tee box | 12: no tee box | 16: no tee box | 17: no tee box | 18: no tee box
+== royal-johannesburg-kensington-golf-club-johannesburg / West Course: 9/18 holes start on a tee box and end on a mapped green
+   3: no tee box | 4: no tee box | 5: no tee box | 7: no tee box | 8: no tee box | 12: no tee box | 16: no tee box | 17: no tee box | 18: no tee box
 == royal-johannesburg-kensington-golf-club-johannesburg / East Course: 18/18 holes start on a tee box and end on a mapped green
+== bryanston-country-club / Bryanston Country Club: 16/18 holes start on a tee box and end on a mapped green
+   3: no tee box | 14: no tee box

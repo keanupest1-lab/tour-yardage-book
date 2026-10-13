@@ -1,150 +1,4 @@
 {
- "bryanston-country-club": [
-  {
-   "group": "Bryanston Country Club",
-   "ref": "1",
-   "teeFound": true,
-   "greenEstimated": false,
-   "shared": [],
-   "length": 488
-  },
-  {
-   "group": "Bryanston Country Club",
-   "ref": "2",
-   "teeFound": true,
-   "greenEstimated": false,
-   "shared": [],
-   "length": 476
-  },
-  {
-   "group": "Bryanston Country Club",
-   "ref": "3",
-   "teeFound": true,
-   "greenEstimated": false,
-   "shared": [],
-   "length": 337
-  },
-  {
-   "group": "Bryanston Country Club",
-   "ref": "4",
-   "teeFound": true,
-   "greenEstimated": false,
-   "shared": [],
-   "length": 164
-  },
-  {
-   "group": "Bryanston Country Club",
-   "ref": "5",
-   "teeFound": true,
-   "greenEstimated": false,
-   "shared": [],
-   "length": 354
-  },
-  {
-   "group": "Bryanston Country Club",
-   "ref": "6",
-   "teeFound": true,
-   "greenEstimated": false,
-   "shared": [],
-   "length": 391
-  },
-  {
-   "group": "Bryanston Country Club",
-   "ref": "7",
-   "teeFound": true,
-   "greenEstimated": false,
-   "shared": [],
-   "length": 421
-  },
-  {
-   "group": "Bryanston Country Club",
-   "ref": "8",
-   "teeFound": true,
-   "greenEstimated": false,
-   "shared": [],
-   "length": 411
-  },
-  {
-   "group": "Bryanston Country Club",
-   "ref": "9",
-   "teeFound": true,
-   "greenEstimated": false,
-   "shared": [],
-   "length": 149
-  },
-  {
-   "group": "Bryanston Country Club",
-   "ref": "10",
-   "teeFound": true,
-   "greenEstimated": false,
-   "shared": [],
-   "length": 516
-  },
-  {
-   "group": "Bryanston Country Club",
-   "ref": "11",
-   "teeFound": true,
-   "greenEstimated": false,
-   "shared": [],
-   "length": 184
-  },
-  {
-   "group": "Bryanston Country Club",
-   "ref": "12",
-   "teeFound": true,
-   "greenEstimated": false,
-   "shared": [],
-   "length": 407
-  },
-  {
-   "group": "Bryanston Country Club",
-   "ref": "13",
-   "teeFound": true,
-   "greenEstimated": false,
-   "shared": [],
-   "length": 314
-  },
-  {
-   "group": "Bryanston Country Club",
-   "ref": "14",
-   "teeFound": false,
-   "greenEstimated": false,
-   "shared": [],
-   "length": 159
-  },
-  {
-   "group": "Bryanston Country Club",
-   "ref": "15",
-   "teeFound": true,
-   "greenEstimated": false,
-   "shared": [],
-   "length": 509
-  },
-  {
-   "group": "Bryanston Country Club",
-   "ref": "16",
-   "teeFound": true,
-   "greenEstimated": false,
-   "shared": [],
-   "length": 370
-  },
-  {
-   "group": "Bryanston Country Club",
-   "ref": "17",
-   "teeFound": true,
-   "greenEstimated": false,
-   "shared": [],
-   "length": 454
-  },
-  {
-   "group": "Bryanston Country Club",
-   "ref": "18",
-   "teeFound": true,
-   "greenEstimated": false,
-   "shared": [],
-   "length": 440
-  }
- ],
  "dainfern-golf-estate": [
   {
    "group": "Dainfern Golf Estate",
@@ -152,7 +6,7 @@
    "teeFound": true,
    "greenEstimated": false,
    "shared": [],
-   "length": 525
+   "length": 376
   },
   {
    "group": "Dainfern Golf Estate",
@@ -165,10 +19,10 @@
   {
    "group": "Dainfern Golf Estate",
    "ref": "3",
-   "teeFound": true,
+   "teeFound": false,
    "greenEstimated": false,
    "shared": [],
-   "length": 350
+   "length": 396
   },
   {
    "group": "Dainfern Golf Estate",
@@ -189,10 +43,10 @@
   {
    "group": "Dainfern Golf Estate",
    "ref": "6",
-   "teeFound": true,
+   "teeFound": false,
    "greenEstimated": false,
    "shared": [],
-   "length": 255
+   "length": 165
   },
   {
    "group": "Dainfern Golf Estate",
@@ -200,7 +54,7 @@
    "teeFound": true,
    "greenEstimated": false,
    "shared": [],
-   "length": 551
+   "length": 431
   },
   {
    "group": "Dainfern Golf Estate",
@@ -269,10 +123,10 @@
   {
    "group": "Dainfern Golf Estate",
    "ref": "16",
-   "teeFound": true,
+   "teeFound": false,
    "greenEstimated": false,
    "shared": [],
-   "length": 125
+   "length": 180
   },
   {
    "group": "Dainfern Golf Estate",
@@ -362,7 +216,7 @@
    "teeFound": true,
    "greenEstimated": false,
    "shared": [],
-   "length": 463
+   "length": 355
   },
   {
    "group": "Glendower Golf Club",
@@ -418,7 +272,7 @@
    "teeFound": true,
    "greenEstimated": false,
    "shared": [],
-   "length": 472
+   "length": 431
   },
   {
    "group": "Glendower Golf Club",
@@ -457,26 +311,26 @@
   {
    "group": "Irene Country Club",
    "ref": "3",
-   "teeFound": true,
+   "teeFound": false,
    "greenEstimated": false,
    "shared": [],
-   "length": 584
+   "length": 468
   },
   {
    "group": "Irene Country Club",
    "ref": "4",
-   "teeFound": true,
+   "teeFound": false,
    "greenEstimated": false,
    "shared": [],
-   "length": 336
+   "length": 207
   },
   {
    "group": "Irene Country Club",
    "ref": "5",
-   "teeFound": true,
+   "teeFound": false,
    "greenEstimated": false,
    "shared": [],
-   "length": 346
+   "length": 415
   },
   {
    "group": "Irene Country Club",
@@ -497,10 +351,10 @@
   {
    "group": "Irene Country Club",
    "ref": "8",
-   "teeFound": true,
+   "teeFound": false,
    "greenEstimated": false,
    "shared": [],
-   "length": 235
+   "length": 303
   },
   {
    "group": "Irene Country Club",
@@ -640,7 +494,7 @@
    "teeFound": true,
    "greenEstimated": false,
    "shared": [],
-   "length": 489
+   "length": 345
   },
   {
    "group": "New Course",
@@ -688,7 +542,7 @@
    "teeFound": true,
    "greenEstimated": false,
    "shared": [],
-   "length": 233
+   "length": 218
   },
   {
    "group": "New Course",
@@ -714,7 +568,7 @@
    "teeFound": true,
    "greenEstimated": false,
    "shared": [],
-   "length": 528
+   "length": 371
   },
   {
    "group": "New Course",
@@ -722,7 +576,7 @@
    "teeFound": true,
    "greenEstimated": false,
    "shared": [],
-   "length": 245
+   "length": 202
   },
   {
    "group": "New Course",
@@ -846,7 +700,7 @@
    "teeFound": true,
    "greenEstimated": false,
    "shared": [],
-   "length": 447
+   "length": 297
   },
   {
    "group": "Jubilee Course",
@@ -854,7 +708,7 @@
    "teeFound": true,
    "greenEstimated": false,
    "shared": [],
-   "length": 472
+   "length": 377
   },
   {
    "group": "Jubilee Course",
@@ -862,7 +716,7 @@
    "teeFound": true,
    "greenEstimated": false,
    "shared": [],
-   "length": 294
+   "length": 231
   },
   {
    "group": "Jubilee Course",
@@ -870,7 +724,7 @@
    "teeFound": true,
    "greenEstimated": false,
    "shared": [],
-   "length": 544
+   "length": 388
   },
   {
    "group": "Eden Course",
@@ -966,7 +820,7 @@
    "teeFound": true,
    "greenEstimated": false,
    "shared": [],
-   "length": 407
+   "length": 381
   },
   {
    "group": "Eden Course",
@@ -1000,15 +854,15 @@
    "teeFound": true,
    "greenEstimated": true,
    "shared": [],
-   "length": 121
+   "length": 119
   },
   {
    "group": "Strathtyrum Course",
    "ref": "7",
-   "teeFound": true,
+   "teeFound": false,
    "greenEstimated": false,
    "shared": [],
-   "length": 279
+   "length": 320
   },
   {
    "group": "Strathtyrum Course",
@@ -1024,7 +878,7 @@
    "teeFound": true,
    "greenEstimated": false,
    "shared": [],
-   "length": 340
+   "length": 312
   },
   {
    "group": "Strathtyrum Course",
@@ -1037,10 +891,10 @@
   {
    "group": "Strathtyrum Course",
    "ref": "11",
-   "teeFound": true,
+   "teeFound": false,
    "greenEstimated": true,
    "shared": [],
-   "length": 420
+   "length": 484
   },
   {
    "group": "Strathtyrum Course",
@@ -1108,7 +962,7 @@
    "teeFound": true,
    "greenEstimated": false,
    "shared": [],
-   "length": 214
+   "length": 89
   },
   {
    "group": "Balgove Course",
@@ -1116,7 +970,7 @@
    "teeFound": true,
    "greenEstimated": false,
    "shared": [],
-   "length": 280
+   "length": 173
   },
   {
    "group": "Balgove Course",
@@ -1124,7 +978,7 @@
    "teeFound": true,
    "greenEstimated": false,
    "shared": [],
-   "length": 264
+   "length": 141
   },
   {
    "group": "Balgove Course",
@@ -1370,10 +1224,10 @@
   {
    "group": "West Course",
    "ref": "5",
-   "teeFound": true,
+   "teeFound": false,
    "greenEstimated": false,
    "shared": [],
-   "length": 549
+   "length": 431
   },
   {
    "group": "West Course",
@@ -1394,10 +1248,10 @@
   {
    "group": "West Course",
    "ref": "8",
-   "teeFound": true,
+   "teeFound": false,
    "greenEstimated": false,
    "shared": [],
-   "length": 487
+   "length": 344
   },
   {
    "group": "West Course",
@@ -1525,7 +1379,7 @@
    "teeFound": true,
    "greenEstimated": false,
    "shared": [],
-   "length": 673
+   "length": 525
   },
   {
    "group": "East Course",
@@ -1613,7 +1467,7 @@
    "teeFound": true,
    "greenEstimated": false,
    "shared": [],
-   "length": 478
+   "length": 347
   },
   {
    "group": "East Course",
@@ -1621,7 +1475,153 @@
    "teeFound": true,
    "greenEstimated": false,
    "shared": [],
-   "length": 647
+   "length": 500
+  }
+ ],
+ "bryanston-country-club": [
+  {
+   "group": "Bryanston Country Club",
+   "ref": "1",
+   "teeFound": true,
+   "greenEstimated": false,
+   "shared": [],
+   "length": 488
+  },
+  {
+   "group": "Bryanston Country Club",
+   "ref": "2",
+   "teeFound": true,
+   "greenEstimated": false,
+   "shared": [],
+   "length": 476
+  },
+  {
+   "group": "Bryanston Country Club",
+   "ref": "3",
+   "teeFound": false,
+   "greenEstimated": false,
+   "shared": [],
+   "length": 402
+  },
+  {
+   "group": "Bryanston Country Club",
+   "ref": "4",
+   "teeFound": true,
+   "greenEstimated": false,
+   "shared": [],
+   "length": 164
+  },
+  {
+   "group": "Bryanston Country Club",
+   "ref": "5",
+   "teeFound": true,
+   "greenEstimated": false,
+   "shared": [],
+   "length": 354
+  },
+  {
+   "group": "Bryanston Country Club",
+   "ref": "6",
+   "teeFound": true,
+   "greenEstimated": false,
+   "shared": [],
+   "length": 391
+  },
+  {
+   "group": "Bryanston Country Club",
+   "ref": "7",
+   "teeFound": true,
+   "greenEstimated": false,
+   "shared": [],
+   "length": 421
+  },
+  {
+   "group": "Bryanston Country Club",
+   "ref": "8",
+   "teeFound": true,
+   "greenEstimated": false,
+   "shared": [],
+   "length": 411
+  },
+  {
+   "group": "Bryanston Country Club",
+   "ref": "9",
+   "teeFound": true,
+   "greenEstimated": false,
+   "shared": [],
+   "length": 135
+  },
+  {
+   "group": "Bryanston Country Club",
+   "ref": "10",
+   "teeFound": true,
+   "greenEstimated": false,
+   "shared": [],
+   "length": 516
+  },
+  {
+   "group": "Bryanston Country Club",
+   "ref": "11",
+   "teeFound": true,
+   "greenEstimated": false,
+   "shared": [],
+   "length": 184
+  },
+  {
+   "group": "Bryanston Country Club",
+   "ref": "12",
+   "teeFound": true,
+   "greenEstimated": false,
+   "shared": [],
+   "length": 407
+  },
+  {
+   "group": "Bryanston Country Club",
+   "ref": "13",
+   "teeFound": true,
+   "greenEstimated": false,
+   "shared": [],
+   "length": 314
+  },
+  {
+   "group": "Bryanston Country Club",
+   "ref": "14",
+   "teeFound": false,
+   "greenEstimated": false,
+   "shared": [],
+   "length": 159
+  },
+  {
+   "group": "Bryanston Country Club",
+   "ref": "15",
+   "teeFound": true,
+   "greenEstimated": false,
+   "shared": [],
+   "length": 509
+  },
+  {
+   "group": "Bryanston Country Club",
+   "ref": "16",
+   "teeFound": true,
+   "greenEstimated": false,
+   "shared": [],
+   "length": 370
+  },
+  {
+   "group": "Bryanston Country Club",
+   "ref": "17",
+   "teeFound": true,
+   "greenEstimated": false,
+   "shared": [],
+   "length": 454
+  },
+  {
+   "group": "Bryanston Country Club",
+   "ref": "18",
+   "teeFound": true,
+   "greenEstimated": false,
+   "shared": [],
+   "length": 440
   }
  ]
 }
