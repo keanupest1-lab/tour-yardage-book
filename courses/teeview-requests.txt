@@ -1,0 +1,2 @@
+# slug | hole [| eye height in metres]
+bryanston-country-club | 1

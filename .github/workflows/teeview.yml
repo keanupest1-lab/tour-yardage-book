@@ -1,0 +1,32 @@
+name: Render tee views
+on:
+  push:
+    paths: ['courses/teeview-requests.txt', 'ml/teeview.py']
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: teeview
+  cancel-in-progress: false
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install numpy scipy pillow
+      - name: Render
+        env:
+          PYTHONUNBUFFERED: '1'
+        run: python3 ml/teeview.py 2>&1 | tee courses/teeview-last-run.log
+      - name: Save
+        if: always()
+        run: |
+          git config --global user.name "course-bot"; git config --global user.email "course-bot@users.noreply.github.com"
+          git add courses/teeview courses/teeview-last-run.log
+          git diff --cached --quiet && exit 0
+          git commit -m "Tee views"
+          for i in 1 2 3; do git pull --rebase origin main && git push origin HEAD:main && break; sleep 5; done
