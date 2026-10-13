@@ -22,6 +22,7 @@ export function editsToElements(edits) {
     if (h.par) tags.par = String(h.par);
     if (h.note) tags.note = String(h.note);
     if (h.dist) tags.dist = String(h.dist);
+    if (h.name) tags.name = String(h.name);
     els.push({ type: 'way', id: id--, tags, geometry: h.line.map(([lat, lon]) => ({ lat, lon })) });
   }
   for (const s of edits.shapes || []) {
@@ -42,7 +43,8 @@ export function mergeEdits(base, edits) {
     .map((e) => {
       // par-only edits on OpenStreetMap holes (copy, never mutate the snapshot)
       const h = e.tags?.golf === 'hole' ? edits.holes?.[String(e.tags.ref)] : null;
-      return h && h.par ? { ...e, tags: { ...e.tags, par: String(h.par) } } : e;
+      if (!h || (!h.par && !h.name)) return e;
+      return { ...e, tags: { ...e.tags, ...(h.par ? { par: String(h.par) } : {}), ...(h.name ? { name: String(h.name) } : {}) } };
     });
   return { ...base, elements: [...kept, ...editsToElements(edits)] };
 }

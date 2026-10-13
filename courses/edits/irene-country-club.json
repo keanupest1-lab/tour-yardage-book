@@ -28,7 +28,8 @@
      28.2226592
     ]
    ],
-   "dist": 522
+   "dist": 522,
+   "name": "Stone Walls"
   },
   "11": {
    "par": 4,
@@ -42,7 +43,8 @@
      28.2193494
     ]
    ],
-   "dist": 401
+   "dist": 401,
+   "name": "Nellmapius"
   },
   "12": {
    "par": 4,
@@ -60,7 +62,8 @@
      28.2159269
     ]
    ],
-   "dist": 392
+   "dist": 392,
+   "name": "High Cloud"
   },
   "13": {
    "par": 3,
@@ -74,7 +77,8 @@
      28.2171875
     ]
    ],
-   "dist": 171
+   "dist": 171,
+   "name": "Paddocks"
   },
   "14": {
    "par": 4,
@@ -96,7 +100,8 @@
      28.2136899
     ]
    ],
-   "dist": 437
+   "dist": 437,
+   "name": "Wan Der Byl"
   },
   "15": {
    "par": 4,
@@ -115,7 +120,8 @@
     ]
    ],
    "dist": 313,
-   "note": "Routing inferred from satellite imagery and the scorecard. Confirm against the club course map."
+   "note": "Routing inferred from satellite imagery and the scorecard. Confirm against the club course map.",
+   "name": "Fairways"
   },
   "16": {
    "par": 3,
@@ -130,7 +136,8 @@
     ]
    ],
    "dist": 133,
-   "note": "Routing inferred from satellite imagery and the scorecard. Confirm against the club course map."
+   "note": "Routing inferred from satellite imagery and the scorecard. Confirm against the club course map.",
+   "name": "Island"
   },
   "17": {
    "par": 5,
@@ -161,7 +168,8 @@
     ]
    ],
    "dist": 507,
-   "note": "Routing inferred from satellite imagery and the scorecard. Confirm against the club course map."
+   "note": "Routing inferred from satellite imagery and the scorecard. Confirm against the club course map.",
+   "name": "Oaks"
   },
   "18": {
    "par": 4,
@@ -180,7 +188,8 @@
     ]
    ],
    "dist": 318,
-   "note": "Routing inferred from satellite imagery and the scorecard. Confirm against the club course map."
+   "note": "Routing inferred from satellite imagery and the scorecard. Confirm against the club course map.",
+   "name": "Avenue"
   },
   "1": {
    "par": 4,
@@ -211,7 +220,8 @@
      28.221676912209745
     ]
    ],
-   "note": "Routed automatically: shapes found by the AI model in satellite imagery, holes matched to the scorecard. Check against the club course map."
+   "note": "Routed automatically: shapes found by the AI model in satellite imagery, holes matched to the scorecard. Check against the club course map.",
+   "name": "The First"
   },
   "2": {
    "par": 5,
@@ -234,7 +244,8 @@
      28.220819952622264
     ]
    ],
-   "note": "Routed automatically: shapes found by the AI model in satellite imagery, holes matched to the scorecard. Check against the club course map."
+   "note": "Routed automatically: shapes found by the AI model in satellite imagery, holes matched to the scorecard. Check against the club course map.",
+   "name": "Riverside"
   },
   "3": {
    "par": 4,
@@ -257,7 +268,8 @@
      28.214480460195205
     ]
    ],
-   "note": "Routed automatically: shapes found by the AI model in satellite imagery, holes matched to the scorecard. Check against the club course map."
+   "note": "Routed automatically: shapes found by the AI model in satellite imagery, holes matched to the scorecard. Check against the club course map.",
+   "name": "Hollow"
   },
   "4": {
    "par": 3,
@@ -272,7 +284,8 @@
      28.215368639824817
     ]
    ],
-   "note": "Routed automatically: shapes found by the AI model in satellite imagery, holes matched to the scorecard. Check against the club course map."
+   "note": "Routed automatically: shapes found by the AI model in satellite imagery, holes matched to the scorecard. Check against the club course map.",
+   "name": "Long Shot"
   },
   "5": {
    "par": 4,
@@ -295,7 +308,8 @@
      28.218482102766558
     ]
    ],
-   "note": "Routed automatically: shapes found by the AI model in satellite imagery, holes matched to the scorecard. Check against the club course map."
+   "note": "Routed automatically: shapes found by the AI model in satellite imagery, holes matched to the scorecard. Check against the club course map.",
+   "name": "Hostel"
   },
   "6": {
    "par": 4,
@@ -322,7 +336,8 @@
      28.218927357242194
     ]
    ],
-   "note": "Routed automatically: shapes found by the AI model in satellite imagery, holes matched to the scorecard. Check against the club course map."
+   "note": "Routed automatically: shapes found by the AI model in satellite imagery, holes matched to the scorecard. Check against the club course map.",
+   "name": "Poplars"
   },
   "7": {
    "par": 3,
@@ -337,7 +352,8 @@
      28.220596826308707
     ]
    ],
-   "note": "Routed automatically: shapes found by the AI model in satellite imagery, holes matched to the scorecard. Check against the club course map."
+   "note": "Routed automatically: shapes found by the AI model in satellite imagery, holes matched to the scorecard. Check against the club course map.",
+   "name": "Pulpit"
   },
   "8": {
    "par": 4,
@@ -352,7 +368,8 @@
      28.22186300785245
     ]
    ],
-   "note": "Routed automatically: shapes found by the AI model in satellite imagery, holes matched to the scorecard. Check against the club course map."
+   "note": "Routed automatically: shapes found by the AI model in satellite imagery, holes matched to the scorecard. Check against the club course map.",
+   "name": "Gobbler"
   },
   "9": {
    "par": 5,
@@ -375,7 +392,8 @@
      28.22333137120208
     ]
    ],
-   "note": "Routed automatically: shapes found by the AI model in satellite imagery, holes matched to the scorecard. Check against the club course map."
+   "note": "Routed automatically: shapes found by the AI model in satellite imagery, holes matched to the scorecard. Check against the club course map.",
+   "name": "Gauntlet"
   }
  },
  "shapes": [

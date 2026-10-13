@@ -3,37 +3,120 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0f2a20">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Tour Yardage Books</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Sans:wght@400;600&display=swap">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230f2a20'/%3E%3Ctext x='32' y='44' text-anchor='middle' font-family='Arial' font-weight='800' font-size='30' fill='%23d2ae62'%3ETYB%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&display=swap">
 <link rel="stylesheet" href="src/style.css">
 </head>
 <body>
-<div class="wrap">
-  <header class="brand"><b>Tour Yardage Books</b><span>Tour-style yardage and green pages for any mapped course</span></header>
-  <form id="search" class="search">
-    <input id="q" type="search" placeholder="Course name, e.g. Irene Country Club" autocomplete="off" aria-label="Course name">
-    <button type="submit">Find course</button>
-  </form>
-  <p id="status" class="status" role="status"></p>
-  <ul id="results" class="results"></ul>
 
-  <main id="viewer" class="wrap" style="padding:0" hidden>
-    <div class="bar">
-      <h1 id="title"></h1>
-      <div class="controls">
-        <select id="groupPick" aria-label="Course" hidden></select>
-        <select id="units" aria-label="Units"><option value="m">Metres</option><option value="yd">Yards</option></select>
-        <a id="editLink" class="button" href="editor.html" hidden>Edit course</a>
-        <button id="printHole" type="button">Print hole</button>
-        <button id="printAll" type="button" class="primary">Print book</button>
+<div id="home" class="home">
+  <section class="cover">
+    <svg class="emboss" viewBox="0 0 440 700" aria-hidden="true">
+      <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <g class="deb">
+          <path d="M214 640c-30-40-40-96-32-160 7-58 6-112-8-170-12-52-6-102 30-140 30-32 76-48 120-44"/>
+          <path d="M268 640c-22-46-24-104-14-166 9-55 12-108 2-160-8-44 0-82 30-110 22-20 52-30 80-30"/>
+          <path d="M309 92c10-26 40-40 66-30 24 9 34 36 22 60-12 24-44 34-68 22-18-9-26-30-20-52z"/>
+          <path d="M302 92c12-34 50-52 84-38 30 12 42 48 26 78-15 30-56 42-86 26-24-12-34-40-24-66z"/>
+          <path d="M268 160c14 6 22 20 16 30-6 9-22 8-30-2-7-9 2-30 14-28z"/>
+          <path d="M392 150c6 10 2 22-8 24-9 2-16-8-12-18 3-7 14-12 20-6z"/>
+          <path d="M150 360c16-6 30 4 30 16s-16 20-28 14c-12-5-14-25-2-30z"/>
+          <path d="M226 668h44v-22h-44z"/>
+          <path d="M40 470a210 210 0 0 1 330-80" stroke-dasharray="2 9"/>
+          <path d="M30 420a250 250 0 0 1 350-90" stroke-dasharray="2 9"/>
+          <path d="M24 370a290 290 0 0 1 360-96" stroke-dasharray="2 9"/>
+          <path d="M248 657C232 560 228 470 236 380s4-170 40-224 60-60 72-58" stroke-dasharray="1 7"/>
+        </g>
+      </g>
+    </svg>
+    <h1 class="wordmark" aria-label="Tour Yardage Books"><span>Tour</span><span>Yardage</span><span>Books</span></h1>
+    <p class="lede">Tour-grade yardage and green books for your course, drawn from satellite and map data.</p>
+    <form id="search" class="search" role="search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="q" type="search" placeholder="Search for a course" autocomplete="off" enterkeyhint="search" aria-label="Course name">
+      <button type="submit" class="btn foil">Search</button>
+    </form>
+    <p id="status" class="status" role="status" aria-live="polite"></p>
+  </section>
+
+  <section class="shelf" aria-labelledby="shelfTitle">
+    <h2 id="shelfTitle">Your library</h2>
+    <p id="shelfSub" class="sub">Courses that are saved and open instantly.</p>
+    <ul id="results" class="results"></ul>
+  </section>
+
+  <p class="foot">Course data © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a>. Distances are measured from mapped shapes. Check them on site before competition use.</p>
+</div>
+
+<main id="viewer" class="viewer" hidden>
+  <header class="topbar">
+    <button id="back" class="icon-btn" type="button" aria-label="Back to library">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg>
+    </button>
+    <div class="titles"><h1 id="title"></h1><p id="place" class="place"></p></div>
+    <div class="actions">
+      <div class="seg" role="group" aria-label="Units">
+        <button type="button" data-units="m" aria-pressed="true">m</button><button type="button" data-units="yd" aria-pressed="false">yd</button>
+      </div>
+      <select id="groupPick" class="btn" aria-label="Course" hidden></select>
+      <a id="editLink" class="button" href="editor.html" hidden>Edit course</a>
+      <button id="printHole" type="button" class="btn">Print hole</button>
+      <button id="printAll" type="button" class="btn foil">Print book</button>
+    </div>
+    <button id="more" class="icon-btn" type="button" aria-label="More options" aria-haspopup="dialog">
+      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>
+    </button>
+  </header>
+
+  <nav class="index" aria-label="Holes"><div id="tabs" class="tabs"></div></nav>
+
+  <div class="stage">
+    <aside class="side">
+    <div class="holehead">
+      <div id="bigNum" class="big" aria-hidden="true"></div>
+      <div>
+        <p id="holeName" class="hname"></p>
+        <dl><div><dt>Par</dt><dd id="par"></dd></div><div><dt id="lenLbl">Length</dt><dd id="len"></dd></div></dl>
+      </div>
+      <div class="steps">
+        <button id="prev" class="icon-btn" type="button" aria-label="Previous hole"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg></button>
+        <button id="next" class="icon-btn" type="button" aria-label="Next hole"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></button>
       </div>
     </div>
-    <nav class="tabs-wrap"><button id="prev" type="button" aria-label="Previous hole">&lsaquo;</button><div id="tabs" class="tabs"></div><button id="next" type="button" aria-label="Next hole">&rsaquo;</button></nav>
-    <ul id="warnings" class="warnings"></ul>
-    <section id="pages" class="pages"></section>
-    <p class="foot">Course data © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a>. Distances are computed from mapped shapes. Check them on site before competition use.</p>
-  </main>
-</div>
+    <ul id="warnings" class="notes"></ul>
+    </aside>
+    <section id="pages" class="spread" aria-live="polite"></section>
+  </div>
+</main>
+
+<dialog id="sheet" class="sheet" aria-labelledby="sheetTitle">
+  <div class="inner">
+    <div class="grab"></div>
+    <h2 id="sheetTitle">Course options</h2>
+    <div class="sheet-row"><span>Distances in</span><div class="seg" role="group" aria-label="Units">
+      <button type="button" data-units="m" aria-pressed="true">Metres</button><button type="button" data-units="yd" aria-pressed="false">Yards</button>
+    </div></div>
+    <label id="groupWrap" hidden>Course at this club<select id="groupPick2"></select></label>
+    <a id="editLink2" class="item" href="editor.html" hidden>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m13 7 4 4"/></svg>
+      <span>Edit course<small>Trace or fix holes on the satellite map</small></span></a>
+    <button id="printHole2" class="item" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M7 3h10v6H7zM5 9h14a2 2 0 0 1 2 2v6h-4v4H7v-4H3v-6a2 2 0 0 1 2-2z"/></svg>
+      <span>Print this hole<small>Two pages, 4 × 7 inch book size</small></span></button>
+    <button id="printAll2" class="item" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M5 17a3 3 0 0 1 3-3h11"/></svg>
+      <span>Print the whole book<small>Every hole, green and hole pages</small></span></button>
+    <p id="about" class="about"></p>
+    <button id="sheetClose" type="button" class="btn close">Close</button>
+  </div>
+</dialog>
+
 <div id="print" class="print-only"></div>
 <script type="module" src="src/app.js"></script>
 </body>
