@@ -47,6 +47,30 @@ export function buildCourse(features) {
     try { holes.push(buildHole(h, L)); } catch (e) { skipped.push({ ref: h.tags.ref || '?', reason: e.message }); }
   }
   holes.sort((a, b) => (parseInt(a.ref) || 99) - (parseInt(b.ref) || 99));
+  // each fairway, bunker and tee box belongs to one hole only: the one whose line of play it is closest to.
+  // Pages then show their own hole and nothing from the holes next door.
+  if (holes.length > 1) {
+    const near = (geom, h) => { const st = Math.max(1, Math.floor(geom.length / 16)); let d = Infinity; for (let i = 0; i < geom.length; i += st) d = Math.min(d, G.ptLineDist(geom[i], h.CL)); return d; };
+    const mine = (f, h) => { const d = near(f.geom, h); return holes.every((o) => o === h || near(f.geom, o) >= d - 0.5); };
+    for (const h of holes) {
+      h.fairways = h.fairways.filter((f) => mine(f, h));
+      h.bunkers = h.bunkers.filter((b) => mine(b, h) || G.polyDist(b.geom, h.green.geom) < 6);
+      // a tee box goes to the hole it starts: close to that hole's line and early on it (a box another hole
+      // plays over belongs to the hole that tees off from it); forward tees sit at least 60% of the way back
+      const teeScore = (t, o) => { const c = G.centroid(t.geom), pr = G.projectOnLine(o.CL, c); return pr.d + 0.3 * pr.s; };
+      h.tees = h.tees.filter((t) => G.ptPolyDist(h.TEE, t.geom) < 3
+        || (holes.every((o) => o === h || teeScore(t, o) >= teeScore(t, h))
+          && G.polyArea(t.geom) >= 35 && G.ptLineDist(G.centroid(t.geom), h.CL) <= 15
+          && h.playCentre - G.projectOnLine(h.CL, G.centroid(t.geom)).s >= 0.75 * h.playCentre));
+      // at most the back tee and three forward tees, the ones nearest the line of play
+      if (h.tees.length > 4) {
+        const back = h.tees.filter((t) => G.ptPolyDist(h.TEE, t.geom) < 3);
+        const fwd = h.tees.filter((t) => !back.includes(t)).sort((a, b) => G.ptLineDist(G.centroid(a.geom), h.CL) - G.ptLineDist(G.centroid(b.geom), h.CL));
+        h.tees = [...back, ...fwd].slice(0, 4);
+      }
+      measure(h);
+    }
+  }
   // Several courses in one area (e.g. St Andrews links): group holes by the named course boundary their tee sits in
   const named = L.boundary.filter((b) => b.tags.name);
   const groups = [];
@@ -160,7 +184,9 @@ function buildHole(h, L) {
   }
 
   const corridor = (geom, w) => geom.some((p) => G.ptLineDist(p, CL) <= w) || G.ptPolyDist(CL[Math.floor(CL.length / 2)], geom) === 0;
-  const tees = L.tee.filter((t) => G.ptPolyDist(TEE, t.geom) < 60);
+  // tee boxes of this hole: the back tee and the forward tees along the start of the line of play
+  const tees = L.tee.filter((t) => G.ptPolyDist(TEE, t.geom) < 60
+    || (G.dist(G.centroid(t.geom), TEE) < 170 && G.ptLineDist(G.centroid(t.geom), CL) < 25 && G.dist(G.centroid(t.geom), GC) > 90));
   const fairways = L.fairway.filter((f) => G.lineInside(CL, f.geom).reduce((t, r) => t + (r.s1 - r.s0), 0) >= 25);
   const bunkers = L.bunker.filter((b) => corridor(b.geom, 45) || G.polyDist(b.geom, green.geom) < 25);
   const water = L.water.filter((w) => corridor(w.geom, 70));

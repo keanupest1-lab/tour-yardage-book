@@ -89,15 +89,15 @@ export function greenPage(H, course, opts = {}) {
   o.push(`<clipPath id="gp${H.ref}"><rect x="0" y="${f1(mapTop)}" width="${W}" height="${f1(Hh - mapTop - 90)}"/></clipPath><g clip-path="url(#gp${H.ref})">`);
   o.push(`<rect x="0" y="${f1(mapTop)}" width="${W}" height="${Hh}" fill="#f8fbf6" opacity="0.7"/>`);
   const vis = (L) => L.filter((f) => inView(f.geom, tf, W, Hh));
-  for (const w of vis(course.layers.water)) o.push(poly(w.geom.map(tf), `fill="${C.water}" stroke="${C.waterL}" stroke-width="2.5"`));
-  for (const f of vis(course.layers.fairway)) o.push(path(f.geom.map(tf), `fill="${C.fwFill}" stroke="${C.fwLine}" stroke-width="3"`));
+  for (const w of vis(H.water)) o.push(poly(w.geom.map(tf), `fill="${C.water}" stroke="${C.waterL}" stroke-width="2.5"`));
+  for (const f of vis(H.fairways)) o.push(path(f.geom.map(tf), `fill="${C.fwFill}" stroke="${C.fwLine}" stroke-width="3"`));
   for (const t of course.layers.tree.filter((t) => inView([t.c], tf, W, Hh))) {
     const [x, y] = tf(t.c); o.push(`<circle cx="${f1(x)}" cy="${f1(y)}" r="${f1(t.r * k)}" fill="${C.canopy}" stroke="${C.canopyL}" stroke-width="1.8" stroke-dasharray="4 4"/>`);
   }
   const collar = G.offsetPoly(H.green.geom, 1.8);
   o.push(path(collar.map(tf), `fill="#fff" stroke="${C.fwLine}" stroke-width="2.5"`));
-  for (const gr of vis(course.layers.green)) o.push(path(gr.geom.map(tf), `fill="#fff" stroke="${C.ink}" stroke-width="${gr === H.green ? 4 : 2}"`));
-  for (const b of vis(course.layers.bunker)) o.push(path(b.geom.map(tf), `fill="${C.sandF}" stroke="${C.sandL}" stroke-width="2.5"`));
+  o.push(path(H.green.geom.map(tf), `fill="#fff" stroke="${C.ink}" stroke-width="4"`));
+  for (const b of vis(H.bunkers)) o.push(path(b.geom.map(tf), `fill="${C.sandF}" stroke="${C.sandL}" stroke-width="2.5"`));
   if (H.green.estimated) o.push(path(H.green.geom.map(tf), `fill="#fff" stroke="${C.ink}" stroke-width="3" stroke-dasharray="10 7"`));
   // faint grid again over the fills
   for (let x = cx % g; x < W; x += g) o.push(`<line x1="${f1(x)}" y1="0" x2="${f1(x)}" y2="${Hh}" stroke="${C.grid}" stroke-width="1.1" opacity="0.8"/>`);
@@ -174,22 +174,20 @@ export function holePage(H, course, opts = {}) {
   o.push(`<clipPath id="hp${H.ref}"><rect x="0" y="${TOP}" width="${W}" height="${BOT - TOP}"/></clipPath><g clip-path="url(#hp${H.ref})">`);
   const vis = (L) => L.filter((f) => inView(f.geom, tf, W, Hh));
   // canopy: dashed outlines merge visually (strokes first, fills on top hide inner edges)
-  for (const w of vis(course.layers.wood)) o.push(poly(w.geom.map(tf), `fill="${C.canopy}" stroke="${C.canopyL}" stroke-width="1.8" stroke-dasharray="4 4"`));
-  const trees = course.layers.tree.filter((t) => inView([t.c], tf, W, Hh)).map((t) => { const [x, y] = tf(t.c); return { x, y, r: Math.max(t.r * s, 6) }; });
+  for (const w of vis(H.woods)) o.push(poly(w.geom.map(tf), `fill="${C.canopy}" stroke="${C.canopyL}" stroke-width="1.8" stroke-dasharray="4 4"`));
+  const trees = H.trees.filter((t) => inView([t.c], tf, W, Hh)).map((t) => { const [x, y] = tf(t.c); return { x, y, r: Math.max(t.r * s, 6) }; });
   for (const t of trees) o.push(`<circle cx="${f1(t.x)}" cy="${f1(t.y)}" r="${f1(t.r)}" fill="none" stroke="${C.canopyL}" stroke-width="1.8" stroke-dasharray="3 4"/>`);
   for (const t of trees) o.push(`<circle cx="${f1(t.x)}" cy="${f1(t.y)}" r="${f1(t.r - 1.2)}" fill="${C.canopy}"/>`);
-  for (const w of vis(course.layers.water)) {
+  for (const w of vis(H.water)) {
     o.push(poly(w.geom.map(tf), `fill="${C.water}" stroke="${C.waterL}" stroke-width="2.5"`));
     o.push(poly(G.offsetPoly(w.geom, 1).map(tf), `fill="none" stroke="${C.red}" stroke-width="1.6" stroke-dasharray="10 6"`));
   }
   for (const ob of vis(course.layers.ob)) o.push(`<polyline points="${pts(ob.geom.map(tf))}" fill="none" stroke="${C.red}" stroke-width="2.5" stroke-dasharray="8 8"/>`);
-  for (const f of vis(course.layers.fairway)) o.push(path(f.geom.map(tf), `fill="${C.fwFill}" stroke="${C.fwLine}" stroke-width="${H.fairways.includes(f) ? 3.2 : 1.6}"`));
-  for (const t of vis(course.layers.tee)) o.push(path(t.geom.map(tf), `fill="${C.fwFill}" stroke="${C.ink}" stroke-width="${H.tees.includes(t) ? 2.4 : 1.2}"`));
-  for (const gr of vis(course.layers.green)) {
-    o.push(path(G.offsetPoly(gr.geom, 1.8).map(tf), `fill="#fff" stroke="${C.fwLine}" stroke-width="2"`));
-    o.push(path(gr.geom.map(tf), `fill="#fff" stroke="${C.ink}" stroke-width="${gr === H.green ? 2.8 : 1.4}"`));
-  }
-  for (const b of vis(course.layers.bunker)) o.push(path(b.geom.map(tf), `fill="${C.sandF}" stroke="${C.sandL}" stroke-width="2"`));
+  for (const f of H.fairways) o.push(path(f.geom.map(tf), `fill="${C.fwFill}" stroke="${C.fwLine}" stroke-width="3.2"`));
+  for (const t of H.tees) o.push(path(t.geom.map(tf), `fill="#fff" stroke="${C.ink}" stroke-width="2.6"`));
+  o.push(path(G.offsetPoly(H.green.geom, 1.8).map(tf), `fill="#fff" stroke="${C.fwLine}" stroke-width="2"`));
+  o.push(path(H.green.geom.map(tf), `fill="#fff" stroke="${C.ink}" stroke-width="2.8"`));
+  for (const b of H.bunkers) o.push(path(b.geom.map(tf), `fill="${C.sandF}" stroke="${C.sandL}" stroke-width="2"`));
   if (H.green.estimated) o.push(path(H.green.geom.map(tf), `fill="#fff" stroke="${C.ink}" stroke-width="2.4" stroke-dasharray="7 5"`));
 
   // terrain contours (1 m, every 5th heavier) from the course's elevation model
@@ -313,6 +311,37 @@ export function holePage(H, course, opts = {}) {
     const lab = `throat [${n(H.throat.width)}] · +${n(H.throatOffset)} to front`, b = Occupancy.box(Math.max(ax, bx2) + 10, Math.max(ay, by2) + 20, lab, 17, 'start');
     if (occ.free(b)) { occ.take(b); o.push(txt(Math.max(ax, bx2) + 10, Math.max(ay, by2) + 20, lab, 17, C.ink, 'start', 700)); }
   }
+  // every tee box of the hole, with its distance to the centre of the green along the line of play
+  const teeLabs = [];
+  const backBox = H.tees.reduce((a, t) => (!a || G.ptPolyDist(H.TEE, t.geom) < G.ptPolyDist(H.TEE, a.geom) ? t : a), null);
+  for (const t of H.tees) {
+    const back = t === backBox && G.ptPolyDist(H.TEE, t.geom) < 10;
+    const d = back ? H.playCentre : H.playCentre - Math.max(0, G.projectOnLine(H.CL, G.centroid(t.geom)).s);
+    teeLabs.push({ t, d, back });
+  }
+  teeLabs.sort((a, b) => (b.back - a.back) || (b.d - a.d));
+  const shown = [];
+  teeLabs.forEach(({ t, d, back }) => {
+    if (shown.some((x) => Math.abs(x - d) < 6)) return;     // same distance as a tee already labelled
+    shown.push(d);
+    const P = t.geom.map(tf), xr = Math.max(...P.map((p) => p[0])), yc = P.reduce((a, p) => a + p[1], 0) / P.length;
+    const lab = `${n(d)}`, sub = back ? 'BACK TEE' : 'TEE';
+    let ly = yc + 10;
+    const b = Occupancy.box(xr + 12, ly, lab, 26, 'start');
+    if (!occ.free(b)) ly += 34;
+    occ.take(Occupancy.box(xr + 12, ly, lab, 26, 'start'));
+    o.push(`<line x1="${f1(xr + 2)}" y1="${f1(yc)}" x2="${f1(xr + 10)}" y2="${f1(ly - 8)}" stroke="#888" stroke-width="1.4"/>`);
+    o.push(txt(xr + 12, ly, lab, 26, C.ink, 'start', 700));
+    o.push(txt(xr + 12, ly + 18, sub, 13, C.gold, 'start', 700));
+  });
+  // back tee with no box traced (in shade on the photo): still mark and label it
+  if (!teeLabs.some((x) => x.back)) {
+    const [bx, by] = tf(H.TEE);
+    o.push(`<rect x="${f1(bx - 12)}" y="${f1(by - 18)}" width="24" height="36" rx="5" fill="#fff" stroke="${C.ink}" stroke-width="2.4" stroke-dasharray="5 4"/>`);
+    occ.take([bx - 14, by - 20, bx + 14, by + 20]);
+    o.push(txt(bx + 22, by + 4, `${n(H.playCentre)}`, 26, C.ink, 'start', 700));
+    o.push(txt(bx + 22, by + 22, 'BACK TEE', 13, C.gold, 'start', 700));
+  }
   // back tee marker
   const [tx, ty] = tf(H.TEE);
   o.push(`<circle cx="${f1(tx)}" cy="${f1(ty)}" r="7" fill="#e0ad22" stroke="#8a6a10" stroke-width="1.5"/>`);
@@ -359,11 +388,11 @@ function inset(H, course, x, y, w, h) {
   const id = `in${String(H.ref).replace(/\W/g, '')}`;
   const o = [`<clipPath id="${id}"><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="6"/></clipPath>`,
     `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="6" fill="#f6f8f4" stroke="#9aa0a5" stroke-width="1.5"/>`, `<g clip-path="url(#${id})">`];
-  for (const wv of course.layers.water.filter((q) => near(q.geom))) o.push(poly(wv.geom.map(tf), `fill="${C.water}" stroke="${C.waterL}" stroke-width="1"`));
-  for (const f of course.layers.fairway.filter((q) => near(q.geom))) o.push(poly(f.geom.map(tf), `fill="${H.fairways.includes(f) ? '#cfe6c6' : '#e7efe3'}" stroke="none"`));
-  for (const g of course.layers.green.filter((q) => near(q.geom))) o.push(poly(g.geom.map(tf), `fill="${g === H.green ? '#fff' : '#f2f2f2'}" stroke="${g === H.green ? C.ink : '#aaa'}" stroke-width="${g === H.green ? 1.4 : 0.8}"`));
-  for (const b of course.layers.bunker.filter((q) => near(q.geom))) o.push(poly(b.geom.map(tf), `fill="${C.sandF}" stroke="none"`));
-  for (const hh of course.layers.hole) if (hh !== H.src && near(hh.geom || [])) o.push(`<polyline points="${pts((hh.geom || []).map(tf))}" fill="none" stroke="#b8bcc0" stroke-width="1"/>`);
+  for (const wv of H.water.filter((q) => near(q.geom))) o.push(poly(wv.geom.map(tf), `fill="${C.water}" stroke="${C.waterL}" stroke-width="1"`));
+  for (const f of H.fairways) o.push(poly(f.geom.map(tf), `fill="#cfe6c6" stroke="none"`));
+  for (const t of H.tees) o.push(poly(t.geom.map(tf), `fill="#fff" stroke="${C.ink}" stroke-width="0.8"`));
+  o.push(poly(H.green.geom.map(tf), `fill="#fff" stroke="${C.ink}" stroke-width="1.4"`));
+  for (const b of H.bunkers) o.push(poly(b.geom.map(tf), `fill="${C.sandF}" stroke="none"`));
   o.push(`<polyline points="${pts(H.CL.map(tf))}" fill="none" stroke="${C.red}" stroke-width="2.2" stroke-linejoin="round"/>`);
   const [tx, ty] = tf(H.TEE); o.push(`<circle cx="${f1(tx)}" cy="${f1(ty)}" r="4" fill="#e0ad22" stroke="#8a6a10" stroke-width="1"/>`);
   o.push('</g>');
