@@ -129,7 +129,8 @@ function drawMap(o, H, course, V, clip, id, opts = {}) {
 }
 
 // ---------------------------------------------------------------- yardage annotations
-function annot(H, course, V, U, occ, o, clip) {
+function annot(H, course, V, U, occ, o, clip, Z = 1) {
+  const z = (v) => Math.round(v * Z * 10) / 10;
   const n = (m) => Math.round(m * U.k), toM = (v) => v / U.k;
   const [cx0, cy0, cx1, cy1] = clip;
   const inside = ([x, y], pad = 0) => x > cx0 + pad && x < cx1 - pad && y > cy0 + pad && y < cy1 - pad;
@@ -148,8 +149,8 @@ function annot(H, course, V, U, occ, o, clip) {
         if (!inside([ex, ey], 20)) continue;
         if (w) {
           const lab = `${n(H.F(e))}`, ax = ex - side * 12, an = side < 0 ? 'start' : 'end';
-          const b = Occ.box(ax, ey + 8, lab, 22, an);
-          if (occ.free(b)) { occ.take(b); o.push(xmark(ex, ey, 6.5)); o.push(txt(ax, ey + 8, lab, 22, C.soft, an, 400)); }
+          const b = Occ.box(ax, ey + 8, lab, z(22), an);
+          if (occ.free(b)) { occ.take(b); o.push(xmark(ex, ey, z(6.5))); o.push(txt(ax, ey + 8, lab, z(22), C.soft, an, 400)); }
         }
         // rough point ~20 m outside the edge (towards the page side)
         let q = G.add(e, G.mul(V.v, side * 20));
@@ -158,16 +159,16 @@ function annot(H, course, V, U, occ, o, clip) {
         if (side < 0 ? qx > ex - 20 : qx < ex + 20) continue;
         const mx = side < 0 ? cx0 + 20 : cx1 - 20, an = side < 0 ? 'start' : 'end';
         const lab = `${n(H.F(q))}`, el = elevAt(q), blue = showBlue(q) ? `${n(H.B(q))}` : null;
-        const b = Occ.box(mx, qy + 10, lab, 30, an);
+        const b = Occ.box(mx, qy + z(10), lab, z(30), an);
         const bb = [b[0], b[1] - 16, b[2], b[3] + (blue ? 22 : 0)];
         if (!occ.free(bb)) continue;
         occ.take(bb);
         const lx0 = side < 0 ? b[2] + 6 : qx + 9, lx1 = side < 0 ? qx - 9 : b[0] - 6;
         o.push(`<line x1="${f1(lx0)}" y1="${f1(qy)}" x2="${f1(lx1)}" y2="${f1(qy)}" stroke="#777" stroke-width="1.3" stroke-dasharray="2 4"/>`);
-        o.push(xmark(qx, qy, 6.5));
-        o.push(txt(mx, qy + 10, lab, 30, C.ink, an, 400));
-        if (el != null) o.push(txt(side < 0 ? mx + 2 : mx - 2, qy - 14, `${el}`, 15, C.grey, an, 400, false));
-        if (blue) o.push(txt(mx, qy + 30, blue, 18, C.blue, an, 400));
+        o.push(xmark(qx, qy, z(6.5)));
+        o.push(txt(mx, qy + z(10), lab, z(30), C.ink, an, 400));
+        if (el != null) o.push(txt(side < 0 ? mx + 2 : mx - 2, qy - z(14), `${el}`, z(15), C.grey, an, 400, false));
+        if (blue) o.push(txt(mx, qy + z(30), blue, z(18), C.blue, an, 400));
       }
     },
     // centre plate: marker, number to the front, from the tee in blue, height against the green in grey
@@ -176,11 +177,11 @@ function annot(H, course, V, U, occ, o, clip) {
       const [x, y] = V.tf(p);
       if (!inside([x, y], 30)) return;
       const lab = `${n(H.F(p))}`, blue = showBlue(p) ? `${n(H.B(p))}` : null, el = elevAt(p);
-      o.push(marker(x, y, i));
-      o.push(txt(x + 16, y + 12, lab, 34, C.ink, 'start', 400));
-      if (blue) o.push(txt(x + 18, y + 34, blue, 18, C.blue, 'start', 400));
-      if (el != null) o.push(txt(x + 6, y - 14, `${el}`, 14, C.grey, 'start', 400, false));
-      occ.take([x - 14, y - 30, x + 16 + lab.length * 20, y + 38]);
+      o.push(`<g transform="translate(${f1(x)},${f1(y)}) scale(${Z}) translate(${f1(-x)},${f1(-y)})">${marker(x, y, i)}</g>`);
+      o.push(txt(x + z(16), y + z(12), lab, z(34), C.ink, 'start', 400));
+      if (blue) o.push(txt(x + z(18), y + z(34), blue, z(18), C.blue, 'start', 400));
+      if (el != null) o.push(txt(x + 6, y - 14, `${el}`, z(14), C.grey, 'start', 400, false));
+      occ.take([x - z(14), y - z(30), x + z(16 + lab.length * 20), y + z(38)]);
     },
     // carry arcs from the back tee: label at the page edge, fairway width at the fairway edge, ticks on the edges
     rings(list) {
@@ -188,7 +189,7 @@ function annot(H, course, V, U, occ, o, clip) {
         const r = toM(rv); if (r > H.toFront - 15) return;
         const col = RING_COLS[rv] || ringCol(i), d0 = G.norm(G.sub(H.GC, H.TEE));
         const arc = [];
-        for (let a = -80; a <= 80; a += 1) {
+        for (let a = -38; a <= 38; a += 1) {
           const t = (a * Math.PI) / 180;
           arc.push(V.tf(G.add(H.TEE, G.mul([d0[0] * Math.cos(t) - d0[1] * Math.sin(t), d0[0] * Math.sin(t) + d0[1] * Math.cos(t)], r))));
         }
@@ -196,13 +197,13 @@ function annot(H, course, V, U, occ, o, clip) {
         if (vis.length < 2) return;
         o.push(`<polyline points="${pts(arc)}" fill="none" stroke="${col}" stroke-width="1.6" opacity=".8" clip-path="url(#cl${clip.join('')})"/>`);
         const left = vis.reduce((a, b) => (b[0] < a[0] ? b : a));
-        if (left[0] < cx0 + 40) { const b = Occ.box(cx0 + 6, left[1] + 6, `-${rv}`, 18, 'start'); if (occ.free(b)) { occ.take(b); o.push(txt(cx0 + 6, left[1] + 6, `-${rv}`, 18, col, 'start', 400)); } }
+        if (left[0] < cx0 + 40) { const b = Occ.box(cx0 + 6, left[1] + 6, `-${rv}`, z(18), 'start'); if (occ.free(b)) { occ.take(b); o.push(txt(cx0 + 6, left[1] + 6, `-${rv}`, z(18), col, 'start', 400)); } }
         const p = H.onLine(r); const w = p && H.widthAt(p);
         if (w) {
           for (const e of [w.left, w.right]) { const [x, y] = V.tf(e); if (inside([x, y])) o.push(`<circle cx="${f1(x)}" cy="${f1(y)}" r="3.5" fill="${col}"/>`); }
           const [x, y] = V.tf(w.right);
-          const b = Occ.box(x + 10, y - 6, `${n(w.width)}`, 18, 'start');
-          if (inside([x, y]) && occ.free(b)) { occ.take(b); o.push(txt(x + 10, y - 6, `${n(w.width)}`, 18, col, 'start', 400)); }
+          const b = Occ.box(x + 10, y - 6, `${n(w.width)}`, z(18), 'start');
+          if (inside([x, y]) && occ.free(b)) { occ.take(b); o.push(txt(x + 10, y - 6, `${n(w.width)}`, z(18), col, 'start', 400)); }
         }
       });
     },
@@ -210,11 +211,11 @@ function annot(H, course, V, U, occ, o, clip) {
       const tag = (p, main, sub, dx, dy, an) => {
         const [x, y] = V.tf(p); if (!inside([x, y], 20)) return;
         for (const [ddx, ddy, a] of [[dx, dy, an], [-dx, dy, an === 'end' ? 'start' : 'end'], [dx, dy + 28, an]]) {
-          const b1 = Occ.box(x + ddx, y + ddy, main ?? sub, 24, a), b2 = sub && main != null ? Occ.box(x + ddx, y + ddy + 20, sub, 17, a) : b1;
+          const b1 = Occ.box(x + ddx, y + ddy, main ?? sub, z(24), a), b2 = sub && main != null ? Occ.box(x + ddx, y + ddy + 20, sub, z(17), a) : b1;
           const b = [Math.min(b1[0], b2[0]), b1[1], Math.max(b1[2], b2[2]), b2[3]];
           if (!occ.free(b)) continue;
           occ.take(b);
-          if (main != null) o.push(txt(x + ddx, y + ddy, main, 24, C.ink, a, 400));
+          if (main != null) o.push(txt(x + ddx, y + ddy, main, z(24), C.ink, a, 400));
           if (sub) o.push(txt(x + ddx, y + ddy + (main != null ? 20 : 0), sub, main != null ? 17 : 19, C.blue, a, 400));
           return;
         }
@@ -232,11 +233,11 @@ function annot(H, course, V, U, occ, o, clip) {
 }
 
 // the green, magnified (top of the approach page)
-function greenSection(o, H, course, U, top, bottom) {
+function greenSection(o, H, course, U, top, bottom, notesH = 120, label = true) {
   const n = (m) => Math.round(m * U.k);
   const depth = H.greenDepth, width = H.greenWidth;
   const kMax = 1000 / 480 * 10;
-  const notes = top + 120;
+  const notes = top + notesH;
   const k = Math.min(kMax, (bottom - notes - 60) / (depth + 14), 820 / (width + 24));
   const front = H.along(H.greenEdges.F);
   const cx = W / 2, frontY = bottom - 46;
@@ -277,8 +278,8 @@ function greenSection(o, H, course, U, top, bottom) {
     if (y < notes + 14) break;
     o.push(txt(40, y + 8, j * 5, 24, '#2f4fa0', 'middle', 400));
   }
-  o.push(txt(W - 40, notes + 54, `Par ${H.par}`, 36, C.gold, 'end', 400));
-  o.push(txt(W - 40, notes + 92, `${n(H.tagDist || H.playCentre)} ${U.label}`, 36, C.gold, 'end', 400));
+  if (label) o.push(txt(W - 40, notes + 54, `Par ${H.par}`, 36, C.gold, 'end', 400));
+  if (label) o.push(txt(W - 40, notes + 92, `${n(H.tagDist || H.playCentre)} ${U.label}`, 36, C.gold, 'end', 400));
   o.push(compass(W - 92, notes + 172, -Math.atan2(H.U[0], H.U[1]) * 180 / Math.PI, 20));
   o.push(`<line x1="0" y1="${bottom}" x2="${W}" y2="${bottom}" stroke="${C.ink}" stroke-width="4"/>`);
 }
@@ -342,14 +343,14 @@ function driveTable(o, H, U, ringsList, ros, dz, y0) {
 
 const svgDoc = (parts) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${PH}" width="101.6mm" height="177.8mm">${parts.join('')}</svg>`;
 
-// ---------------------------------------------------------------- pages
+// ---------------------------------------------------------------- the page
+// One page per hole, like a tour book: the green on top, the whole hole below it (green at the top, tee at the
+// bottom), the drive table, and the view from the tee across the foot of the page.
 export function bookPages(H, course, opts = {}) {
   const U = { ...unitInfo(opts.units), pdf: !!opts.pdf };
   const n = (m) => Math.round(m * U.k);
   const ringsList = U.k > 1 ? [225, 250, 275, 300, 325, 350] : [200, 225, 250, 275, 300, 320];
   const par3 = H.par <= 3 || H.playCentre < 240;
-  const step = 20;   // margin rows every 20 yards / metres
-  // run-outs from the tee through the A and B carry points
   const ros = [];
   for (const [letter, rv] of [['A', ringsList[1]], ['B', ringsList[3]]]) {   // A: 250 yds / 225 m drive line, B: 300 yds / 275 m
     const r = rv / U.k, aim = H.onLine(r); if (!aim || par3) continue;
@@ -357,94 +358,83 @@ export function bookPages(H, course, opts = {}) {
     ros.push({ letter, rv, aim, ro, carry: n(H.B(ro.entry)), out: n(H.B(ro.exit)), front: n(H.F(ro.exit)) });
   }
   const dz = course.terrain ? (() => { const a = course.terrain.at(H.TEE), g = course.terrain.at(H.GC); return a == null || g == null ? null : g - a; })() : null;
-  const pages = [];
 
-  // ===== approach page: green on top, the approach below
-  {
-    const o = [`<rect width="${W}" height="${PH}" fill="#fff"/>`, defs()];
-    const GS = 580, FOOT = PH - 104;
-    greenSection(o, H, course, U, 0, GS);
-    // scale: the approach ~200 m (par 3: the whole hole) down the page, at most ~1:1750
-    const mapTop = GS + 4, mapBot = FOOT;
-    const span = par3 ? H.playFront + 22 : 200;
-    const s = Math.min(5.9, (mapBot - mapTop - 30) / span);
-    // centre the line of play across the page
-    const u = G.norm(G.sub(H.GC, G.pointAlong(H.CL, Math.max(0, H.playCentre - (par3 ? H.playCentre : 150)))));
-    const near = H.CL.filter((p) => G.dist(p, H.GF) < span);
-    const lat = near.map((p) => G.dot(G.sub(p, H.GF), G.perpR(u)));
-    const mid = lat.length ? (Math.max(...lat, 0) + Math.min(...lat, 0)) / 2 : 0;
-    const V = view(H.GF, u, s, W / 2 - mid * s, mapTop + 34);
-    const clip = [0, mapTop, W, mapBot];
-    const id = `ap${String(H.ref).replace(/\W/g, '')}`;
-    drawMap(o, H, course, V, clip, id, { pdf: U.pdf });
-    o.push(`<clipPath id="cl${clip.join('')}"><rect x="0" y="${mapTop}" width="${W}" height="${mapBot - mapTop}"/></clipPath>`);
-    const occ = new Occ();
-    occ.take([0, mapBot - 250, 190, mapBot]);           // the inset
-    const A = annot(H, course, V, U, occ, o, clip);
-    A.rings(ringsList);
-    for (let i = 1, r = 25; ; r += 25, i++) { const p = H.fromFront(r / U.k); if (!p || H.B(p) < 30) break; const [, y] = V.tf(p); if (y > mapBot) break; A.centre(p, i); }
-    for (let r = step; ; r += step) { const p = H.fromFront(r / U.k); if (!p) break; const [, y] = V.tf(p); if (y > mapBot + 20) break; A.row(p); }
-    A.hazards();
-    if (par3) teeMarks(o, H, V, U, occ, clip);
-    o.push(`<line x1="0" y1="${mapTop}" x2="${W}" y2="${mapTop}" stroke="${C.ink}" stroke-width="4"/>`);
-    inset(o, H, course, U, 18, mapBot - 238, 162, 222);
-    const rows = [];
-    if (ros.length) rows.push(['RUN OUT', ros[0] ? `${ros[0].out} (${ros[0].letter})` : null, ros[1] ? `${ros[1].out} (${ros[1].letter})` : null],
-      ['CARRY', ros[0] ? `${ros[0].carry}` : null, ros[1] ? `${ros[1].carry}` : null]);
-    else rows.push(['TO GREEN', `F ${n(H.playFront)}  C ${n(H.playCentre)}  B ${n(H.playBack)}`, null],
-      ['GREEN', dz == null ? null : Math.abs(dz) < 1 ? 'level with tee' : `${Math.abs(Math.round(dz * U.k))} ${U.label.toLowerCase()} ${dz > 0 ? 'above' : 'below'} tee`, dz == null || Math.abs(dz) < 1 ? null : `plays ${n((H.tagDist || H.playCentre) + dz)}`]);
-    footer(o, rows, FOOT);
-    pages.push({ kind: 'approach', svg: svgDoc(o) });
+  const o = [`<rect width="${W}" height="${PH}" fill="#fff"/>`, defs()];
+  const HEAD = 74, GS = 560, PHOTO = opts.teeView ? 250 : 0, FOOT = PH - PHOTO - (par3 ? 40 : 78);
+  // header: hole number in a circle, length and par in a pill
+  o.push(`<circle cx="44" cy="38" r="26" fill="#fff" stroke="${C.ink}" stroke-width="2.4"/>` + txt(44, 48, H.ref, 30, C.ink, 'middle', 700, false));
+  const head = `${n(H.tagDist || H.playCentre)}${U.k > 1 ? 'y' : 'm'} Par ${H.par}${H.si ? ` · SI ${H.si}` : ''}`;
+  const hw = head.length * 17 + 40;
+  o.push(`<rect x="84" y="14" width="${hw}" height="48" rx="24" fill="#fff" stroke="${C.ink}" stroke-width="2.4"/>` + txt(84 + hw / 2, 48, head, 28, C.ink, 'middle', 400, false));
+  if (dz != null && Math.abs(dz) >= 1) o.push(txt(W - 24, 48, `green ${dz > 0 ? '+' : '−'}${Math.abs(Math.round(dz * U.k))} · plays ${n((H.tagDist || H.playCentre) + dz)}`, 22, C.grey, 'end', 400, false));
+  o.push(`<line x1="0" y1="${HEAD}" x2="${W}" y2="${HEAD}" stroke="${C.ink}" stroke-width="3"/>`);
+  greenSection(o, H, course, U, HEAD, GS, 8, false);
+
+  // the whole hole: tee at the bottom, green at the top
+  const mapTop = GS + 4, mapBot = FOOT;
+  const u = G.norm(G.sub(H.GC, H.TEE));
+  const v = G.perpR(u);
+  const fw = H.fairways.flatMap((f) => f.geom);
+  const shape = [...H.CL, ...H.green.geom, ...fw, ...H.tees.flatMap((t) => t.geom)];
+  const al = shape.map((p) => G.dot(G.sub(p, H.TEE), u)), la = shape.map((p) => G.dot(G.sub(p, H.TEE), v));
+  const top = Math.max(...al), bot = Math.min(...al, 0);
+  const s = Math.min(5.9, (mapBot - mapTop - 60) / (G.dot(G.sub(H.GF, H.TEE), u) - bot + 18), (W - 300) / (Math.max(...la) - Math.min(...la) + 16));
+  const mid = (Math.max(...la) + Math.min(...la)) / 2;
+  const oy = mapBot - 30 + bot * s;                 // tee near the bottom
+  const V = view(H.TEE, u, s, W / 2 - mid * s, oy);
+  const clip = [0, mapTop, W, mapBot];
+  const id = `hp${String(H.ref).replace(/\W/g, '')}`;
+  drawMap(o, H, course, V, clip, id, { pdf: U.pdf, contours: false });
+  o.push(`<clipPath id="cl${clip.join('')}"><rect x="0" y="${mapTop}" width="${W}" height="${mapBot - mapTop}"/></clipPath>`);
+  const occ = new Occ();
+  const Z = Math.max(0.62, Math.min(1, s / 4.2));
+  const A = annot(H, course, V, U, occ, o, clip, Z);
+  A.rings(ringsList);
+  // run-outs: straight from the tee along the drive line to where the fairway ends
+  for (const { ro, letter } of ros) {
+    const [x, y] = V.tf(ro.exit), [tx, ty] = V.tf(H.TEE);
+    if (!A.inside([x, y])) continue;
+    o.push(`<line x1="${f1(tx)}" y1="${f1(ty)}" x2="${f1(x)}" y2="${f1(y)}" stroke="#444" stroke-width="1.2" stroke-dasharray="9 6" opacity=".65" clip-path="url(#cl${clip.join('')})"/>`);
+    o.push(`<circle cx="${f1(x)}" cy="${f1(y)}" r="${13 * Z}" fill="#fff" stroke="${C.ink}" stroke-width="1.6"/>` + txt(x, y + 6 * Z, letter, 16 * Z, C.ink, 'middle', 700, false));
+    const lft = x < W / 2, ax = x + (lft ? 20 : -20) * Z, an = lft ? 'start' : 'end';
+    const l1 = `RUN OUT ${n(H.B(ro.exit))}`, l2 = `${n(H.F(ro.exit))} to front`;
+    const wdt = l1.length * 11 * Z;
+    const b = [lft ? ax : ax - wdt, y - 20 * Z, lft ? ax + wdt : ax, y + 24 * Z];
+    if (occ.free(b)) { occ.take(b); o.push(txt(ax, y - 2 * Z, l1, 18 * Z, C.blue, an, 700)); o.push(txt(ax, y + 18 * Z, l2, 16 * Z, C.ink, an, 400)); }
   }
+  // drive plates where the carry arcs cross the line of play, then plates every 25 to the front
+  if (!par3) ringsList.forEach((rv, i) => { const p = H.onLine(rv / U.k); if (p) A.centre(p, i); });
+  for (let i = 1, r = 25; ; r += 25, i++) { const p = H.fromFront(r / U.k); if (!p || H.B(p) < 40 || (!par3 && r > 175)) break; if (!par3 && H.B(p) >= ringsList[0] / U.k - 12 && H.B(p) <= ringsList[ringsList.length - 1] / U.k + 12) continue; A.centre(p, i); }
+  // margin numbers every 25 (to the front, and from the tee up to 350)
+  for (let r = 25; ; r += 25) { const p = H.fromFront(r / U.k); if (!p || H.B(p) < 60) break; A.row(p); }
+  A.hazards();
+  teeMarks(o, H, V, U, occ, clip);
+  o.push(compass(W - 60, mapTop + 70, -Math.atan2(u[0], u[1]) * 180 / Math.PI, 18));
 
-  // ===== tee page (par 4 and 5): the tee shot from the back tee
+  // drive table (par 4/5): each drive and what is left to the front; run-outs
+  o.push(`<line x1="0" y1="${FOOT}" x2="${W}" y2="${FOOT}" stroke="#b9bdc1" stroke-width="1.5"/>`);
   if (!par3) {
-    const o = [`<rect width="${W}" height="${PH}" fill="#fff"/>`, defs()];
-    const FOOT = PH - 210, top = 0;
-    const u = G.norm(G.sub(H.CL[1], H.CL[0]));
-    // cover the line of play from the tee to where the approach page starts (with some overlap)
-    const sEnd = Math.max(120, Math.min(H.playFront - 15, G.projectOnLine(H.CL, H.onLine(MAX_DRIVE) || H.GF).s + 18));
-    const covered = [];
-    for (let d = 0; d <= sEnd; d += 10) covered.push(G.pointAlong(H.CL, d));
-    const fw = H.fairways.flatMap((f) => f.geom).filter((p) => G.projectOnLine(H.CL, p).s <= sEnd + 20);
-    const al = covered.map((p) => G.dot(G.sub(p, H.TEE), u));
-    const la = [...covered, ...fw].map((p) => G.dot(G.sub(p, H.TEE), G.perpR(u)));
-    const tee0 = FOOT - 70;
-    const s = Math.min(5.9, (tee0 - top - 60) / (Math.max(...al) + 25), (W - 260) / (Math.max(...la) - Math.min(...la) + 20));
-    const mid = (Math.max(...la) + Math.min(...la)) / 2;
-    const V = view(H.TEE, u, s, W / 2 - mid * s, tee0);
-    const clip = [0, top, W, FOOT];
-    const id = `tp${String(H.ref).replace(/\W/g, '')}`;
-    drawMap(o, H, course, V, clip, id, { pdf: U.pdf });
-    o.push(`<clipPath id="cl${clip.join('')}"><rect x="0" y="${top}" width="${W}" height="${FOOT - top}"/></clipPath>`);
-    const occ = new Occ();
-    occ.take([600, 0, W, 165]);                           // header disc
-    occ.take([0, 0, 130, 140]);                           // compass
-    const A = annot(H, course, V, U, occ, o, clip);
-    A.rings(ringsList);
-    // where the carry arcs cross the line of play: the plates, big number to the front
-    ringsList.forEach((rv, i) => { const p = H.onLine(rv / U.k); if (p) A.centre(p, i); });
-    for (let r = 140; r / U.k <= MAX_DRIVE + 1; r += step) { const p = H.onLine(r / U.k); if (!p) break; const [, y] = V.tf(p); if (y < top + 20) break; A.row(p); }
-    A.hazards();
-    for (const { ro, letter, aim } of ros) {
-      const [x, y] = V.tf(ro.exit), [tx, ty] = V.tf(H.TEE);
-      if (!A.inside([x, y])) continue;
-      o.push(`<line x1="${f1(tx)}" y1="${f1(ty)}" x2="${f1(x)}" y2="${f1(y)}" stroke="#444" stroke-width="1.3" stroke-dasharray="10 6" opacity=".7" clip-path="url(#cl${clip.join('')})"/>`);
-      o.push(`<circle cx="${f1(x)}" cy="${f1(y)}" r="14" fill="#fff" stroke="${C.ink}" stroke-width="1.8"/>` + txt(x, y + 6, letter, 17, C.ink, 'middle', 700, false));
-      const lft = x < W / 2, ax = x + (lft ? 22 : -22), an = lft ? 'start' : 'end';
-      const l1 = `RUN OUT ${n(H.B(ro.exit))}`, l2 = `${n(H.F(ro.exit))} to front`;
-      const b = [Math.min(ax, ax + (lft ? 1 : -1) * l1.length * 11), y - 20, Math.max(ax, ax + (lft ? 1 : -1) * l1.length * 11), y + 26];
-      if (occ.free(b)) { occ.take(b); o.push(txt(ax, y - 2, l1, 19, C.blue, an, 700)); o.push(txt(ax, y + 20, l2, 17, C.ink, an, 400)); }
-    }
-    teeMarks(o, H, V, U, occ, clip);
-    o.push(compass(70, 80, -Math.atan2(u[0], u[1]) * 180 / Math.PI, 20));
-    // header: hole number
-    o.push(`<circle cx="${W - 84}" cy="74" r="54" fill="${C.gold}"/>` + txt(W - 84, 94, H.ref, 56, '#fff', 'middle', 700, false));
-    o.push(txt(W - 150, 150, `Par ${H.par}${H.si ? ' · SI ' + H.si : ''}`, 22, C.ink, 'end', 400));
-    driveTable(o, H, U, ringsList, ros, dz, FOOT);
-    pages.push({ kind: 'tee', svg: svgDoc(o) });
+    const cols = ringsList.filter((rv) => rv / U.k < H.playFront - 20);
+    const cx = (i) => 230 + i * ((W - 270) / Math.max(cols.length - 1, 1));
+    o.push(txt(16, FOOT + 30, 'DRIVE', 14, C.blue, 'start', 700, false));
+    o.push(txt(16, FOOT + 64, 'TO FRONT', 14, C.blue, 'start', 700, false));
+    cols.forEach((rv, i) => {
+      const p = H.onLine(rv / U.k);
+      o.push(txt(cx(i), FOOT + 30, rv, 20, RING_COLS[rv] || C.blue, 'middle', 700, false));
+      o.push(txt(cx(i), FOOT + 64, p ? n(H.F(p)) : '–', 26, C.ink, 'middle', 400, false));
+    });
+  } else {
+    o.push(txt(16, FOOT + 28, 'TO GREEN', 14, C.blue, 'start', 700, false));
+    o.push(txt(230, FOOT + 28, `F ${n(H.playFront)}  C ${n(H.playCentre)}  B ${n(H.playBack)}`, 24, C.ink, 'start', 400, false));
   }
-  return pages;
+  // the view from the tee
+  if (opts.teeView) {
+    const y0 = PH - PHOTO;
+    o.push(`<clipPath id="tv${id}"><rect x="0" y="${y0}" width="${W}" height="${PHOTO}"/></clipPath>`);
+    o.push(`<rect x="0" y="${y0}" width="${W}" height="${PHOTO}" fill="#e9eee6"/>`);
+    o.push(`<image href="${opts.teeView}" x="0" y="${y0}" width="${W}" height="${PHOTO}" preserveAspectRatio="xMidYMid slice" clip-path="url(#tv${id})"/>`);
+  }
+  return [{ kind: 'hole', svg: svgDoc(o) }];
 }
 
 // tee boxes of the hole with their distance to the centre of the green; the back tee marked

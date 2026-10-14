@@ -263,6 +263,7 @@ button, select, input { font: inherit; color: inherit; }
   .notes li { font-size: 13.5px; }
   .spread { grid-template-columns: repeat(2, calc(var(--pageh) * 4 / 7)); gap: 0; }
   .spread .teeview { order: 3; margin-top: 18px; }
+  .spread .page.hole { grid-column: 1 / -1; justify-self: center; width: calc(var(--pageh) * 4 / 7); border-radius: 10px; }
   .spread .page.approach:only-of-type { grid-column: 1 / -1; justify-self: center; width: calc(var(--pageh) * 4 / 7); border-radius: 10px; }
   .teeview img { height: auto; object-fit: initial; }
   .spread .page:first-child { border-radius: 10px 2px 2px 10px; }

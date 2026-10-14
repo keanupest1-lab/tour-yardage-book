@@ -215,34 +215,8 @@ function renderHole(dir = 0) {
   const gname = state.group != null ? state.course.groups[state.group].name : '';
   $('#holeName').textContent = [h.name, gname && gname !== state.name ? gname : ''].filter(Boolean).join(', ');
   const pages = $('#pages');
-  const NAMES = { approach: 'green and approach', tee: 'tee shot' };
-  pages.innerHTML = bookPages(h, state.course, opts).sort((a, b) => (a.kind === 'tee' ? -1 : 1) - (b.kind === 'tee' ? -1 : 1)).map((pg) => `<figure class="page ${pg.kind}" aria-label="Hole ${escapeHtml(h.ref)} ${NAMES[pg.kind]} page">${pg.svg}</figure>`).join('');
-  // the view from the tee, when one has been rendered for this hole
-  if (state.meta?.slug) {
-    const base = `courses/teeview/${state.meta.slug}-${encodeURIComponent(h.ref)}`;
-    const fig = document.createElement('figure');
-    fig.className = 'teeview'; fig.hidden = true;
-    const CAP = { '-photo': 'AI-rendered photo of the real layout: shapes and distances are from the course, fine detail is generated.',
-      '': '3D render from satellite imagery, measured trees and terrain.', '-high': 'Raised view: 3D render from satellite imagery, measured trees and terrain.' };
-    fig.innerHTML = `<img alt="Hole ${escapeHtml(h.ref)} from the tee">
-      <div class="seg tv-seg" role="group" aria-label="Viewpoint"><button type="button" data-tv="-photo" hidden>Photo</button><button type="button" data-tv="">3D</button><button type="button" data-tv="-high">Raised</button></div>
-      <figcaption></figcaption>`;
-    const img = fig.querySelector('img');
-    const show = (tag) => {
-      img.src = `${base}${tag}.jpg`;
-      fig.querySelector('figcaption').textContent = CAP[tag];
-      fig.querySelectorAll('[data-tv]').forEach((x) => x.setAttribute('aria-pressed', String(x.dataset.tv === tag)));
-    };
-    img.addEventListener('load', () => { fig.hidden = false; });
-    img.addEventListener('error', () => { if (img.src.endsWith('-photo.jpg')) show(''); else fig.hidden = true; });
-    fig.querySelectorAll('[data-tv]').forEach((b) => b.addEventListener('click', () => show(b.dataset.tv)));
-    // use the photo when there is one
-    const probe = new Image();
-    probe.onload = () => { fig.querySelector('[data-tv="-photo"]').hidden = false; show('-photo'); };
-    probe.onerror = () => show('');
-    probe.src = `${base}-photo.jpg`;
-    pages.appendChild(fig);
-  }
+  const teeView = state.meta?.slug ? `courses/teeview/${state.meta.slug}-${encodeURIComponent(h.ref)}.jpg` : null;
+  pages.innerHTML = bookPages(h, state.course, { ...opts, teeView }).map((pg) => `<figure class="page ${pg.kind}" aria-label="Hole ${escapeHtml(h.ref)} page">${pg.svg}</figure>`).join('');
   if (dir) { pages.style.setProperty('--dir', `${dir * 14}px`); pages.classList.remove('swapping'); void pages.offsetWidth; pages.classList.add('swapping'); }
   const WARN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 3 2 20h20z"/><path d="M12 10v4M12 17h.01"/></svg>';
   $('#warnings').innerHTML = h.warnings.map((w) => `<li>${WARN}<span>${escapeHtml(w)}</span></li>`).join('');
@@ -366,7 +340,7 @@ async function downloadBook(btn) {
     document.body.appendChild(box);
     const opts = { units: state.units };
     let n = 0; const total = holes.length * 2;
-    // the tee shot for each hole goes across the top of its green page
+    // the tee shot for each hole goes across the foot of its page
     const teeView = async (h) => {
       if (!state.meta?.slug) return null;
       try {
@@ -375,7 +349,8 @@ async function downloadBook(btn) {
         return await new Promise((res) => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.onerror = () => res(null); fr.readAsDataURL(b); });
       } catch { return null; }
     };
-    const all = holes.map((h) => bookPages(h, state.course, { ...opts, pdf: true }));
+    const all = [];
+    for (const h of holes) all.push(bookPages(h, state.course, { ...opts, pdf: true, teeView: await teeView(h) }));
     const total2 = all.reduce((a, p) => a + p.length, 0);
     for (const hp of all) {
       for (const page of hp.map((pg) => pg.svg)) {
