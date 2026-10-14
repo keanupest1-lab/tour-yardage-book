@@ -1,6 +1,6 @@
 import { searchCourses, loadCourseData, parseOverpass } from './osm.js';
 import { buildCourse } from './course.js';
-import { greenPage, holePage } from './render.js';
+import { bookPages } from './book.js';
 import { mergeEdits, slugify, hasEdits } from './edits.js';
 import { loadTerrain } from './terrain.js';
 
@@ -215,7 +215,8 @@ function renderHole(dir = 0) {
   const gname = state.group != null ? state.course.groups[state.group].name : '';
   $('#holeName').textContent = [h.name, gname && gname !== state.name ? gname : ''].filter(Boolean).join(', ');
   const pages = $('#pages');
-  pages.innerHTML = `<figure class="page" aria-label="Hole ${escapeHtml(h.ref)} hole page">${holePage(h, state.course, opts)}</figure><figure class="page" aria-label="Hole ${escapeHtml(h.ref)} green page">${greenPage(h, state.course, opts)}</figure>`;
+  const NAMES = { approach: 'green and approach', tee: 'tee shot' };
+  pages.innerHTML = bookPages(h, state.course, opts).sort((a, b) => (a.kind === 'tee' ? -1 : 1) - (b.kind === 'tee' ? -1 : 1)).map((pg) => `<figure class="page ${pg.kind}" aria-label="Hole ${escapeHtml(h.ref)} ${NAMES[pg.kind]} page">${pg.svg}</figure>`).join('');
   // the view from the tee, when one has been rendered for this hole
   if (state.meta?.slug) {
     const base = `courses/teeview/${state.meta.slug}-${encodeURIComponent(h.ref)}`;
@@ -264,7 +265,7 @@ function setUnits(u) {
 function printBook(all) {
   const holes = all ? visibleHoles().map((i) => state.course.holes[i]) : [state.course.holes[state.hole]];
   const opts = { units: state.units };
-  $('#print').innerHTML = holes.map((h) => `<div class="pp">${greenPage(h, state.course, opts)}</div><div class="pp">${holePage(h, state.course, opts)}</div>`).join('');
+  $('#print').innerHTML = holes.map((h) => bookPages(h, state.course, opts).map((pg) => `<div class="pp">${pg.svg}</div>`).join('')).join('');
   if ($('#sheet').open) $('#sheet').close();
   window.print();
 }
@@ -374,10 +375,11 @@ async function downloadBook(btn) {
         return await new Promise((res) => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.onerror = () => res(null); fr.readAsDataURL(b); });
       } catch { return null; }
     };
-    for (const h of holes) {
-      const tv = await teeView(h);
-      for (const page of [holePage(h, state.course, opts), greenPage(h, state.course, { ...opts, teeView: tv })]) {
-        say(`Page ${++n} of ${total}…`);
+    const all = holes.map((h) => bookPages(h, state.course, { ...opts, pdf: true }));
+    const total2 = all.reduce((a, p) => a + p.length, 0);
+    for (const hp of all) {
+      for (const page of hp.map((pg) => pg.svg)) {
+        say(`Page ${++n} of ${total2}…`);
         box.innerHTML = page;
         const svg = box.querySelector('svg');
         // PDF built-in fonts: Helvetica regular and bold only

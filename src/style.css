@@ -166,7 +166,7 @@ button, select, input { font: inherit; color: inherit; }
 .teeview { grid-column: 1 / -1; order: 1; margin: 0; position: relative; border-radius: 10px; overflow: hidden; background: var(--leather-deep);
   box-shadow: 0 18px 40px rgba(0, 0, 0, .42), 0 2px 6px rgba(0, 0, 0, .3); }
 .teeview img { display: block; width: 100%; height: 300px; object-fit: cover; object-position: 50% 50%; }
-.spread .page:first-child { order: 0; } .spread .page:nth-child(2) { order: 2; }
+.spread .page.approach { order: 0; } .spread .page.tee { order: 2; }
 .teeview .tv-seg { position: absolute; top: 10px; left: 10px; background: rgba(10, 31, 23, .72); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
 .teeview .tv-seg button { height: 30px; font-size: 12.5px; min-width: 0; padding: 0 10px; }
 .teeview figcaption { padding: 8px 12px; font-size: 12.5px; color: var(--muted); background: var(--leather-deep); }
@@ -263,6 +263,7 @@ button, select, input { font: inherit; color: inherit; }
   .notes li { font-size: 13.5px; }
   .spread { grid-template-columns: repeat(2, calc(var(--pageh) * 4 / 7)); gap: 0; }
   .spread .teeview { order: 3; margin-top: 18px; }
+  .spread .page.approach:only-of-type { grid-column: 1 / -1; justify-self: center; width: calc(var(--pageh) * 4 / 7); border-radius: 10px; }
   .teeview img { height: auto; object-fit: initial; }
   .spread .page:first-child { border-radius: 10px 2px 2px 10px; }
   .spread .page:last-child { border-radius: 2px 10px 10px 2px; }
