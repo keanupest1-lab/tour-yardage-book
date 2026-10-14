@@ -16,7 +16,7 @@ const C = {
   fwEdge: '#5f6265', cut: '#62b05a', sandF: '#e9d4ad', sandL: '#c09f6c', water: '#dcecf8', waterL: '#5e9fd6',
   contour: '#d4d4d4', contourMaj: '#c2c2c2', tee: '#1d1d1d',
 };
-const RING_COLS = { 200: '#2a74c9', 225: '#55a84a', 250: '#c9372c', 275: '#e0a91f', 300: '#8f5cbf', 325: '#8f5cbf' };
+const RING_COLS = { 200: '#2a74c9', 225: '#55a84a', 250: '#c9372c', 275: '#e0a91f', 300: '#8f5cbf', 320: '#3a3a3a', 325: '#2a74c9', 350: '#3a3a3a' };
 const ringCol = (i) => ['#55a84a', '#c9372c', '#e0a91f', '#8f5cbf', '#2a74c9'][i % 5];
 
 const esc = (s) => String(s).replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
@@ -55,6 +55,7 @@ class Occ {
   }
 }
 
+const MAX_DRIVE = 320;   // metres (350 yards): the longest drive the book plans for
 const unitInfo = (units) => (units === 'yd' ? { k: 1.0936133, label: 'Yds', grid: 4.572 } : { k: 1, label: 'Mts', grid: 5 });
 
 // a page view: O at (ox, oy), direction u pointing up the page, s units per metre
@@ -133,7 +134,7 @@ function annot(H, course, V, U, occ, o, clip) {
   const [cx0, cy0, cx1, cy1] = clip;
   const inside = ([x, y], pad = 0) => x > cx0 + pad && x < cx1 - pad && y > cy0 + pad && y < cy1 - pad;
   const elevAt = (p) => { if (!course.terrain) return null; const a = course.terrain.at(p), g = course.terrain.at(H.GC); return a == null || g == null ? null : Math.round((a - g) * U.k); };
-  const showBlue = (p) => H.B(p) <= toM(380);
+  const showBlue = (p) => H.B(p) <= MAX_DRIVE + 1;   // nobody drives it further: no from-tee numbers past 350 yds
   return {
     n, toM, inside, elevAt,
     // fairway-edge ⊗ with its number, and a rough ⊗ further out with a dotted leader to the margin number
@@ -314,21 +315,46 @@ function footer(o, rows, y0) {
   });
 }
 
+// tee page footer: for each drive, how far is left to the front; the run-outs; the hole
+function driveTable(o, H, U, ringsList, ros, dz, y0) {
+  const n = (m) => Math.round(m * U.k);
+  o.push(`<rect x="0" y="${y0}" width="${W}" height="${PH - y0}" fill="#fff"/><line x1="0" y1="${y0}" x2="${W}" y2="${y0}" stroke="#b9bdc1" stroke-width="1.5"/>`);
+  const cols = ringsList.filter((rv) => rv / U.k < H.playFront - 20);
+  const cx = (i) => 250 + i * ((W - 290) / Math.max(cols.length - 1, 1));
+  const line = (y) => o.push(`<line x1="0" y1="${y + 11}" x2="${W}" y2="${y + 11}" stroke="#e3e5e7" stroke-width="1"/>`);
+  let y = y0 + 32;
+  o.push(txt(20, y, 'DRIVE', 15, C.blue, 'start', 700, false));
+  cols.forEach((rv, i) => o.push(txt(cx(i), y, rv, 22, RING_COLS[rv] || C.blue, 'middle', 700, false)));
+  line(y); y += 34;
+  o.push(txt(20, y, 'TO FRONT', 15, C.blue, 'start', 700, false));
+  cols.forEach((rv, i) => { const p = H.onLine(rv / U.k); o.push(txt(cx(i), y, p ? n(H.F(p)) : '–', 26, C.ink, 'middle', 400, false)); });
+  line(y); y += 34;
+  o.push(txt(20, y, 'RUN OUT', 15, C.blue, 'start', 700, false));
+  if (ros.length) ros.forEach((r, i) => o.push(txt(250 + i * 360, y, `${r.letter}  ${r.out}  (${r.front} to front)`, 22, C.ink, 'start', 400, false)));
+  else o.push(txt(250, y, 'fairway runs through', 20, C.grey, 'start', 400, false));
+  line(y); y += 34;
+  o.push(txt(20, y, 'TO GREEN', 15, C.blue, 'start', 700, false));
+  const plays = dz == null || Math.abs(dz) < 1 ? '' : `   plays ${n((H.tagDist || H.playCentre) + dz)} (${dz > 0 ? '+' : '−'}${Math.abs(Math.round(dz * U.k))})`;
+  o.push(txt(250, y, `F ${n(H.playFront)}  C ${n(H.playCentre)}  B ${n(H.playBack)}${plays}`, 22, C.ink, 'start', 400, false));
+  line(y); y += 30;
+  o.push(txt(20, y, `Par ${H.par}${H.si ? ' · SI ' + H.si : ''} · ${n(H.tagDist || H.playCentre)} ${U.label}${H.playCentre - H.toCentre > 10 ? ' · dogleg, straight ' + n(H.toCentre) : ''} · from-tee numbers stop at ${n(MAX_DRIVE)}`, 15, C.grey, 'start', 400, false));
+}
+
 const svgDoc = (parts) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${PH}" width="101.6mm" height="177.8mm">${parts.join('')}</svg>`;
 
 // ---------------------------------------------------------------- pages
 export function bookPages(H, course, opts = {}) {
   const U = { ...unitInfo(opts.units), pdf: !!opts.pdf };
   const n = (m) => Math.round(m * U.k);
-  const ringsList = U.k > 1 ? [250, 275, 300, 325] : [200, 225, 250, 275, 300];
+  const ringsList = U.k > 1 ? [225, 250, 275, 300, 325, 350] : [200, 225, 250, 275, 300, 320];
   const par3 = H.par <= 3 || H.playCentre < 240;
   const step = 20;   // margin rows every 20 yards / metres
   // run-outs from the tee through the A and B carry points
   const ros = [];
-  for (const [letter, rv] of [['A', ringsList[1]], ['B', ringsList[3]]]) {
+  for (const [letter, rv] of [['A', ringsList[1]], ['B', ringsList[3]]]) {   // A: 250 yds / 225 m drive line, B: 300 yds / 275 m
     const r = rv / U.k, aim = H.onLine(r); if (!aim || par3) continue;
     const ro = H.runout(aim); if (!ro || !ro.containsAim) continue;
-    ros.push({ letter, ro, carry: n(H.B(ro.entry)), out: n(H.B(ro.exit)) });
+    ros.push({ letter, rv, aim, ro, carry: n(H.B(ro.entry)), out: n(H.B(ro.exit)), front: n(H.F(ro.exit)) });
   }
   const dz = course.terrain ? (() => { const a = course.terrain.at(H.TEE), g = course.terrain.at(H.GC); return a == null || g == null ? null : g - a; })() : null;
   const pages = [];
@@ -374,10 +400,10 @@ export function bookPages(H, course, opts = {}) {
   // ===== tee page (par 4 and 5): the tee shot from the back tee
   if (!par3) {
     const o = [`<rect width="${W}" height="${PH}" fill="#fff"/>`, defs()];
-    const FOOT = PH - 140, top = 0;
+    const FOOT = PH - 210, top = 0;
     const u = G.norm(G.sub(H.CL[1], H.CL[0]));
     // cover the line of play from the tee to where the approach page starts (with some overlap)
-    const sEnd = Math.max(120, H.playFront - 180);
+    const sEnd = Math.max(120, Math.min(H.playFront - 15, G.projectOnLine(H.CL, H.onLine(MAX_DRIVE) || H.GF).s + 18));
     const covered = [];
     for (let d = 0; d <= sEnd; d += 10) covered.push(G.pointAlong(H.CL, d));
     const fw = H.fairways.flatMap((f) => f.geom).filter((p) => G.projectOnLine(H.CL, p).s <= sEnd + 20);
@@ -398,25 +424,24 @@ export function bookPages(H, course, opts = {}) {
     A.rings(ringsList);
     // where the carry arcs cross the line of play: the plates, big number to the front
     ringsList.forEach((rv, i) => { const p = H.onLine(rv / U.k); if (p) A.centre(p, i); });
-    for (let r = 140; ; r += step) { const p = H.onLine(r / U.k); if (!p) break; const [, y] = V.tf(p); if (y < top + 20) break; A.row(p); }
+    for (let r = 140; r / U.k <= MAX_DRIVE + 1; r += step) { const p = H.onLine(r / U.k); if (!p) break; const [, y] = V.tf(p); if (y < top + 20) break; A.row(p); }
     A.hazards();
-    for (const { ro, letter } of ros) {
-      const [x, y] = V.tf(ro.exit);
+    for (const { ro, letter, aim } of ros) {
+      const [x, y] = V.tf(ro.exit), [tx, ty] = V.tf(H.TEE);
       if (!A.inside([x, y])) continue;
-      o.push(`<circle cx="${f1(x)}" cy="${f1(y)}" r="13" fill="#fff" stroke="${C.ink}" stroke-width="1.6"/>` + txt(x, y + 6, letter, 16, C.ink, 'middle', 700, false));
-      const lab = `${n(H.B(ro.exit))}`, lft = H.side(ro.exit) < 0;
-      const b = Occ.box(x + (lft ? -20 : 20), y + 6, lab, 20, lft ? 'end' : 'start');
-      if (occ.free(b)) { occ.take(b); o.push(txt(x + (lft ? -20 : 20), y + 6, lab, 20, C.blue, lft ? 'end' : 'start', 400)); }
+      o.push(`<line x1="${f1(tx)}" y1="${f1(ty)}" x2="${f1(x)}" y2="${f1(y)}" stroke="#444" stroke-width="1.3" stroke-dasharray="10 6" opacity=".7" clip-path="url(#cl${clip.join('')})"/>`);
+      o.push(`<circle cx="${f1(x)}" cy="${f1(y)}" r="14" fill="#fff" stroke="${C.ink}" stroke-width="1.8"/>` + txt(x, y + 6, letter, 17, C.ink, 'middle', 700, false));
+      const lft = x < W / 2, ax = x + (lft ? 22 : -22), an = lft ? 'start' : 'end';
+      const l1 = `RUN OUT ${n(H.B(ro.exit))}`, l2 = `${n(H.F(ro.exit))} to front`;
+      const b = [Math.min(ax, ax + (lft ? 1 : -1) * l1.length * 11), y - 20, Math.max(ax, ax + (lft ? 1 : -1) * l1.length * 11), y + 26];
+      if (occ.free(b)) { occ.take(b); o.push(txt(ax, y - 2, l1, 19, C.blue, an, 700)); o.push(txt(ax, y + 20, l2, 17, C.ink, an, 400)); }
     }
     teeMarks(o, H, V, U, occ, clip);
     o.push(compass(70, 80, -Math.atan2(u[0], u[1]) * 180 / Math.PI, 20));
     // header: hole number
     o.push(`<circle cx="${W - 84}" cy="74" r="54" fill="${C.gold}"/>` + txt(W - 84, 94, H.ref, 56, '#fff', 'middle', 700, false));
     o.push(txt(W - 150, 150, `Par ${H.par}${H.si ? ' · SI ' + H.si : ''}`, 22, C.ink, 'end', 400));
-    const rows = [['TO GREEN', `F ${n(H.playFront)}  C ${n(H.playCentre)}  B ${n(H.playBack)}`, null]];
-    if (dz != null) rows.push(['GREEN', Math.abs(dz) < 1 ? 'level with tee' : `${Math.abs(Math.round(dz * U.k))} ${U.label.toLowerCase()} ${dz > 0 ? 'above' : 'below'} tee`, Math.abs(dz) < 1 ? null : `plays ${n((H.tagDist || H.playCentre) + dz)}`]);
-    rows.push(['HOLE', `${n(H.tagDist || H.playCentre)} ${U.label}`, H.playCentre - H.toCentre > 10 ? `dogleg · straight ${n(H.toCentre)}` : null]);
-    footer(o, rows, FOOT);
+    driveTable(o, H, U, ringsList, ros, dz, FOOT);
     pages.push({ kind: 'tee', svg: svgDoc(o) });
   }
   return pages;
