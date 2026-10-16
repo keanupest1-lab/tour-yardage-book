@@ -10,8 +10,10 @@ export const norm = (a) => { const n = Math.hypot(a[0], a[1]) || 1; return [a[0]
 export const perpR = (u) => [u[1], -u[0]]; // right-hand normal of a direction (x east, y north)
 
 export function makeProjection(lat0, lon0) {
-  const kx = 111320 * Math.cos((lat0 * Math.PI) / 180);
-  const ky = 110540;
+  // metres per degree on the WGS84 ellipsoid at the course's latitude (error well under 1 m over a course)
+  const a = 6378137, e2 = 0.00669437999014, rad = Math.PI / 180, sn = Math.sin(lat0 * rad), w = 1 - e2 * sn * sn;
+  const kx = (a / Math.sqrt(w)) * Math.cos(lat0 * rad) * rad;
+  const ky = ((a * (1 - e2)) / Math.pow(w, 1.5)) * rad;
   return {
     fwd: ([lon, lat]) => [(lon - lon0) * kx, (lat - lat0) * ky],
     inv: ([x, y]) => [x / kx + lon0, y / ky + lat0],

@@ -54,12 +54,12 @@ def refine(full, M, coords, kind):
     return [list(M.px2ll(x + x0, y + y0)) for x, y in cnt]
 
 
-def main(slug):
+def main(slug, kinds=("green", "bunker")):
     meta = json.load(open(f"courses/imagery/{slug}/meta.json"))["z19"]
     full = Image.open(f"courses/imagery/{slug}/z19.jpg").convert("RGB")
     M = A.Mosaic(full, 19, meta["tile_x0"], meta["tile_y0"])
     ep = f"courses/edits/{slug}.json"; e = json.load(open(ep))
-    done = {"green": 0, "bunker": 0}   # tee boxes: GrabCut grows them into the rough here, so they stay as traced
+    done = {k: 0 for k in kinds}   # tee boxes: GrabCut grows them into the rough here, so they stay as traced
     for s in e["shapes"]:
         if s["kind"] not in done or s.get("refined"): continue
         r = refine(full, M, s["coords"], s["kind"])
@@ -69,4 +69,5 @@ def main(slug):
 
 
 if __name__ == "__main__":
-    main(sys.argv[1])
+    # optional second argument: which kinds to sharpen, e.g. "bunker" (hand-traced map greens are kept as they are)
+    main(sys.argv[1], tuple(sys.argv[2].split(",")) if len(sys.argv) > 2 else ("green", "bunker"))

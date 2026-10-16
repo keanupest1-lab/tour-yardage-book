@@ -201,7 +201,7 @@ function buildHole(h, L) {
     ref: h.tags.ref || '?', par, si: h.tags.handicap || h.tags.stroke_index || '', name: h.tags.name || '',
     lengthM, tagDist: isFinite(tagDist) ? tagDist : null,
     CL, TEE, START0, GC, GF, GB, U, V, green, tees, fairways, bunkers, water, trees, woods,
-    warnings: [], src: h, verified,
+    warnings: [], src: h, verified, note: verified && h.tags.note ? String(h.tags.note) : '',
   };
   if (h.tags.note) hole.warnings.push(h.tags.note);
   hole.teeFound = teeFound;

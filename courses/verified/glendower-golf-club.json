@@ -1,0 +1,162 @@
+{
+ "slug": "glendower-golf-club",
+ "name": "Glendower Golf Club",
+ "base": "osm",
+ "imagery": "courses/imagery/glendower-golf-club/meta.json",
+ "card": {
+  "source": "Club scorecard (GolfPass), yards",
+  "tees": "Yellow (championship) 7614 yd / White 7173 yd"
+ },
+ "designer": "C. H. Alison (1937)",
+ "verified": "Every hole checked on 0.27 m satellite imagery against the scorecard (2026-10-16): back tees placed where the card length falls on the tee, or at the furthest tee visible.",
+ "retag": [
+  {
+   "from": "tee",
+   "to": "green",
+   "near_hole_end": 3
+  }
+ ],
+ "holes": [
+  {
+   "hole": 1,
+   "si": 7,
+   "yellow_yd": 449,
+   "white_yd": 435,
+   "tee": "card"
+  },
+  {
+   "hole": 2,
+   "si": 13,
+   "yellow_yd": 559,
+   "white_yd": 530,
+   "tee": "card"
+  },
+  {
+   "hole": 3,
+   "si": 9,
+   "yellow_yd": 253,
+   "white_yd": 208,
+   "tee": {
+    "along": -5,
+    "lat": 0
+   },
+   "note": "Card 231 m: that tee isn't visible from the air, so distances are from the back of the tee strip."
+  },
+  {
+   "hole": 4,
+   "si": 1,
+   "yellow_yd": 493,
+   "white_yd": 476,
+   "tee": "card"
+  },
+  {
+   "hole": 5,
+   "si": 3,
+   "yellow_yd": 509,
+   "white_yd": 465,
+   "tee": "card"
+  },
+  {
+   "hole": 6,
+   "si": 15,
+   "yellow_yd": 202,
+   "white_yd": 184,
+   "tee": "card"
+  },
+  {
+   "hole": 7,
+   "si": 5,
+   "yellow_yd": 488,
+   "white_yd": 466,
+   "tee": "card"
+  },
+  {
+   "hole": 8,
+   "si": 17,
+   "yellow_yd": 530,
+   "white_yd": 522,
+   "tee": "card"
+  },
+  {
+   "hole": 9,
+   "si": 11,
+   "yellow_yd": 404,
+   "white_yd": 384,
+   "tee": "card"
+  },
+  {
+   "hole": 10,
+   "si": 2,
+   "yellow_yd": 477,
+   "white_yd": 452,
+   "tee": "card"
+  },
+  {
+   "hole": 11,
+   "si": 10,
+   "yellow_yd": 433,
+   "white_yd": 375,
+   "tee": "card"
+  },
+  {
+   "hole": 12,
+   "si": 8,
+   "yellow_yd": 412,
+   "white_yd": 390,
+   "tee": "card"
+  },
+  {
+   "hole": 13,
+   "si": 14,
+   "yellow_yd": 568,
+   "white_yd": 537,
+   "tee": "card"
+  },
+  {
+   "hole": 14,
+   "si": 18,
+   "yellow_yd": 165,
+   "white_yd": 153,
+   "tee": {
+    "along": -2,
+    "lat": 0
+   },
+   "note": "Card 151 m: that spot is on the road, so distances are from the back of the tee box."
+  },
+  {
+   "hole": 15,
+   "si": 16,
+   "yellow_yd": 547,
+   "white_yd": 536,
+   "tee": {
+    "along": -2,
+    "lat": 0
+   },
+   "note": "Card 500 m: no tee is visible at that length, so distances are from the tee shown."
+  },
+  {
+   "hole": 16,
+   "si": 6,
+   "yellow_yd": 454,
+   "white_yd": 399,
+   "tee": {
+    "card": true,
+    "lat": 5
+   }
+  },
+  {
+   "hole": 17,
+   "si": 12,
+   "yellow_yd": 223,
+   "white_yd": 217,
+   "tee": "card"
+  },
+  {
+   "hole": 18,
+   "si": 4,
+   "yellow_yd": 448,
+   "white_yd": 433,
+   "tee": "card"
+  }
+ ]
+}

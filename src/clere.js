@@ -485,6 +485,14 @@ export function bookPages(H, course, opts = {}) {
     ph.push(txt(130, TH - 26, `PAR ${H.par}  ·  ${n(H.tagDist || H.playCentre)} ${U.label.toUpperCase()}${H.si ? '  ·  SI ' + H.si : ''}`, 24, '#fff', 'start', true, '#1b1b1b'));
   } else {
     ph.push(`<circle cx="${W - 62}" cy="${FT - 58}" r="44" fill="${C.badge}" stroke="#fff" stroke-width="6"/>` + txt(W - 62, FT - 40, H.ref, 50, '#fff', 'middle', true, null));
+    ph.push(txt(W - 118, FT - 30, `PAR ${H.par}  ·  ${n(H.tagDist || H.playCentre)} ${U.label.toUpperCase()}${H.si ? '  ·  SI ' + H.si : ''}`, 22, C.ink, 'end', true));
+  }
+  // a hole whose back tee isn't where the card puts it says so, small, beside the inset
+  if (H.note) {
+    const lines = [''];
+    for (const w_ of H.note.split(' ')) { if ((lines[lines.length - 1] + ' ' + w_).trim().length > 46) lines.push(w_); else lines[lines.length - 1] = (lines[lines.length - 1] + ' ' + w_).trim(); }
+    const L3 = lines.slice(0, 3);
+    L3.forEach((ln, i) => ph.push(txt(222, FT - (photo ? 22 : 64) - (L3.length - 1 - i) * 19, ln, 16, C.soft, 'start', false)));
   }
 
   const body = o.join(''), photoLayer = ph.join('');

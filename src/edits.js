@@ -1,7 +1,7 @@
 // Course edits made in the editor, stored separately from the OpenStreetMap snapshot and merged on load.
 // Edits format: { version: 1, slug, name, updated, holes: { "1": { par, line: [[lat, lon], ...] } },
 //                 shapes: [{ id, kind: green|fairway|bunker|water|tee, coords: [[lat, lon], ...] }],
-//                 trees: [[lat, lon, crown radius m], ...] }
+//                 trees: [[lat, lon, crown radius m], ...], replaceGolf: true (hand-verified: ignore the map's golf features) }
 
 export const slugify = (s) => String(s).toLowerCase().normalize('NFKD').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 60);
 
@@ -43,7 +43,11 @@ export function editsToElements(edits) {
 export function mergeEdits(base, edits) {
   if (!edits) return base;
   const editedRefs = new Set(Object.entries(edits.holes || {}).filter(([, h]) => h.line && h.line.length >= 2).map(([r]) => String(r)));
+  // a hand-verified course carries every hole and shape itself: the map's own golf features are left out
+  const GOLF = new Set(['hole', 'green', 'tee', 'fairway', 'bunker', 'water_hazard', 'lateral_water_hazard']);
+  const replaced = (t) => !!edits.replaceGolf && !!t && (GOLF.has(t.golf) || t.natural === 'water' || t.natural === 'tree' || t.natural === 'tree_row' || t.natural === 'sand');
   const kept = (base?.elements || [])
+    .filter((e) => !replaced(e.tags))
     .filter((e) => !(e.tags && e.tags.golf === 'hole' && editedRefs.has(String(e.tags.ref))))
     .map((e) => {
       // par-only edits on OpenStreetMap holes (copy, never mutate the snapshot)
