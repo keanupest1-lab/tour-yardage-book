@@ -1,6 +1,6 @@
 import { searchCourses, loadCourseData, parseOverpass } from './osm.js';
 import { buildCourse } from './course.js';
-import { bookPages } from './book.js';
+import { bookPages } from './clere.js';
 import { mergeEdits, slugify, hasEdits } from './edits.js';
 import { loadTerrain } from './terrain.js';
 
@@ -203,6 +203,7 @@ function renderTabs() {
   const on = $('#tabs .on'); if (on) on.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
 }
 
+const marksCache = new Map();
 function renderHole(dir = 0) {
   const h = state.course.holes[state.hole];
   if (!h) return;
@@ -215,8 +216,20 @@ function renderHole(dir = 0) {
   const gname = state.group != null ? state.course.groups[state.group].name : '';
   $('#holeName').textContent = [h.name, gname && gname !== state.name ? gname : ''].filter(Boolean).join(', ');
   const pages = $('#pages');
-  const teeView = state.meta?.slug ? `courses/teeview/${state.meta.slug}-${encodeURIComponent(h.ref)}.jpg` : null;
-  pages.innerHTML = bookPages(h, state.course, { ...opts, teeView }).map((pg) => `<figure class="page ${pg.kind}" aria-label="Hole ${escapeHtml(h.ref)} page">${pg.svg}</figure>`).join('');
+  // the view from the tee across the foot of the spread (when it has been rendered for this hole)
+  const slug = state.meta?.slug, key = slug ? `${slug}-${h.ref}` : null;
+  const marks = key ? marksCache.get(key) : null;
+  const teeView = marks ? `courses/teeview/${slug}-${encodeURIComponent(h.ref)}.jpg?v=${marks.v || ''}` : null;
+  pages.classList.add('tall');
+  pages.innerHTML = bookPages(h, state.course, { ...opts, teeView, teeMarks: marks }).map((pg) => `<figure class="page ${pg.kind}" aria-label="Hole ${escapeHtml(h.ref)}, ${pg.kind === 'top' ? 'green end' : 'tee end'}">${pg.svg}</figure>`).join('');
+  if (key && !marksCache.has(key)) {
+    marksCache.set(key, null);
+    fetch(`courses/teeview/${slug}-${encodeURIComponent(h.ref)}.json`, { cache: 'no-store' }).then((r) => (r.ok ? r.json() : null)).then((j) => {
+      if (!j) return;
+      j.v = Date.now() % 1e6; marksCache.set(key, j);
+      if (state.course?.holes[state.hole] === h) renderHole();
+    }).catch(() => {});
+  }
   if (dir) { pages.style.setProperty('--dir', `${dir * 14}px`); pages.classList.remove('swapping'); void pages.offsetWidth; pages.classList.add('swapping'); }
   const WARN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 3 2 20h20z"/><path d="M12 10v4M12 17h.01"/></svg>';
   $('#warnings').innerHTML = h.warnings.map((w) => `<li>${WARN}<span>${escapeHtml(w)}</span></li>`).join('');
@@ -325,41 +338,83 @@ async function downloadBook(btn) {
     const { jsPDF } = window.jspdf;
     const W = 101.6, H = 177.8;
     const doc = new jsPDF({ unit: 'mm', format: [W, H], orientation: 'portrait', compress: true });
-    // cover
-    doc.setFillColor(15, 42, 32); doc.rect(0, 0, W, H, 'F');
-    doc.setTextColor(210, 174, 98); doc.setFont('helvetica', 'bold'); doc.setFontSize(22);
-    doc.text(doc.splitTextToSize(state.name.toUpperCase(), W - 20), 10, 40);
-    doc.setFontSize(11); doc.setTextColor(236, 233, 222); doc.setFont('helvetica', 'normal');
-    const gname = state.group != null ? state.course.groups[state.group].name : '';
-    doc.text([gname && gname !== state.name ? gname : '', 'Yardage book', `Distances in ${state.units === 'yd' ? 'yards' : 'metres'}`].filter(Boolean), 10, 70);
-    doc.setFontSize(7); doc.setTextColor(170, 180, 172);
-    doc.text(doc.splitTextToSize(`Made ${new Date().toISOString().slice(0, 10)} with Tour Yardage Books. Course data © OpenStreetMap contributors; shapes partly traced by AI from satellite imagery. Check distances on site before competition use.`, W - 20), 10, H - 22);
+    // the book face (Roboto Condensed, SIL OFL) embedded in the PDF
+    const b64 = async (url) => { const buf = new Uint8Array(await (await fetch(url)).arrayBuffer()); let bin = ''; for (let i = 0; i < buf.length; i += 0x8000) bin += String.fromCharCode.apply(null, buf.subarray(i, i + 0x8000)); return btoa(bin); };
+    for (const [file, style] of [['RobotoCondensed-Regular.ttf', 'normal'], ['RobotoCondensed-Bold.ttf', 'bold']]) {
+      doc.addFileToVFS(file, await b64(`src/vendor/fonts/${file}`)); doc.addFont(file, 'RobotoCondensed', style);
+    }
     const holes = visibleHoles().map((i) => state.course.holes[i]);
+    const gname = state.group != null ? state.course.groups[state.group].name : '';
+    // ---- cover: white card, framed, gold band
+    const yd = state.units === 'yd', k = yd ? YD : 1;
+    const totPar = holes.reduce((a, h) => a + (h.par || 0), 0), totLen = Math.round(holes.reduce((a, h) => a + (h.tagDist || h.playCentre || 0), 0) * k);
+    doc.setDrawColor(40, 40, 40); doc.setLineWidth(0.55); doc.roundedRect(4.6, 4.6, W - 9.2, H - 9.2, 3.4, 3.4, 'S');
+    doc.setFont('RobotoCondensed', 'bold'); doc.setFontSize(15); doc.setTextColor(58, 58, 58);
+    doc.text('TOUR YARDAGE BOOKS', W / 2, 23, { align: 'center', charSpace: 0.5 });
+    doc.setDrawColor(168, 134, 63); doc.setLineWidth(0.4); doc.line(W / 2 - 15, 26.2, W / 2 + 15, 26.2);
+    doc.setFont('RobotoCondensed', 'normal'); doc.setFontSize(8.5); doc.setTextColor(120, 120, 120);
+    doc.text('Elite yardage book', W / 2, 30.6, { align: 'center' });
+    // a flag on its green, drawn
+    doc.setFillColor(236, 242, 232); doc.ellipse(W / 2, 54, 17, 4.2, 'F');
+    doc.setDrawColor(40, 40, 40); doc.setLineWidth(0.5); doc.line(W / 2 - 1, 54, W / 2 - 1, 36.5);
+    doc.setFillColor(168, 134, 63); doc.triangle(W / 2 - 1, 36.5, W / 2 + 9.5, 39.5, W / 2 - 1, 42.5, 'F');
+    doc.setFillColor(255, 255, 255); doc.setDrawColor(60, 60, 60); doc.setLineWidth(0.25); doc.circle(W / 2 + 3.2, 53.4, 0.9, 'FD');
+    doc.setFont('RobotoCondensed', 'bold'); doc.setFontSize(21); doc.setTextColor(150, 117, 52);
+    // the course name on one line, or two balanced lines ("KRUGERSDORP / GOLF CLUB")
+    let title = [state.name.toUpperCase()];
+    if (doc.getTextWidth(title[0]) > W - 22) {
+      const words = title[0].split(/\s+/); let bestT = null;
+      for (let i = 1; i < words.length; i++) {
+        const t = [words.slice(0, i).join(' '), words.slice(i).join(' ')];
+        const wmax = Math.max(...t.map((x) => doc.getTextWidth(x)));
+        if (!bestT || wmax < bestT.w) bestT = { t, w: wmax };
+      }
+      title = bestT && bestT.w <= W - 22 ? bestT.t : doc.splitTextToSize(title[0], W - 22);
+    }
+    doc.text(title, W / 2, 72, { align: 'center', lineHeightFactor: 1.08 });
+    let y = 72 + title.length * 8.2;
+    doc.setFontSize(11.5); doc.setTextColor(30, 30, 30);
+    const place = shortPlace(state.meta?.place, state.name);
+    if (gname && gname !== state.name) { doc.text(gname, W / 2, y, { align: 'center' }); y += 5.6; }
+    if (place) { doc.text(place, W / 2, y, { align: 'center' }); y += 5.6; }
+    doc.text(`Par ${totPar}  ·  ${totLen.toLocaleString('en-ZA')} ${yd ? 'yards' : 'metres'}  ·  Back tees`, W / 2, y, { align: 'center' }); y += 11;
+    doc.setFontSize(17); doc.setTextColor(43, 85, 166);
+    doc.text(yd ? 'YARDS' : 'METRES', W / 2, y, { align: 'center', charSpace: 1.1 });
+    doc.setFillColor(168, 134, 63); doc.rect(4.85, 122, W - 9.7, 11.5, 'F');
+    doc.setFont('RobotoCondensed', 'bold'); doc.setFontSize(10.5); doc.setTextColor(255, 255, 255);
+    doc.text(`${new Date().getFullYear()} COURSE GUIDE  ·  YARDAGE BOOK`, W / 2, 129.4, { align: 'center', charSpace: 0.35 });
+    doc.setFont('RobotoCondensed', 'normal'); doc.setFontSize(7.2); doc.setTextColor(110, 110, 110);
+    doc.text(doc.splitTextToSize('Black: to the front of the green.  Blue: from the back tee (to 350 yds).  Red: from the drive (par 5s).  Circled letters: run-outs.  Circled numbers: carries.', W - 26), W / 2, 147, { align: 'center' });
+    doc.setFontSize(6.2); doc.setTextColor(140, 140, 140);
+    doc.text(doc.splitTextToSize(`Made ${new Date().toISOString().slice(0, 10)} with Tour Yardage Books from satellite imagery and the club scorecard. Check distances on site before competition use.`, W - 26), W / 2, H - 16, { align: 'center' });
     const box = document.createElement('div');
     box.style.cssText = 'position:fixed;left:-20000px;top:0;width:500px;pointer-events:none';
     document.body.appendChild(box);
     const opts = { units: state.units };
-    let n = 0; const total = holes.length * 2;
-    // the tee shot for each hole goes across the foot of its page
+    let n = 0;
+    // the view from the tee and where its markers fall, for the foot of each spread
     const teeView = async (h) => {
-      if (!state.meta?.slug) return null;
+      if (!state.meta?.slug) return {};
       try {
-        const r = await fetch(`courses/teeview/${state.meta.slug}-${encodeURIComponent(h.ref)}.jpg`); if (!r.ok) return null;
-        const b = await r.blob();
-        return await new Promise((res) => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.onerror = () => res(null); fr.readAsDataURL(b); });
-      } catch { return null; }
+        const base = `courses/teeview/${state.meta.slug}-${encodeURIComponent(h.ref)}`;
+        const mr = await fetch(`${base}.json`, { cache: 'no-store' }); if (!mr.ok) return {};
+        const marks = await mr.json();
+        const r = await fetch(`${base}.jpg`, { cache: 'no-store' }); if (!r.ok) return {};
+        const blob = await r.blob();
+        const url = await new Promise((res) => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.onerror = () => res(null); fr.readAsDataURL(blob); });
+        return url ? { teeView: url, teeMarks: marks } : {};
+      } catch { return {}; }
     };
     const all = [];
-    for (const h of holes) all.push(bookPages(h, state.course, { ...opts, pdf: true, teeView: await teeView(h) }));
+    for (const h of holes) all.push(bookPages(h, state.course, { ...opts, pdf: true, ...(await teeView(h)) }));
     const total2 = all.reduce((a, p) => a + p.length, 0);
     for (const hp of all) {
       for (const page of hp.map((pg) => pg.svg)) {
         say(`Page ${++n} of ${total2}…`);
         box.innerHTML = page;
         const svg = box.querySelector('svg');
-        // PDF built-in fonts: Helvetica regular and bold only
         svg.querySelectorAll('[font-weight]').forEach((el) => el.setAttribute('font-weight', parseInt(el.getAttribute('font-weight')) >= 600 || el.getAttribute('font-weight') === 'bold' ? 'bold' : 'normal'));
-        svg.querySelectorAll('[font-family]').forEach((el) => el.setAttribute('font-family', 'helvetica'));
+        svg.querySelectorAll('[font-family]').forEach((el) => el.setAttribute('font-family', 'RobotoCondensed'));
         // the PDF library doesn't scale outline widths on text to the page: do it here (keeps the white halos thin)
         const vbW = svg.viewBox?.baseVal?.width || parseFloat(svg.getAttribute('width')) || 1000;
         svg.querySelectorAll('text[stroke]').forEach((el) => el.setAttribute('stroke-width', String(parseFloat(el.getAttribute('stroke-width') || '1') * (W / vbW))));

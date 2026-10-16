@@ -2,6 +2,9 @@
    wordmark and the hole you're on, white pages. One family (Archivo) at three widths:
    expanded for the foil wordmark, normal for reading, condensed for numbers. */
 [hidden] { display: none !important; }
+/* the yardage-book face: Roboto Condensed (SIL OFL), the same files go into the PDF */
+@font-face { font-family: "Roboto Condensed"; font-weight: 400; font-display: swap; src: url("vendor/fonts/RobotoCondensed-Regular.woff2") format("woff2"); }
+@font-face { font-family: "Roboto Condensed"; font-weight: 700; font-display: swap; src: url("vendor/fonts/RobotoCondensed-Bold.woff2") format("woff2"); }
 :root {
   --leather: #0f2a20; --leather-2: #143327; --leather-3: #1b3f31; --leather-deep: #0a1f17;
   --line: rgba(236, 232, 218, .13); --line-strong: rgba(236, 232, 218, .24);
@@ -162,6 +165,16 @@ button, select, input { font: inherit; color: inherit; }
 .spread.swapping .page { animation: turn .28s ease-out; }
 @keyframes turn { from { opacity: .35; transform: translateX(var(--dir, 12px)); } to { opacity: 1; transform: none; } }
 
+/* a hole as a two-page spread bound at the top: the green end over the tee end, one continuous map */
+.spread.tall { grid-template-columns: minmax(0, 560px); justify-content: center; gap: 0; }
+.spread.tall .page { border-radius: 0; }
+.spread.tall .page.top { border-radius: 10px 10px 0 0; }
+.spread.tall .page.bottom { border-radius: 0 0 10px 10px; }
+.spread.tall .page.top::after { content: ""; position: absolute; left: 0; right: 0; top: auto; bottom: 0; width: auto; height: 22px; pointer-events: none;
+  background: linear-gradient(180deg, transparent, rgba(0, 0, 0, .10)); }
+.spread.tall .page.bottom::before { content: ""; position: absolute; left: 0; right: 0; top: 0; bottom: auto; width: auto; height: 16px; z-index: 1; pointer-events: none;
+  background: linear-gradient(0deg, transparent, rgba(0, 0, 0, .12)); }
+
 /* the view from the tee, under the pages */
 .teeview { grid-column: 1 / -1; order: 1; margin: 0; position: relative; border-radius: 10px; overflow: hidden; background: var(--leather-deep);
   box-shadow: 0 18px 40px rgba(0, 0, 0, .42), 0 2px 6px rgba(0, 0, 0, .3); }
@@ -263,6 +276,9 @@ button, select, input { font: inherit; color: inherit; }
   .notes li { font-size: 13.5px; }
   .spread { grid-template-columns: repeat(2, calc(var(--pageh) * 4 / 7)); gap: 0; }
   .spread .teeview { order: 3; margin-top: 18px; }
+  .spread.tall { grid-template-columns: calc(var(--pageh) * 4 / 7 * 1.12); gap: 0; }
+  .spread.tall .page.top, .spread.tall .page.bottom { width: auto; }
+  .spread.tall .page.top { order: 0; border-radius: 10px 10px 0 0; } .spread.tall .page.bottom { order: 1; border-radius: 0 0 10px 10px; }
   .spread .page.hole { grid-column: 1 / -1; justify-self: center; width: calc(var(--pageh) * 4 / 7); border-radius: 10px; }
   .spread .page.approach:only-of-type { grid-column: 1 / -1; justify-self: center; width: calc(var(--pageh) * 4 / 7); border-radius: 10px; }
   .teeview img { height: auto; object-fit: initial; }
