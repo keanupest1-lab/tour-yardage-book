@@ -1,5 +1,5 @@
 """Extra map features a yardage book needs that the course query leaves out: rivers, streams and drains
-(waterway lines, with their widths when mapped). Runs in GitHub Actions (Overpass isn't reachable from the
+(waterway lines, with their widths when mapped), and buildings (so roofs are never taken for ground heights). Runs in GitHub Actions (Overpass isn't reachable from the
 workspace) when courses/osm-extra-requests.txt changes. Line format:  slug
 Output: courses/osm-extra/<slug>.json (Overpass JSON, geometry included)."""
 import json, os, sys
@@ -20,6 +20,7 @@ for line in open("courses/osm-extra-requests.txt"):
   way["natural"="water"]({s - pad},{w - pad},{n + pad},{e + pad});
   relation["natural"="water"]({s - pad},{w - pad},{n + pad},{e + pad});
   way["water"="river"]({s - pad},{w - pad},{n + pad},{e + pad});
+  way["building"]({s - pad},{w - pad},{n + pad},{e + pad});
 );
 out geom;"""
     try:
