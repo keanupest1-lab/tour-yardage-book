@@ -11,7 +11,8 @@ behind a crest or a tree is drawn hollow and labelled "blind" (checked by ray ca
 
 Run with Blender as a Python module (pip install bpy==4.2.0, Python 3.11):
   python ml/tee3d.py <slug> <hole>[,<hole>...] [--quick]
-Output: courses/teeview/<slug>-<hole>.jpg (from the tee) and <slug>-<hole>-high.jpg (raised, behind the tee).
+Output: courses/teeview/<slug>-<hole>.jpg (clean view from the back tee) and <slug>-<hole>.json (where the
+line of play falls on the photo, every 5 m from the tee, for the book's markers).
 Request file for the GitHub job: courses/tee3d-requests.txt  "slug | 1-18" or "slug | 1,4,7".
 """
 import base64, json, math, os, sys, time
@@ -442,24 +443,45 @@ def shoot(S, D, out_png, eye=1.65, back=3.0, lens=34.0, shift_y=-0.05):
     return project, W
 
 
+def marks(D, project, scale):
+    """where the line of play is on the photo, every 5 m of distance from the back tee (100-420 m), so the book
+    can put its markers (and their dashed drop lines) on the photo for any distance and units"""
+    line, mpp = D["line_px"], D["mpp"]
+    tee = line[0]
+    L = sum(math.dist(a, b) for a, b in zip(line, line[1:])) * mpp
+    out, want = [], list(range(100, 425, 5))
+    s = 0.0
+    while want and s <= L:
+        p = T.along(line, s / mpp)
+        r = math.dist(p, tee) * mpp
+        if r >= want[0]:
+            q = project(p)
+            if q is not None:
+                x, y, z, vis = q
+                out.append({"r": want[0], "x": round(x * scale, 1), "y": round(y * scale, 1), "vis": bool(vis)})
+            want.pop(0)
+            continue
+        s += 0.5
+    return out
+
+
 def render_hole(slug, hole, quick=False, out_dir="courses/teeview"):
     log(f"== {slug} hole {hole}")
     D = prepare(slug, hole, quick)
     workdir = os.path.join("/tmp", f"tee3d-{slug}-{hole}"); os.makedirs(workdir, exist_ok=True)
     S = build_scene(D, workdir, quick)
-    h = D["h"]; os.makedirs(out_dir, exist_ok=True)
-    outs = []
-    for tag, kw in (("", dict(eye=1.65, back=3.0, lens=34.0, shift_y=-0.02)), ("-high", dict(eye=24.0, back=4.0, lens=30.0, shift_y=-0.06))):
-        png = os.path.join(workdir, f"r{tag}.png")
-        project, Wr = shoot(S, D, png, **kw)
-        img = Image.open(png).convert("RGB")
-        S_ = W_OUT / Wr
-        img = img.resize((W_OUT, H_OUT), Image.LANCZOS) if S_ != 1 else img
-        img = T.overlays(img, project, D["line_px"], D["mpp"], D["bunkers"], hole, h.get("par", 4), h.get("dist", 0), S=S_,
-                         note="3D render from satellite imagery, measured trees and terrain")
-        path = f"{out_dir}/{slug}-{hole}{tag}.jpg"; img.save(path, quality=90); outs.append(path)
-        log(f"  saved {path}")
-    return outs
+    os.makedirs(out_dir, exist_ok=True)
+    png = os.path.join(workdir, "r.png")
+    # a little above head height, as tour-book photos are taken (and clear of the ~30 m terrain model's bumps)
+    project, Wr = shoot(S, D, png, eye=7.0, back=6.0, lens=36.0, shift_y=-0.08)
+    img = Image.open(png).convert("RGB")
+    scale = W_OUT / Wr
+    if scale != 1: img = img.resize((W_OUT, H_OUT), Image.LANCZOS)
+    # clean photo: the book draws its own markers on it
+    path = f"{out_dir}/{slug}-{hole}.jpg"; img.save(path, quality=90)
+    json.dump({"w": W_OUT, "h": H_OUT, "marks": marks(D, project, scale)}, open(f"{out_dir}/{slug}-{hole}.json", "w"))
+    log(f"  saved {path} + marks")
+    return [path]
 
 
 def parse_holes(spec):

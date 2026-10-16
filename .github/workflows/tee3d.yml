@@ -36,6 +36,7 @@ jobs:
           name: shots-${{ matrix.shard }}
           path: |
             shots-out/*.jpg
+            shots-out/*.json
             render-*.log
           if-no-files-found: ignore
   save:
@@ -50,7 +51,7 @@ jobs:
       - name: Save
         run: |
           mkdir -p courses/teeview
-          find shots -name '*.jpg' -exec cp {} courses/teeview/ \;
+          find shots \( -name '*.jpg' -o -name '*.json' \) -exec cp {} courses/teeview/ \;
           cat shots/*/render-*.log > courses/tee3d-last-run.log 2>/dev/null || true
           git config --global user.name "course-bot"; git config --global user.email "course-bot@users.noreply.github.com"
           git add courses/teeview courses/tee3d-last-run.log
