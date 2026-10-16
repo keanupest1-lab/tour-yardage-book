@@ -101,12 +101,24 @@ export function bookPages(H, course, opts = {}) {
   const par5 = H.par >= 5;
   const cap = MAX_DRIVE + 0.5;
   const driveRef = !par3 ? H.onLine(toM(U.key === 'yd' ? 275 : 250)) : null;   // where the drive lands (red numbers)
-  const elev = (p) => {
+  // how far the green sits above (+, uphill) or below (-, downhill) a point, in the book's units
+  const climb = (p) => {
     if (!course.terrain) return null;
     const a = course.terrain.at(p), g = course.terrain.at(H.GC);
-    return a == null || g == null ? null : Math.round(a - g);
+    if (a == null || g == null) return null;
+    const v = Math.round((g - a) * U.k);
+    return v === 0 ? null : v;
   };
-  const fmtE = (e) => (e == null ? null : e < 0 ? `−${-e}` : `${e}`);
+  // drawn as a small triangle and the number: ▲3 the green is 3 above you, ▼3 it is 3 below
+  const slope = (x, y, v, size, anchor = 'start', col = '#2f2f2f') => {
+    if (v == null) return '';
+    const s_ = String(Math.abs(v)), tw = s_.length * size * 0.5, tri = size * 0.62, gap = size * 0.16, total = tri + gap + tw;
+    const left = anchor === 'end' ? x - total : anchor === 'middle' ? x - total / 2 : x;
+    const cy = y - size * 0.37, hh = tri * 0.9;
+    const d = v > 0 ? `M${f1(left)},${f1(cy + hh / 2)} L${f1(left + tri / 2)},${f1(cy - hh / 2)} L${f1(left + tri)},${f1(cy + hh / 2)} Z`
+      : `M${f1(left)},${f1(cy - hh / 2)} L${f1(left + tri / 2)},${f1(cy + hh / 2)} L${f1(left + tri)},${f1(cy - hh / 2)} Z`;
+    return `<path d="${d}" fill="${col}" stroke="#fff" stroke-width="${f1(size * 0.12)}" paint-order="stroke"/>` + txt(left + tri + gap, y, s_, size, col, 'start', true);
+  };
 
   const photo = !!opts.teeView;
   const PHOTO_H = photo ? 300 : 0, FOOT_H = 104;
@@ -242,7 +254,7 @@ export function bookPages(H, course, opts = {}) {
     const [x, y] = V.tf(pl.p); if (!inMap([x, y], 30)) return;
     const kind = pl.kind || ICONS[i % ICONS.length];
     o.push(icon(kind, x, y, Z));
-    const big = `${n(H.F(pl.p))}`, blue = blueOf(pl.p), red = redOf(pl.p), e = fmtE(elev(pl.p));
+    const big = `${n(H.F(pl.p))}`, blue = blueOf(pl.p), red = redOf(pl.p), e = climb(pl.p);
     // number to the right of the plate, or the left if that is taken
     for (const side of [1, -1]) {
       const ax = x + side * 16 * Z, an = side > 0 ? 'start' : 'end';
@@ -252,7 +264,7 @@ export function bookPages(H, course, opts = {}) {
       const bb = [b1[0], b1[1] - 16 * Z, b1[2], b1[3] + ((blue || red) ? 22 * Z : 0)];
       if (!occ.free(bb) && side > 0) continue;
       occ.take(bb); occ.take([x - 12, y - 12, x + 12, y + 12]);
-      if (e != null) o.push(txt(ax + side * 2, by - 30 * Z, e, 14 * Z, C.soft, an, false));
+      if (e != null) o.push(slope(ax + side * 2, by - 30 * Z, e, 16 * Z, an));
       o.push(txt(ax, by, big, 36 * Z, C.ink, an, true));
       if (blue) o.push(txt(ax + side * 2, by + 21 * Z, blue, 19 * Z, C.blue, an, false));
       else if (red) o.push(txt(ax + side * 2, by + 21 * Z, red, 19 * Z, C.red, an, false));
@@ -288,7 +300,7 @@ export function bookPages(H, course, opts = {}) {
       if (side < 0 ? qx < lim : qx > lim) { qx = lim; q = V.inv(qx, qy); }
       if (side < 0 ? qx > ex - 18 : qx < ex + 18) continue;
       const mx = side < 0 ? 12 : W - 12, an = side < 0 ? 'start' : 'end';
-      const lab = `${n(H.F(q))}`, bl = blueOf(q), rd = redOf(q), e2 = fmtE(elev(q));
+      const lab = `${n(H.F(q))}`, bl = blueOf(q), rd = redOf(q), e2 = climb(q);
       const b = Occ.box(mx, qy + 10, lab, 30 * Z, an);
       const bb = [b[0], b[1] - 16 * Z, b[2], b[3] + ((bl || rd) ? 21 * Z : 0)];
       if (!occ.free(bb)) continue;
@@ -297,7 +309,7 @@ export function bookPages(H, course, opts = {}) {
       if (Math.abs(lx1 - lx0) > 8) o.push(`<line x1="${f1(lx0)}" y1="${f1(qy)}" x2="${f1(lx1)}" y2="${f1(qy)}" stroke="#555" stroke-width="1.2" stroke-dasharray="1.2 4" stroke-linecap="round"/>`);
       o.push(xmark(qx, qy, 6.5 * Z));
       o.push(txt(mx, qy + 10, lab, 30 * Z, C.ink, an, true));
-      if (e2 != null) o.push(txt(side < 0 ? mx + 3 : mx - 3, qy - 17 * Z, e2, 14 * Z, C.soft, an, false));
+      if (e2 != null) o.push(slope(side < 0 ? mx + 3 : mx - 3, qy - 17 * Z, e2, 15 * Z, an));
       if (bl) o.push(txt(mx, qy + 10 + 21 * Z, bl, 18 * Z, C.blue, an, false));
       else if (rd) o.push(txt(mx, qy + 10 + 21 * Z, rd, 18 * Z, C.red, an, false));
     }
@@ -417,6 +429,10 @@ export function bookPages(H, course, opts = {}) {
     for (const t of H.tees) o.push(`<polygon points="${pts(t.geom.map(IV.tf))}" fill="#fff" stroke="#333" stroke-width="1.3"/>`);
     o.push(path(H.green.geom.map(IV.tf), 'fill="#fff" stroke="#333" stroke-width="1.5"'));
     const [gx, gy] = IV.tf(H.GC); o.push(`<circle cx="${f1(gx)}" cy="${f1(gy)}" r="4.5" fill="#f1c21b" stroke="#8f7108" stroke-width=".8"/>`);
+    // the green against the back tee
+    const tc = climb(H.TEE);
+    if (tc != null) o.push(slope(Math.min(gx + 12, x1 - 46), gy + 7, tc, 20, 'start'));
+    else if (course.terrain) o.push(txt(Math.min(gx + 12, x1 - 46), gy + 7, 'level', 15, C.soft, 'start', true));
   }
 
   // ---- footer: run-outs (letters) and carries (numbers)
@@ -433,7 +449,13 @@ export function bookPages(H, course, opts = {}) {
   row(runouts, FT + 36); row(carries, FT + FOOT_H / 2 + 36);
   if (!runouts.length && !carries.length) {
     o.push(txt(30, FT + 36, `F ${n(H.playFront)}   C ${n(H.playCentre)}   B ${n(H.playBack)}`, 28, C.blue, 'start', false, null));
-    o.push(txt(30, FT + FOOT_H / 2 + 36, `${n(H.greenDepth)} deep · ${n(H.greenWidth)} wide`, 24, C.blue, 'start', false, null));
+    const tc = climb(H.TEE), dep = `${n(H.greenDepth)} deep · ${n(H.greenWidth)} wide`;
+    o.push(txt(30, FT + FOOT_H / 2 + 36, dep, 24, C.blue, 'start', false, null));
+    if (tc != null) {
+      const x2 = 30 + dep.length * 11.8 + 26;
+      o.push(slope(x2, FT + FOOT_H / 2 + 36, tc, 24, 'start', C.blue));
+      o.push(txt(x2 + 24 * 0.62 + 6 + String(Math.abs(tc)).length * 12 + 18, FT + FOOT_H / 2 + 36, `plays ${n(H.playCentre) + tc}`, 24, C.blue, 'start', false, null));
+    }
   }
 
   // ---- the view from the tee, with the plates on it

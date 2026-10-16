@@ -385,6 +385,15 @@ async function downloadBook(btn) {
     doc.text(`${new Date().getFullYear()} COURSE GUIDE  ·  YARDAGE BOOK`, W / 2, 129.4, { align: 'center', charSpace: 0.35 });
     doc.setFont('RobotoCondensed', 'normal'); doc.setFontSize(7.2); doc.setTextColor(110, 110, 110);
     doc.text(doc.splitTextToSize('Black: to the front of the green.  Blue: from the back tee (to 350 yds).  Red: from the drive (par 5s).  Circled letters: run-outs.  Circled numbers: carries.', W - 26), W / 2, 147, { align: 'center' });
+    // slope key, the triangles drawn (the face has no arrow glyphs)
+    {
+      const y = 158.5, k1 = 'green above you (uphill)', k2 = 'green below you (downhill)';
+      const w1 = doc.getTextWidth(k1), w2 = doc.getTextWidth(k2), tw = 2.1, gap = 1.2, sep = 5;
+      let x = W / 2 - (tw + gap + w1 + sep + tw + gap + w2) / 2;
+      doc.setFillColor(47, 47, 47);
+      doc.triangle(x, y, x + tw / 2, y - 1.9, x + tw, y, 'F'); x += tw + gap; doc.text(k1, x, y); x += w1 + sep;
+      doc.triangle(x, y - 1.9, x + tw / 2, y, x + tw, y - 1.9, 'F'); x += tw + gap; doc.text(k2, x, y);
+    }
     doc.setFontSize(6.2); doc.setTextColor(140, 140, 140);
     doc.text(doc.splitTextToSize(`Made ${new Date().toISOString().slice(0, 10)} with Tour Yardage Books from satellite imagery and the club scorecard. Check distances on site before competition use.`, W - 26), W / 2, H - 16, { align: 'center' });
     const box = document.createElement('div');
