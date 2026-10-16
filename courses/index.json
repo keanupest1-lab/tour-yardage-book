@@ -45,12 +45,12 @@
    "slug": "glendower-golf-club",
    "query": "Glendower Golf Club",
    "name": "Glendower Golf Club",
-   "place": "Glendower Golf Club, Marais Road, Essexwold, Ekurhuleni Ward 19, City of Ekurhuleni Metropolitan Municipality, Gauteng, 2145, South Africa",
+   "place": "Glendower Golf Club, Edenvale, Gauteng, South Africa",
    "bbox": [
-    -26.1606403,
-    -26.1605403,
-    28.1418567,
-    28.1419567
+    -26.1625,
+    -26.149,
+    28.1275,
+    28.148
    ],
    "fetched": "2026-10-12T14:08:10.579Z",
    "census": {
