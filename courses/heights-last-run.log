@@ -1,0 +1,18 @@
+SlideRule {'server': {'environment': 'v5.6.3-5-g35e70248', 'cluster': 'sliderule-20261009183035', 'version': 'v5.6.3', 'duration': 141821, 'build': 'v5.6.3-0-ge620b550-dirty, 6.1.174-217.345.amzn2023.aarch64, Thu Oct  1 10:32:23 UTC 2026', 'launch': '2026-10-17T04:59:50Z'}, 'client': {'version': 'v5.6.3', 'organization': 'sliderule'}}
+== glendower-golf-club  (-26.1665,28.1235)-(-26.1450,28.1520)
+  aw3d30: 1 tiles
+    103x77 px, 1558.0-1716.0 m
+  nasadem: 1 tiles
+    103x77 px, 1559.0-1715.0 m
+  ICESat-2 ground fits: 2824 segments in 55s; columns ['dh_fit_dx', 'pflags', 'h_mean', 'cycle', 'w_surface_window_final', 'x_atc', 'y_atc', 'region', 'n_fit_photons', 'h_sigma', 'rms_misfit', 'segment_id', 'gt', 'spot', 'rgt', 'geometry']
+  ICESat-2 ground photons: 24516 in 92s; columns ['rgt', 'cycle', 'region', 'background_rate', 'solar_elevation', 'segment_dist', 'segment_id', 'pair', 'track', 'sc_orient', 'atl08_class', 'yapc_score', 'quality_ph', 'height', 'snowcover', 'y_atc', 'x_atc', 'relief', 'landcover', 'atl03_cnf', 'geometry', 'spot']
+Error in request to https://sliderule.slideruleearth.io/source/gedi02ap: HTTP error <502> b'<html><body><h1>502 Bad Gateway</h1>\nThe server returned an invalid or incomplete response.\n</body></html>\n'
+  GEDI L2A: 0 footprints in 56s; columns ['geometry']
+== krugersdorp-golf-club  (-26.0924,27.7749)-(-26.0719,27.7957)
+  aw3d30: 1 tiles
+    75x74 px, 1626.0-1765.0 m
+  nasadem: 1 tiles
+    75x74 px, 1637.0-1764.0 m
+  ICESat-2 ground fits: 2175 segments in 32s; columns ['dh_fit_dx', 'pflags', 'h_mean', 'cycle', 'w_surface_window_final', 'x_atc', 'y_atc', 'region', 'n_fit_photons', 'h_sigma', 'rms_misfit', 'segment_id', 'gt', 'spot', 'rgt', 'geometry']
+  ICESat-2 ground photons: 17787 in 69s; columns ['rgt', 'cycle', 'region', 'background_rate', 'solar_elevation', 'segment_dist', 'segment_id', 'pair', 'track', 'sc_orient', 'atl08_class', 'yapc_score', 'quality_ph', 'height', 'snowcover', 'y_atc', 'x_atc', 'relief', 'landcover', 'atl03_cnf', 'geometry', 'spot']
+  GEDI L2A: 1059 footprints in 9s; columns ['flags', 'elevation_hr', 'solar_elevation', 'beam', 'track', 'orbit', 'elevation_lm', 'sensitivity', 'geometry']
