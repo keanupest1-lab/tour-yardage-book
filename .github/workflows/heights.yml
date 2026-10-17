@@ -1,0 +1,33 @@
+name: Ground-truth heights (ICESat-2, GEDI, AW3D30, NASADEM)
+on:
+  push:
+    paths: ['courses/heights-requests.txt', 'scripts/fetch_heights.py']
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: heights
+  cancel-in-progress: false
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install numpy rasterio "sliderule>=4" geopandas shapely pyarrow requests planetary-computer pystac-client
+      - name: Fetch
+        env:
+          PYTHONUNBUFFERED: '1'
+          GDAL_DISABLE_READDIR_ON_OPEN: 'EMPTY_DIR'
+        run: python3 scripts/fetch_heights.py 2>&1 | tee courses/heights-last-run.log
+      - name: Save
+        if: always()
+        run: |
+          git config --global user.name "course-bot"; git config --global user.email "course-bot@users.noreply.github.com"
+          git add courses/heights courses/dem courses/heights-last-run.log
+          git diff --cached --quiet && exit 0
+          git commit -m "Ground-truth heights [skip ci]"
+          for i in 1 2 3; do git pull --rebase origin main && git push origin HEAD:main && break; sleep 5; done
