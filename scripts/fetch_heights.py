@@ -144,19 +144,24 @@ def models(slug, s, n, w, e):
 
 
 def main():
-    want = [l.strip() for l in open("courses/heights-requests.txt") if l.strip() and not l.startswith("#")]
+    # one course per line, optionally followed by the sources to fetch (models, icesat2, gedi); all of them by default
+    want = [l.split() for l in open("courses/heights-requests.txt") if l.strip() and not l.startswith("#")]
     try:
         from sliderule import sliderule as sr
         sr.init("slideruleearth.io", verbose=False)
         log("SlideRule", sr.get_version() if hasattr(sr, "get_version") else "")
     except Exception as e:
         log("SlideRule init failed:", repr(e))
-    for slug in want:
+    for slug, *only in want:
         s, n, w, e, poly = region(slug)
-        log(f"== {slug}  ({s:.4f},{w:.4f})-({n:.4f},{e:.4f})")
-        models(slug, s, n, w, e)
-        icesat2(slug, poly)
-        gedi(slug, poly)
+        log(f"== {slug}  ({s:.4f},{w:.4f})-({n:.4f},{e:.4f})  {' '.join(only) or 'all sources'}")
+        if not only or "models" in only: models(slug, s, n, w, e)
+        if not only or "icesat2" in only: icesat2(slug, poly)
+        if not only or "gedi" in only:
+            for attempt in range(3):        # the GEDI service sometimes answers 502; try again after a pause
+                gedi(slug, poly)
+                if os.path.exists(f"{OUT}/{slug}-gedi.json"): break
+                time.sleep(60)
 
 
 if __name__ == "__main__":
