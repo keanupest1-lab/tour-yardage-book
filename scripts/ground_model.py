@@ -420,10 +420,11 @@ def main():
         if a.qa:
             os.makedirs(a.qa, exist_ok=True)
             json.dump(results, open(os.path.join(a.qa, f"{a.slug}-ground-cv.json"), "w"), indent=1)
-        # the score: slope error on held-out ICESat-2 passes (the most exact heights), then on GEDI
+        # the score: the slope error on held-out laser passes, each laser kind weighted by how many passes it has
+        # (so a course crossed by few ICESat-2 tracks leans on the GEDI ones, which cover more of it)
         def score(r):
             sc = r["scores"]
-            return (sc.get("icesat2", {}).get("pair_rms", 0) ** 2 + 0.5 * sc.get("gedi", {}).get("pair_mad", 0) ** 2)
+            return sum(v["passes"] * v["pair_rms"] ** 2 for v in sc.values()) / max(1, sum(v["passes"] for v in sc.values()))
         best = min(results, key=score)
         grow, use, lam, kappa = best["grow"], best["use"], best["lam"], best["kappa"]
         print(f"best: {'+'.join(use)} margin {grow} smooth {lam} κ {kappa}: " + "  ".join(f"{nm} slopes rms {v['pair_rms']:.2f} m, sign right {v['sign1']:.1f}%" for nm, v in best["scores"].items()))
