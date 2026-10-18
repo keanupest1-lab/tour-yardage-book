@@ -15,8 +15,11 @@ const C = {
   ink: '#1b1b1b', soft: '#333', grey: '#777', blue: '#2b55a6', red: '#c4302b',
   rough: '#efe5de', semiEdge: '#c3b9b1', fwLine: '#4a4a4a', fwRib: '#efefef',
   sand: '#dcae70', sandEdge: '#a7773e', water: '#bcc6e6', waterEdge: '#8f9ccf',
-  tree: '#76826a', spec: '#6e9b3c', specEdge: '#4d7426', badge: '#2457a8',
+  tree: '#76826a', spec: '#6e9b3c', specEdge: '#4d7426', badge: '#2457a8', elev: '#454545',
 };
+// tree crowns: lit side, body, shaded rim, feathered edge, and the colour of their soft shadow
+const CANOPY = { shadow: '#323a2b', edge: '#7a866c', body: '#a3ad91', shade: '#8f9a7e', lit: '#bcc4ab' };
+const CANOPY_PLAY = { shadow: '#2c4419', edge: '#4d7a2a', body: '#86b45e', shade: '#6f9d4a', lit: '#a7cf86' };
 const RINGS = { m: [200, 225, 250, 275, 300, 320], yd: [225, 250, 275, 300, 325, 350] };
 const RING_COL = ['#7a7a7a', '#3e8a57', '#8f3643', '#c8913b', '#34457d', '#7a4c9e'];
 
@@ -50,6 +53,7 @@ class Occ {
   constructor() { this.b = []; }
   free(b) { return !this.b.some((o) => !(b[2] < o[0] || b[0] > o[2] || b[3] < o[1] || b[1] > o[3])); }
   take(b) { this.b.push(b); }
+  static union(bs) { return [Math.min(...bs.map((b) => b[0])), Math.min(...bs.map((b) => b[1])), Math.max(...bs.map((b) => b[2])), Math.max(...bs.map((b) => b[3]))]; }
   static box(x, y, s, size, anchor) {
     const w = String(s).length * size * 0.5;
     const x0 = anchor === 'end' ? x - w : anchor === 'middle' ? x - w / 2 : x;
@@ -101,30 +105,23 @@ export function bookPages(H, course, opts = {}) {
   const par5 = H.par >= 5;
   const cap = MAX_DRIVE + 0.5;
   const driveRef = !par3 ? H.onLine(toM(U.key === 'yd' ? 275 : 250)) : null;   // where the drive lands (red numbers)
-  // how far the green sits above (+, uphill) or below (-, downhill) a point, in the book's units
-  const climb = (p) => {
-    if (!course.terrain) return null;
-    const a = course.terrain.at(p), g = course.terrain.at(H.GC);
-    if (a == null || g == null) return null;
-    const v = Math.round((g - a) * U.k);
-    return v === 0 ? null : v;
-  };
-  // drawn as a small triangle and the number: ▲3 the green is 3 above you, ▼3 it is 3 below
-  const slope = (x, y, v, size, anchor = 'start', col = '#2f2f2f') => {
-    if (v == null) return '';
-    const s_ = String(Math.abs(v)), tw = s_.length * size * 0.5, tri = size * 0.62, gap = size * 0.16, total = tri + gap + tw;
-    const left = anchor === 'end' ? x - total : anchor === 'middle' ? x - total / 2 : x;
-    const cy = y - size * 0.37, hh = tri * 0.9;
-    const d = v > 0 ? `M${f1(left)},${f1(cy + hh / 2)} L${f1(left + tri / 2)},${f1(cy - hh / 2)} L${f1(left + tri)},${f1(cy + hh / 2)} Z`
-      : `M${f1(left)},${f1(cy - hh / 2)} L${f1(left + tri / 2)},${f1(cy + hh / 2)} L${f1(left + tri)},${f1(cy - hh / 2)} Z`;
-    return `<path d="${d}" fill="${col}" stroke="#fff" stroke-width="${f1(size * 0.12)}" paint-order="stroke"/>` + txt(left + tri + gap, y, s_, size, col, 'start', true);
-  };
+  // heights, the way the tour books print them: a small signed number above a distance is how far the FRONT of the
+  // green sits above (+, uphill) or below (−, downhill) that spot; one under a from-tee number is how far that spot sits
+  // above (+) or below (−) the back tee. Book units; 0 is level.
+  const zAt = (p) => (course.terrain ? course.terrain.at(p) : null);
+  const zFront = zAt(H.GF), zTee = zAt(H.TEE);
+  const toGreen = (p) => { const a = zAt(p); return a == null || zFront == null ? null : Math.round((zFront - a) * U.k) || 0; };
+  const fromTee = (p) => { const a = zAt(p); return a == null || zTee == null ? null : Math.round((a - zTee) * U.k) || 0; };
+  const sgn = (v) => (v > 0 ? `+${v}` : v < 0 ? `−${-v}` : '0');
+  const elev = (x, y, v, size, anchor = 'start', col = C.elev) => (v == null ? '' : txt(x, y, sgn(v), size, col, anchor, true));
 
   const photo = !!opts.teeView;
   const PHOTO_H = photo ? 300 : 0, FOOT_H = 104;
   const FT = TH - PHOTO_H - FOOT_H;                  // map runs from the top of the spread down to the footer
-  const o = [];
-  o.push(`<rect width="${W}" height="${TH}" fill="${C.rough}"/>`);
+  // two layers: the base (rough, light-rough corridor, tree canopies), which the PDF carries as a 4K picture so the
+  // soft shading stays smooth, and everything else, which stays vector (sharp at any zoom)
+  const ob = [], o = [];
+  ob.push(`<rect width="${W}" height="${TH}" fill="${C.rough}"/>`);
 
   // ---- scale and orientation: tee at the bottom, green at the top, as large as the spread allows
   // turn the hole on the page (up to 40° off the tee-to-green line) to draw it as large as the spread allows
@@ -150,7 +147,7 @@ export function bookPages(H, course, opts = {}) {
   const near = (geom, pad = 80) => geom.some((p) => { const [x, y] = V.tf(p); return x > -pad && x < W + pad && y > -pad && y < FT + pad; });
   const Z = Math.max(0.8, Math.min(1, s / 5));      // print sizes shrink a touch on very long holes
 
-  o.push(`<clipPath id="map§"><rect x="0" y="0" width="${W}" height="${FT}"/></clipPath><g clip-path="url(#map§)">`);
+  ob.push(`<clipPath id="mapb§"><rect x="0" y="0" width="${W}" height="${FT}"/></clipPath><g clip-path="url(#mapb§)">`);
 
   // ---- light rough corridor along the hole (white), outlined where it meets the deeper rough
   const corridor = [];
@@ -158,21 +155,29 @@ export function bookPages(H, course, opts = {}) {
   corridor.push({ d: smoothPath(H.green.geom.map(V.tf)), w: 2 * 10 * s });
   for (const t of H.tees) corridor.push({ d: smoothPath(t.geom.map(V.tf)), w: 2 * 7 * s });
   corridor.push({ d: smoothPath(H.CL.map(V.tf), false), w: 2 * (par3 ? 20 : 15) * s, open: true });
-  for (const c of corridor) o.push(`<path d="${c.d}" fill="${c.open ? 'none' : C.semiEdge}" stroke="${C.semiEdge}" stroke-width="${f1(c.w + 2.6)}" stroke-linejoin="round" stroke-linecap="round"/>`);
-  for (const c of corridor) o.push(`<path d="${c.d}" fill="${c.open ? 'none' : '#fff'}" stroke="#fff" stroke-width="${f1(c.w)}" stroke-linejoin="round" stroke-linecap="round"/>`);
+  for (const c of corridor) ob.push(`<path d="${c.d}" fill="${c.open ? 'none' : C.semiEdge}" stroke="${C.semiEdge}" stroke-width="${f1(c.w + 2.6)}" stroke-linejoin="round" stroke-linecap="round"/>`);
+  for (const c of corridor) ob.push(`<path d="${c.d}" fill="${c.open ? 'none' : '#fff'}" stroke="#fff" stroke-width="${f1(c.w)}" stroke-linejoin="round" stroke-linecap="round"/>`);
 
-  // ---- tree canopies: soft olive crowns that darken where they crowd together
-  const trees = course.layers.tree.filter((t) => near([t.c], 40)).map((t) => { const [x, y] = V.tf(t.c); return { t, x, y, r: Math.max(t.r * s, 5) }; });
-  // drawn per page (only the crowns on that page), so each page of the PDF stays light
-  const treeLayer = (pg) => {
-    const mine = trees.filter((t) => t.y + t.r * 1.2 > pg * PH && t.y - t.r * 1.2 < (pg + 1) * PH);
-    let out = '';
-    for (const [k, op] of [[1.18, 0.06], [1.06, 0.07], [0.94, 0.08], [0.82, 0.085], [0.7, 0.09], [0.58, 0.09], [0.46, 0.09], [0.34, 0.085]]) {
-      out += `<g fill="${C.tree}" fill-opacity="${op}">` + mine.map((t) => `<circle cx="${f1(t.x)}" cy="${f1(t.y)}" r="${f1(t.r * k)}"/>`).join('') + '</g>';
+  // ---- tree canopies, drawn as soft shaded crowns (light from the top left of the page) that merge into one mass
+  // where they crowd together: each crown a smooth gradient with a feathered edge over a soft shadow, so it stays
+  // smooth at any size (no rings or steps when printed or zoomed)
+  const TS = opts.treeStyle || 'soft';
+  const crowns = (list, P, id) => {
+    if (!list.length) return '';
+    const L = [...list].sort((a, b) => b.r - a.r);
+    if (TS === 'haze') {
+      return `<defs><radialGradient id="th${id}§"><stop offset="0" stop-color="${C.tree}" stop-opacity=".62"/><stop offset=".55" stop-color="${C.tree}" stop-opacity=".42"/><stop offset="1" stop-color="${C.tree}" stop-opacity="0"/></radialGradient></defs>`
+        + `<g fill="url(#th${id}§)">` + L.map((t) => `<circle cx="${f1(t.x)}" cy="${f1(t.y)}" r="${f1(t.r * 1.15)}"/>`).join('') + '</g>';
     }
-    return out;
+    return `<defs><radialGradient id="tb${id}§" cx=".5" cy=".5" r=".5" fx=".38" fy=".34"><stop offset="0" stop-color="${P.lit}"/><stop offset=".6" stop-color="${P.body}"/><stop offset=".88" stop-color="${P.shade}"/><stop offset="1" stop-color="${P.edge}" stop-opacity="0"/></radialGradient>`
+      + `<radialGradient id="ts${id}§"><stop offset="0" stop-color="${P.shadow}" stop-opacity=".34"/><stop offset=".7" stop-color="${P.shadow}" stop-opacity=".16"/><stop offset="1" stop-color="${P.shadow}" stop-opacity="0"/></radialGradient></defs>`
+      + `<g fill="url(#ts${id}§)">` + L.map((t) => `<circle cx="${f1(t.x + 0.16 * t.r)}" cy="${f1(t.y + 0.22 * t.r)}" r="${f1(t.r * 1.14)}"/>`).join('') + '</g>'
+      + `<g fill="url(#tb${id}§)">` + L.map((t) => `<circle cx="${f1(t.x)}" cy="${f1(t.y)}" r="${f1(t.r)}"/>`).join('') + '</g>';
   };
-  o.push('¤TREES¤');
+  const trees = course.layers.tree.filter((t) => near([t.c], 40)).map((t) => { const [x, y] = V.tf(t.c); return { t, x, y, r: Math.max(t.r * s, 5) }; });
+  // drawn per page (only the crowns on that page), so each page stays light
+  const treeLayer = (pg) => crowns(trees.filter((t) => t.y + t.r * 1.3 > pg * PH && t.y - t.r * 1.3 < (pg + 1) * PH), CANOPY, 'a');
+  ob.push('¤TREES¤');
   // trees in play: the biggest crowns right beside the landing area, marked with their distances
   const fwPolys = H.fairways.map((f) => f.geom);
   const inPlay = course.layers.tree.filter((t) => {
@@ -180,10 +185,11 @@ export function bookPages(H, course, opts = {}) {
     const dEdge = Math.min(...fwPolys.map((p) => G.ptPolyDist(t.c, p)), Infinity);
     return dEdge > 0 && dEdge - t.r < 6;
   }).sort((a, b) => b.r - a.r).slice(0, 3);
-  for (const t of inPlay) {
-    const [x, y] = V.tf(t.c), r = Math.max(t.r * s, 8);
-    for (const [k, op] of [[1.1, 0.16], [0.9, 0.2], [0.7, 0.24], [0.5, 0.26]]) o.push(`<circle cx="${f1(x)}" cy="${f1(y)}" r="${f1(r * k)}" fill="${C.spec}" fill-opacity="${op}"/>`);
-    o.push(`<circle cx="${f1(x)}" cy="${f1(y)}" r="3.4" fill="${C.red}"/>`);
+  {
+    const list = inPlay.map((t) => { const [x, y] = V.tf(t.c); return { x, y, r: Math.max(t.r * s, 8) }; });
+    ob.push(crowns(list, CANOPY_PLAY, 'p'), '</g>');
+    o.push(`<clipPath id="map§"><rect x="0" y="0" width="${W}" height="${FT}"/></clipPath><g clip-path="url(#map§)">`);
+    for (const t of list) o.push(`<circle cx="${f1(t.x)}" cy="${f1(t.y)}" r="3.6" fill="${C.red}" stroke="#fff" stroke-width=".9"/>`);
   }
 
   // ---- water
@@ -254,20 +260,27 @@ export function bookPages(H, course, opts = {}) {
     const [x, y] = V.tf(pl.p); if (!inMap([x, y], 30)) return;
     const kind = pl.kind || ICONS[i % ICONS.length];
     o.push(icon(kind, x, y, Z));
-    const big = `${n(H.F(pl.p))}`, blue = blueOf(pl.p), red = redOf(pl.p), e = climb(pl.p);
+    const big = `${n(H.F(pl.p))}`, blue = blueOf(pl.p), red = redOf(pl.p), eg = toGreen(pl.p), et = blue ? fromTee(pl.p) : null;
     // number to the right of the plate, or the left if that is taken
     for (const side of [1, -1]) {
       const ax = x + side * 16 * Z, an = side > 0 ? 'start' : 'end';
+      const below = (blue || red) ? 22 * Z : 0, below2 = et != null ? 18 * Z : 0;
       let by = y + 12 * Z;
-      if (by - 30 * Z < PH + 20 && by + 34 * Z > PH - 20) by = by < PH ? PH - 20 - 34 * Z : PH + 20 + 30 * Z;   // keep off the fold
-      const b1 = Occ.box(ax, by, big, 36 * Z, an);
-      const bb = [b1[0], b1[1] - 16 * Z, b1[2], b1[3] + ((blue || red) ? 22 * Z : 0)];
+      if (by - 32 * Z < PH + 20 && by + 12 * Z + below + below2 > PH - 20) by = by < PH ? PH - 20 - 12 * Z - below - below2 : PH + 20 + 32 * Z;   // keep off the fold
+      // the room the whole stack takes: height above, the distance, from-tee (or drive) and height below
+      const sub = blue || red, bs = [Occ.box(ax, by, big, 36 * Z, an)];
+      if (eg != null) bs.push(Occ.box(ax + side * 2, by - 30 * Z, sgn(eg), 17 * Z, an));
+      if (sub) bs.push(Occ.box(ax + side * 2, by + 21 * Z, sub, 19 * Z, an));
+      if (et != null) bs.push(Occ.box(ax + side * 2, by + 38 * Z, sgn(et), 15 * Z, an));
+      const bb = Occ.union(bs);
       if (!occ.free(bb) && side > 0) continue;
       occ.take(bb); occ.take([x - 12, y - 12, x + 12, y + 12]);
-      if (e != null) o.push(slope(ax + side * 2, by - 30 * Z, e, 16 * Z, an));
+      o.push(elev(ax + side * 2, by - 30 * Z, eg, 17 * Z, an));
       o.push(txt(ax, by, big, 36 * Z, C.ink, an, true));
-      if (blue) o.push(txt(ax + side * 2, by + 21 * Z, blue, 19 * Z, C.blue, an, false));
-      else if (red) o.push(txt(ax + side * 2, by + 21 * Z, red, 19 * Z, C.red, an, false));
+      if (blue) {
+        o.push(txt(ax + side * 2, by + 21 * Z, blue, 19 * Z, C.blue, an, false));
+        o.push(elev(ax + side * 2, by + 38 * Z, et, 15 * Z, an));
+      } else if (red) o.push(txt(ax + side * 2, by + 21 * Z, red, 19 * Z, C.red, an, false));
       break;
     }
   });
@@ -277,12 +290,15 @@ export function bookPages(H, course, opts = {}) {
     const w = H.widthAt(p); if (!w) return;
     for (const [e, side] of [[w.left, -1], [w.right, 1]]) {
       const [x, y] = V.tf(e); if (!inMap([x, y], 40)) continue;
-      const lab = `${n(H.F(e))}`, ax = x + side * 11, an = side < 0 ? 'end' : 'start';
-      const b = Occ.box(ax, y + 8, lab, 25 * Z, an);
-      const bb = [b[0], b[1], b[2], b[3] + (blueOf(e) ? 19 * Z : 0)];
+      const lab = `${n(H.F(e))}`, ax = x + side * 11, an = side < 0 ? 'end' : 'start', eg = toGreen(e);
+      const bs = [Occ.box(ax, y + 8, lab, 25 * Z, an), [x - 8 * Z, y - 8 * Z, x + 8 * Z, y + 8 * Z]], bl0 = blueOf(e);
+      if (eg != null) bs.push(Occ.box(ax + side, y + 8 - 22 * Z, sgn(eg), 14 * Z, an));
+      if (bl0) bs.push(Occ.box(ax, y + 8 + 19 * Z, bl0, 17 * Z, an));
+      const bb = Occ.union(bs);
       if (!occ.free(bb)) continue;
       occ.take(bb);
       o.push(xmark(x, y, 6.5 * Z));
+      o.push(elev(ax + side, y + 8 - 22 * Z, eg, 14 * Z, an));
       o.push(txt(ax, y + 8, lab, 25 * Z, C.ink, an, true));
       const bl = blueOf(e); if (bl) o.push(txt(ax, y + 8 + 19 * Z, bl, 17 * Z, C.blue, an, false));
     }
@@ -300,18 +316,23 @@ export function bookPages(H, course, opts = {}) {
       if (side < 0 ? qx < lim : qx > lim) { qx = lim; q = V.inv(qx, qy); }
       if (side < 0 ? qx > ex - 18 : qx < ex + 18) continue;
       const mx = side < 0 ? 12 : W - 12, an = side < 0 ? 'start' : 'end';
-      const lab = `${n(H.F(q))}`, bl = blueOf(q), rd = redOf(q), e2 = climb(q);
-      const b = Occ.box(mx, qy + 10, lab, 30 * Z, an);
-      const bb = [b[0], b[1] - 16 * Z, b[2], b[3] + ((bl || rd) ? 21 * Z : 0)];
+      const lab = `${n(H.F(q))}`, bl = blueOf(q), rd = redOf(q), eg = toGreen(q), et = bl ? fromTee(q) : null;
+      const b = Occ.box(mx, qy + 10, lab, 30 * Z, an), bs = [b];
+      if (eg != null) bs.push(Occ.box(side < 0 ? mx + 2 : mx - 2, qy - 16 * Z, sgn(eg), 15 * Z, an));
+      if (bl || rd) bs.push(Occ.box(mx, qy + 10 + 21 * Z, bl || rd, 18 * Z, an));
+      if (et != null) bs.push(Occ.box(side < 0 ? mx + 2 : mx - 2, qy + 10 + 37 * Z, sgn(et), 14 * Z, an));
+      const bb = Occ.union(bs);
       if (!occ.free(bb)) continue;
       occ.take(bb); occ.take([qx - 9, qy - 9, qx + 9, qy + 9]);
       const lx0 = side < 0 ? b[2] + 6 : qx + 9, lx1 = side < 0 ? qx - 9 : b[0] - 6;
       if (Math.abs(lx1 - lx0) > 8) o.push(`<line x1="${f1(lx0)}" y1="${f1(qy)}" x2="${f1(lx1)}" y2="${f1(qy)}" stroke="#555" stroke-width="1.2" stroke-dasharray="1.2 4" stroke-linecap="round"/>`);
       o.push(xmark(qx, qy, 6.5 * Z));
+      o.push(elev(side < 0 ? mx + 2 : mx - 2, qy - 16 * Z, eg, 15 * Z, an));
       o.push(txt(mx, qy + 10, lab, 30 * Z, C.ink, an, true));
-      if (e2 != null) o.push(slope(side < 0 ? mx + 3 : mx - 3, qy - 17 * Z, e2, 15 * Z, an));
-      if (bl) o.push(txt(mx, qy + 10 + 21 * Z, bl, 18 * Z, C.blue, an, false));
-      else if (rd) o.push(txt(mx, qy + 10 + 21 * Z, rd, 18 * Z, C.red, an, false));
+      if (bl) {
+        o.push(txt(mx, qy + 10 + 21 * Z, bl, 18 * Z, C.blue, an, false));
+        o.push(elev(side < 0 ? mx + 2 : mx - 2, qy + 10 + 37 * Z, et, 14 * Z, an));
+      } else if (rd) o.push(txt(mx, qy + 10 + 21 * Z, rd, 18 * Z, C.red, an, false));
     }
   };
   const minB = par3 ? 40 : 90, stepR = s > 9 ? 10 : 20;
@@ -429,10 +450,8 @@ export function bookPages(H, course, opts = {}) {
     for (const t of H.tees) o.push(`<polygon points="${pts(t.geom.map(IV.tf))}" fill="#fff" stroke="#333" stroke-width="1.3"/>`);
     o.push(path(H.green.geom.map(IV.tf), 'fill="#fff" stroke="#333" stroke-width="1.5"'));
     const [gx, gy] = IV.tf(H.GC); o.push(`<circle cx="${f1(gx)}" cy="${f1(gy)}" r="4.5" fill="#f1c21b" stroke="#8f7108" stroke-width=".8"/>`);
-    // the green against the back tee
-    const tc = climb(H.TEE);
-    if (tc != null) o.push(slope(Math.min(gx + 12, x1 - 46), gy + 7, tc, 20, 'start'));
-    else if (course.terrain) o.push(txt(Math.min(gx + 12, x1 - 46), gy + 7, 'level', 15, C.soft, 'start', true));
+    // the front of the green against the back tee
+    o.push(elev(Math.min(gx + 12, x1 - 40), gy + 8, toGreen(H.TEE), 22, 'start', C.ink));
   }
 
   // ---- footer: run-outs (letters) and carries (numbers)
@@ -449,13 +468,10 @@ export function bookPages(H, course, opts = {}) {
   row(runouts, FT + 36); row(carries, FT + FOOT_H / 2 + 36);
   if (!runouts.length && !carries.length) {
     o.push(txt(30, FT + 36, `F ${n(H.playFront)}   C ${n(H.playCentre)}   B ${n(H.playBack)}`, 28, C.blue, 'start', false, null));
-    const tc = climb(H.TEE), dep = `${n(H.greenDepth)} deep · ${n(H.greenWidth)} wide`;
+    // the centre of the green against the back tee, and what the shot plays (a metre/yard up adds one)
+    const zc = zAt(H.GC), tc = zc == null || zTee == null ? null : Math.round((zc - zTee) * U.k) || 0;
+    const dep = `${n(H.greenDepth)} deep · ${n(H.greenWidth)} wide${tc == null ? '' : `  ·  ${sgn(tc)} to the centre  ·  plays ${n(H.playCentre) + tc}`}`;
     o.push(txt(30, FT + FOOT_H / 2 + 36, dep, 24, C.blue, 'start', false, null));
-    if (tc != null) {
-      const x2 = 30 + dep.length * 11.8 + 26;
-      o.push(slope(x2, FT + FOOT_H / 2 + 36, tc, 24, 'start', C.blue));
-      o.push(txt(x2 + 24 * 0.62 + 6 + String(Math.abs(tc)).length * 12 + 18, FT + FOOT_H / 2 + 36, `plays ${n(H.playCentre) + tc}`, 24, C.blue, 'start', false, null));
-    }
   }
 
   // ---- the view from the tee, with the plates on it
@@ -517,8 +533,13 @@ export function bookPages(H, course, opts = {}) {
     L3.forEach((ln, i) => ph.push(txt(222, FT - (photo ? 22 : 64) - (L3.length - 1 - i) * 19, ln, 16, C.soft, 'start', false)));
   }
 
-  const body = o.join(''), photoLayer = ph.join('');
-  const page = (k) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 ${k * PH} ${W} ${PH}" width="101.6mm" height="177.8mm">${
-    body.replace('¤TREES¤', treeLayer(k)).replace('¤PHOTO¤', k === 1 ? photoLayer : '').replace(/§/g, `${String(H.ref).replace(/\W/g, '')}p${k}`)}</svg>`;
-  return [{ kind: 'top', svg: page(0) }, { kind: 'bottom', svg: page(1) }];
+  const baseBody = ob.join(''), body = o.join(''), photoLayer = ph.join('');
+  const wrap = (k, inner) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 ${k * PH} ${W} ${PH}" width="101.6mm" height="177.8mm">${inner}</svg>`;
+  const ids = (str, k) => str.replace(/§/g, `${String(H.ref).replace(/\W/g, '')}p${k}`);
+  // each page: the whole thing (screen, print), and its two layers (PDF)
+  const page = (k) => {
+    const b = ids(baseBody.replace('¤TREES¤', treeLayer(k)), k), v = ids(body.replace('¤PHOTO¤', k === 1 ? photoLayer : ''), k);
+    return { svg: wrap(k, b + v), base: wrap(k, b), overlay: wrap(k, v) };
+  };
+  return [{ kind: 'top', ...page(0) }, { kind: 'bottom', ...page(1) }];
 }

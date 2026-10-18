@@ -20,7 +20,8 @@ Static site. Deploy the folder as-is to Vercel (framework: Other, no build step)
 
 ## Limits (v1)
 - Quality depends on OpenStreetMap mapping. A hole needs a `golf=hole` line and a green; fairways improve most numbers.
-- No elevation yet: plus/minus heights, contours and green slopes need LiDAR (planned: USGS 3DEP, UK EA, IGN LiDAR HD, AHN).
+- Heights (the small +/− numbers): `scripts/ground_model.py` fits one bare-ground surface per course to laser ground returns (ICESat-2, GEDI) and satellite surface models (Copernicus GLO-30, ALOS AW3D30, NASADEM), with tree cover modelled out and roofs left out; which sources it uses and how smooth the ground is are chosen by predicting laser passes it didn't see. Data jobs: `scripts/fetch_dem.py`, `scripts/fetch_heights.py`. Green contours and slopes still need LiDAR.
+- PDF: each page is a 4K picture (2194 × 3840 px) of the rough, corridor and tree canopies, with every line and number on top as vector.
 - Respect OSM usage policies: cache course data rather than refetching for every view once traffic grows.
 
 Course data © OpenStreetMap contributors (ODbL).
