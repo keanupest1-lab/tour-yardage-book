@@ -1,0 +1,152 @@
+[
+ {
+  "type": "way",
+  "id": 4075670,
+  "name": "World of Golf",
+  "tags": {
+   "leisure": "golf_course",
+   "name": "World of Golf"
+  },
+  "bounds": {
+   "minlat": -26.0433173,
+   "minlon": 28.0910714,
+   "maxlat": -26.0392702,
+   "maxlon": 28.0953448
+  },
+  "holes": [],
+  "greens": 0
+ },
+ {
+  "type": "way",
+  "id": 4342175,
+  "name": "Country Club Johannesburg - Woodmead",
+  "tags": {
+   "leisure": "golf_course",
+   "name": "Country Club Johannesburg - Woodmead"
+  },
+  "bounds": {
+   "minlat": -26.0626201,
+   "minlon": 28.0698446,
+   "maxlat": -26.0404074,
+   "maxlon": 28.0856339
+  },
+  "holes": [
+   "10th",
+   "10th",
+   "11th",
+   "11th",
+   "12th",
+   "12th",
+   "13th",
+   "13th",
+   "14th",
+   "14th",
+   "15th",
+   "15th",
+   "16th",
+   "16th",
+   "17th",
+   "17th",
+   "18th",
+   "18th",
+   "1st",
+   "1st",
+   "1st",
+   "2nd",
+   "2nd",
+   "2nd",
+   "3rd",
+   "3rd",
+   "3rd",
+   "4th",
+   "4th",
+   "4th",
+   "5th",
+   "5th",
+   "5th",
+   "6th",
+   "6th",
+   "7th",
+   "7th",
+   "7th",
+   "8th",
+   "8th",
+   "8th",
+   "9th",
+   "9th",
+   "9th"
+  ],
+  "greens": 46
+ },
+ {
+  "type": "way",
+  "id": 23680577,
+  "name": "Leewukop Golf Course (Abandoned)",
+  "tags": {
+   "leisure": "golf_course",
+   "name": "Leewukop Golf Course (Abandoned)",
+   "sport": "golf"
+  },
+  "bounds": {
+   "minlat": -26.0172764,
+   "minlon": 28.0626089,
+   "maxlat": -26.0069688,
+   "maxlon": 28.0714225
+  },
+  "holes": [],
+  "greens": 0
+ },
+ {
+  "type": "way",
+  "id": 28768782,
+  "name": "Kyalami Country Club",
+  "tags": {
+   "leisure": "golf_course",
+   "name": "Kyalami Country Club"
+  },
+  "bounds": {
+   "minlat": -25.9799912,
+   "minlon": 28.0521509,
+   "maxlat": -25.9718086,
+   "maxlon": 28.0664088
+  },
+  "holes": [
+   "1",
+   "10",
+   "11",
+   "12",
+   "13",
+   "14",
+   "15",
+   "16",
+   "17",
+   "18",
+   "2",
+   "3",
+   "4",
+   "5",
+   "6",
+   "7",
+   "8",
+   "9"
+  ],
+  "greens": 0
+ },
+ {
+  "type": "way",
+  "id": 395459414,
+  "name": "Bryanston Country Club",
+  "tags": {
+   "leisure": "golf_course",
+   "name": "Bryanston Country Club"
+  },
+  "bounds": {
+   "minlat": -26.0658955,
+   "minlon": 28.0011284,
+   "maxlat": -26.0543103,
+   "maxlon": 28.0132528
+  },
+  "holes": [],
+  "greens": 2
+ }
+]
