@@ -1,3 +1,11 @@
-SlideRule {'server': {'version': 'v5.6.3', 'environment': 'v5.6.3-5-g35e70248', 'launch': '2026-10-18T03:32:57Z', 'duration': 5469417, 'cluster': 'sliderule-20261009183035', 'build': 'v5.6.3-0-ge620b550-dirty, 6.1.174-217.345.amzn2023.aarch64, Thu Oct  1 10:32:23 UTC 2026'}, 'client': {'version': 'v5.6.3', 'organization': 'sliderule'}}
-== glendower-golf-club  (-26.1665,28.1235)-(-26.1450,28.1520)  gedi
-  GEDI L2A: 1471 footprints in 44s; columns ['beam', 'orbit', 'sensitivity', 'solar_elevation', 'flags', 'track', 'elevation_hr', 'elevation_lm', 'geometry']
+SlideRule {'server': {'version': 'v5.6.3', 'launch': '2026-10-19T04:43:36Z', 'cluster': 'sliderule-20261009183035', 'build': 'v5.6.3-0-ge620b550-dirty, 6.1.174-217.345.amzn2023.aarch64, Thu Oct  1 10:32:23 UTC 2026', 'duration': 2709632, 'environment': 'v5.6.3-5-g35e70248'}, 'client': {'version': 'v5.6.3', 'organization': 'sliderule'}}
+== kyalami-country-club  (-25.9880,28.0440)-(-25.9640,28.0745)  all sources
+  aw3d30: 1 tiles
+    110x86 px, 1414.0-1532.0 m
+  nasadem: 1 tiles
+    110x86 px, 1415.0-1531.0 m
+  ICESat-2 ground fits: 3714 segments in 233s; columns ['segment_id', 'w_surface_window_final', 'h_mean', 'cycle', 'rgt', 'n_fit_photons', 'dh_fit_dx', 'spot', 'y_atc', 'x_atc', 'rms_misfit', 'region', 'gt', 'h_sigma', 'pflags', 'geometry']
+  ICESat-2 ground photons: 41113 in 270s; columns ['track', 'segment_dist', 'solar_elevation', 'region', 'segment_id', 'rgt', 'sc_orient', 'pair', 'cycle', 'background_rate', 'atl08_class', 'atl03_cnf', 'snowcover', 'yapc_score', 'landcover', 'relief', 'height', 'quality_ph', 'x_atc', 'y_atc', 'geometry', 'spot']
+Alert <-7>: Failure on resource GEDI02_A_2024150071017_O30931_01_T03987_02_004_02_V002.h5 beam 8: H5Coro::Future read failure on BEAM1000/lat_lowestmode
+Alert <-7>: Failure on resource GEDI02_A_2024150071017_O30931_01_T03987_02_004_02_V002.h5 beam 11: H5Coro::Future read failure on BEAM1011/lat_lowestmode
+  GEDI L2A: 1849 footprints in 34s; columns ['track', 'elevation_hr', 'elevation_lm', 'orbit', 'beam', 'sensitivity', 'flags', 'solar_elevation', 'geometry']
