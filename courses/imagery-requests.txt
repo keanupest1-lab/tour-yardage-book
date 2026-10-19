@@ -1,4 +1,4 @@
-# slug | south,north,west,east | zoom   (zoom 18 ≈ 0.55 m per pixel, 19 ≈ 0.27 m)
+# slug | south,north,west,east | zoom   (zoom 18 ≈ 0.55 m per pixel, 19 ≈ 0.27 m) (retry 19 Oct)
 irene-country-club | -25.8905,-25.8770,28.2125,28.2242 | 18
 irene-country-club | -25.8905,-25.8770,28.2125,28.2242 | 19
 krugersdorp-golf-club | -26.0900,-26.0745,27.7770,27.7935 | 18

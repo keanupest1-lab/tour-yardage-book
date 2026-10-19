@@ -11,7 +11,7 @@ concurrency:
 jobs:
   imagery:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
       - run: pip install pillow
@@ -23,5 +23,4 @@ jobs:
           git add courses/imagery
           git diff --cached --quiet && exit 0
           git commit -m "Course imagery [skip ci]"
-          git pull --rebase origin main
-          git push origin HEAD:main
+          for i in 1 2 3 4 5; do git pull --rebase origin main && git push origin HEAD:main && break; sleep $((5 * i)); done
