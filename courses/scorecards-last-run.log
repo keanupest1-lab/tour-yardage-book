@@ -1,18 +1,5 @@
-== glendower-golf-club
+== kyalami-country-club
+  saved courses/scorecards/raw/kyalami-country-club-1.jpg (627424 bytes) from https://kyalamigolf.co.za/wp-content/uploads/2022/07/Kyalami-Golf-Score-Card1.jpg
+  saved courses/scorecards/raw/kyalami-country-club-2.jpg (336809 bytes) from https://kyalamigolf.co.za/wp-content/uploads/2022/07/Kyalami-Golf-Score-Card2.jpg
+  saved courses/scorecards/raw/kyalami-country-club-3.jpg (153638 bytes) from https://kyalamigolf.co.za/wp-content/uploads/2022/09/Course-Layout-Website.jpg
   FAILED <HTTPError 403: 'Forbidden'>
-== dainfern-golf-estate
-  FAILED <HTTPError 403: 'Forbidden'>
-== royal-johannesburg-kensington-east
-  FAILED <HTTPError 403: 'Forbidden'>
-== royal-johannesburg-kensington-west
-  FAILED <HTTPError 403: 'Forbidden'>
-== pretoria-country-club
-  FAILED <HTTPError 403: 'Forbidden'>
-== bryanston-country-club
-  FAILED <HTTPError 403: 'Forbidden'>
-== irene-country-club
-  FAILED <HTTPError 403: 'Forbidden'>
-== houghton-golf-club
-  FAILED <HTTPError 403: 'Forbidden'>
-== old-course-st-andrews
-  no GolfPass page found
