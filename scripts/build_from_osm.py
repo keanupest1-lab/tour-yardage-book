@@ -64,7 +64,9 @@ def main(slug):
         osm_water = [sh for sh in shapes if sh["kind"] == "water"]
         shapes = []
         n_m = 0
+        skip = set(spec.get("skip_classes", []))
         for kind, cls, min_m2 in (("fairway", 1, 250), ("green", 2, 120), ("tee", 3, 20), ("bunker", 4, 8), ("water", 5, 40)):
+            if kind in skip: continue
             sm = ndimage.gaussian_filter((lab == cls).astype(np.float32), 1.6 / mpp_m if kind in ("fairway", "water") else 0.9 / mpp_m)
             cl = np.where(sm > 0.5, cls, 0).astype(np.uint8)
             for pp in polygons(cl, cls, mpp_m, min_m2, eps=0.7):
@@ -74,6 +76,17 @@ def main(slug):
         for k_, a_ in enumerate(spec.get("add", [])):
             shapes.append({"kind": a_["kind"], "ll": [tuple(MM.px2ll(x, y)) for x, y in a_["px"]], "id": f"add{a_['kind']}{k_}", "added": True})
         print(f"  {n_m} shapes from the model, {len(spec.get('add', []))} added by hand")
+        # tee boxes are built as rectangles: the model's tee blobs become the rectangle of the same area and heading
+        import cv2
+        for sh in shapes:
+            if sh["kind"] != "tee" or sh.get("added"): continue
+            px_ = np.array([MM.ll2px(*p) for p in sh["ll"]], np.float32)
+            (cx_, cy_), (w_, h_), ang = cv2.minAreaRect(px_)
+            area_ = cv2.contourArea(px_)
+            if w_ * h_ <= 0 or area_ <= 0: continue
+            k_ = math.sqrt(area_ / (w_ * h_))
+            box = cv2.boxPoints(((cx_, cy_), (w_ * k_, h_ * k_), ang))
+            sh["ll"] = [tuple(MM.px2ll(float(x), float(y))) for x, y in box]
     def centroid(P):
         x, y = P[:, 0], P[:, 1]; x1, y1 = np.roll(x, -1), np.roll(y, -1)
         cr = x * y1 - x1 * y; A2 = cr.sum()
@@ -96,6 +109,20 @@ def main(slug):
             shapes = [sh for sh in shapes if not (sh["kind"] == d_["kind"] and not sh.get("added") and
                       (np.linalg.norm(sh["c"] - q) < r_ or _P(sh["xy"]).buffer(0).distance(__import__("shapely.geometry", fromlist=["Point"]).Point(q)) < 0.5))]
             if len(shapes) == before: print(f"  drop {d_['kind']} at {d_['px']}: nothing there")
+        # sand the model sees inside a pond is a fountain or a reflection, not a bunker
+        ponds = [_P(sh["xy"]).buffer(0) for sh in shapes if sh["kind"] == "water"]
+        from shapely.geometry import Point as _Pt
+        n0 = len(shapes)
+        shapes = [sh for sh in shapes if not (sh["kind"] == "bunker" and any(pd.contains(_Pt(*sh["c"])) for pd in ponds))]
+        if len(shapes) < n0: print(f"  {n0 - len(shapes)} bunkers inside ponds dropped")
+        # the model also finds sand arenas, lawns and ponds in the gardens around the course: keep what is near a hole
+        from shapely.geometry import LineString as _L
+        from shapely.ops import unary_union as _U
+        lines_ = _U([_L([fwd(*p) for p in h_["line"]]) for h_ in holes.values()])
+        reach = {"bunker": 70, "fairway": 45, "water": 120, "tee": 60, "green": 60}
+        n0 = len(shapes)
+        shapes = [sh for sh in shapes if sh.get("added") or _P(sh["xy"]).buffer(0).distance(lines_) < reach.get(sh["kind"], 80)]
+        print(f"  {n0 - len(shapes)} shapes far from every hole dropped")
     # rivers and streams (fetched separately): drawn as water at their mapped or usual width, near the holes only
     xp = f"courses/osm-extra/{slug}.json"
     if os.path.exists(xp):
@@ -150,6 +177,21 @@ def main(slug):
         s = min(cand, key=lambda s: poly_dist(end, s["xy"]))
         if poly_dist(end, s["xy"]) < 15: s["kind"] = fx["to"]; print(f"  retagged {s['id']} {fx['from']} -> {fx['to']} (hole {fx['near_hole_end']})")
 
+    if from_mask:
+        # the model marks odd patches of short grass as tee: keep tee-sized shapes beside the first 170 m of a hole
+        from shapely.geometry import LineString as _LS, Polygon as _PG
+        starts = []
+        for hs in spec["holes"]:
+            P0 = [fwd(*p) for p in holes[int(hs["hole"])]["line"]]
+            u0 = (P0[1] - P0[0]) / np.linalg.norm(P0[1] - P0[0])
+            starts.append(_LS([P0[0] - u0 * 40, P0[0] + u0 * min(170, np.linalg.norm(P0[1] - P0[0]))]))
+        def tee_ok(sh):
+            if sh.get("added"): return True
+            a_ = ring_area(sh["xy"])
+            return 8 <= a_ <= 1200 and min(_PG(sh["xy"]).buffer(0).distance(st_) for st_ in starts) < 22
+        n0 = len(shapes)
+        shapes = [sh for sh in shapes if sh["kind"] != "tee" or tee_ok(sh)]
+        print(f"  {n0 - len(shapes)} stray tee-like patches dropped, {sum(1 for sh in shapes if sh['kind'] == 'tee')} tee boxes kept")
     greens = [s for s in shapes if s["kind"] == "green"]
     out_holes, added_pads, extended, report = {}, [], [], []
     for hs in spec["holes"]:
@@ -176,7 +218,7 @@ def main(slug):
         P[0] = T
         L = sum(np.linalg.norm(P[i + 1] - P[i]) for i in range(len(P) - 1))
         dist = round(card) if mode == "card" else round(L)
-        out_holes[str(r)] = {"par": h["par"], "si": hs.get("si"), "dist": dist, "line": [inv(p) for p in P], "source": "verified",
+        out_holes[str(r)] = {"par": h["par"], "si": hs.get("si"), "dist": dist, "card": round(card), "line": [inv(p) for p in P], "source": "verified",
                              **({"note": hs["note"]} if hs.get("note") and mode == "fixed" else {})}
         report.append((r, mode, round(a, 1), round(L), round(card)))
         # tee pad: the back tee must stand on one
@@ -195,18 +237,57 @@ def main(slug):
                 shapes.append({"kind": "tee", "ll": [tuple(inv(p)) for p in pad], "xy": pad, "c": centroid(pad), "id": f"pad{r}", "added": True})
                 added_pads.append(r)
     for row in report: print("  hole %2d  %-5s tee moved %6.1f m  length %4d m  card %4d m" % row)
-    if from_mask:
-        # the model marks odd patches of short grass as tee: keep tee shapes that are tee-sized and near a hole start
-        starts = [fwd(*holes[int(hs["hole"])]["line"][0]) for hs in spec["holes"]] + [fwd(*o["line"][0]) for o in out_holes.values()]
-        def tee_ok(sh):
-            if sh.get("added") or sh.get("extended"): return True
-            a_ = ring_area(sh["xy"])
-            near_ = min(np.linalg.norm(sh["c"] - st_) for st_ in starts)
-            return 8 <= a_ <= 900 and near_ < 60
-        n0 = len(shapes)
-        shapes = [sh for sh in shapes if sh["kind"] != "tee" or tee_ok(sh)]
-        print(f"  {n0 - len(shapes)} stray tee-like patches dropped")
     print("  tee pads added for holes", added_pads, "extended for holes", extended)
+
+    if from_mask:
+        from shapely.geometry import Polygon as _PG, Point as _Pt
+        from shapely.ops import unary_union as _UU
+        # tee boxes traced on the high-res photo (spec "tee_boxes": rectangles in imagery px) replace the model's
+        # rough blobs they sit on
+        tb = spec.get("tee_boxes") or []
+        if tb:
+            n_rep = 0
+            for box in tb:
+                xy = np.array([fwd(*MM.px2ll(*q)) for q in box["px"]]); c_ = centroid(xy)
+                hit = [sh for sh in shapes if sh["kind"] == "tee" and (_PG(sh["xy"]).buffer(0).contains(_Pt(*c_)) or np.linalg.norm(sh["c"] - c_) < 6)]
+                for sh in hit:
+                    sh["xy"] = xy; sh["ll"] = [tuple(inv(q)) for q in xy]; sh["c"] = c_; sh["traced"] = True; n_rep += 1
+            print(f"  {n_rep} tee boxes replaced by ones traced on the photo")
+        # fairways stop at the green: the model's fairway class runs on round the collar, which would draw as a second
+        # ring around the green. Keep the approach (in front of the green, as wide as the green's front) and trim the
+        # fairway away beside and behind the green, then round off the corners the cut leaves
+        from shapely.geometry import LineString as _LSg
+        cut = []
+        for r_, oh in out_holes.items():
+            P = [fwd(*q) for q in oh["line"]]
+            g = min(greens, key=lambda s_: poly_dist(P[-1], s_["xy"]))
+            ug = (P[-1] - P[-2]) / np.linalg.norm(P[-1] - P[-2]); nrm = np.array([ug[1], -ug[0]])
+            G_ = _PG(g["xy"]).buffer(0); gc_ = P[-1]
+            al = (g["xy"] - gc_) @ ug
+            front = al.min()
+            # the green's width a few metres in from its front edge
+            chord = G_.intersection(_LSg([gc_ + ug * (front + 4) - nrm * 80, gc_ + ug * (front + 4) + nrm * 80]))
+            if chord.is_empty: continue
+            pts_ = np.array(chord.coords) if chord.geom_type == "LineString" else np.vstack([np.array(c_.coords) for c_ in chord.geoms])
+            lat_ = (pts_ - gc_) @ nrm; l0, l1 = lat_.min() + 1.0, lat_.max() - 1.0
+            if l1 - l0 < 4: l0, l1 = (l0 + l1) / 2 - 2, (l0 + l1) / 2 + 2
+            appr = _PG([gc_ + ug * (front - 80) + nrm * l0, gc_ + ug * (front + 6) + nrm * l0, gc_ + ug * (front + 6) + nrm * l1, gc_ + ug * (front - 80) + nrm * l1])
+            cut.append(G_.buffer(16).difference(appr).union(G_.buffer(0.6)))
+        CUT = _UU(cut)
+        new_shapes, n_cut = [], 0
+        for sh in shapes:
+            if sh["kind"] != "fairway":
+                new_shapes.append(sh); continue
+            F = _PG(sh["xy"]).buffer(0)
+            if not F.intersects(CUT):
+                new_shapes.append(sh); continue
+            rest = F.difference(CUT).buffer(-2.0).buffer(2.0).buffer(3.0).buffer(-3.0).difference(CUT); n_cut += 1
+            parts = [q for q in getattr(rest, "geoms", [rest]) if q.area >= 60]
+            for k_, q in enumerate(parts):
+                xy = np.array(q.simplify(0.25).exterior.coords)[:-1]
+                new_shapes.append({**sh, "xy": xy, "ll": [tuple(inv(p_)) for p_ in xy], "c": centroid(xy), "id": sh["id"] + ("" if k_ == 0 else f"-{k_}")})
+        shapes = new_shapes
+        print(f"  {n_cut} fairways trimmed where they ran round a green")
 
     # tree crowns from the photo (z18), inside the course and clear of the playing shapes
     meta = json.load(open(spec["imagery"]))["z18"]

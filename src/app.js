@@ -348,7 +348,8 @@ async function downloadBook(btn) {
     const gname = state.group != null ? state.course.groups[state.group].name : '';
     // ---- cover: white card, framed, gold band
     const yd = state.units === 'yd', k = yd ? YD : 1;
-    const totPar = holes.reduce((a, h) => a + (h.par || 0), 0), totLen = Math.round(holes.reduce((a, h) => a + (h.tagDist || h.playCentre || 0), 0) * k);
+    // the course's length as the club's card gives it (a hole drawn from a nearer tee still counts its card length)
+    const totPar = holes.reduce((a, h) => a + (h.par || 0), 0), totLen = Math.round(holes.reduce((a, h) => a + (h.cardDist || h.tagDist || h.playCentre || 0), 0) * k);
     doc.setDrawColor(40, 40, 40); doc.setLineWidth(0.55); doc.roundedRect(4.6, 4.6, W - 9.2, H - 9.2, 3.4, 3.4, 'S');
     doc.setFont('RobotoCondensed', 'bold'); doc.setFontSize(15); doc.setTextColor(58, 58, 58);
     // letter-spaced lines centred by hand (the library centres them as if they weren't spaced)

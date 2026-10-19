@@ -199,7 +199,7 @@ function buildHole(h, L) {
 
   const hole = {
     ref: h.tags.ref || '?', par, si: h.tags.handicap || h.tags.stroke_index || '', name: h.tags.name || '',
-    lengthM, tagDist: isFinite(tagDist) ? tagDist : null,
+    lengthM, tagDist: isFinite(tagDist) ? tagDist : null, cardDist: isFinite(parseFloat(h.tags.card)) ? parseFloat(h.tags.card) : null,
     CL, TEE, START0, GC, GF, GB, U, V, green, tees, fairways, bunkers, water, trees, woods,
     warnings: [], src: h, verified, note: verified && h.tags.note ? String(h.tags.note) : '',
   };

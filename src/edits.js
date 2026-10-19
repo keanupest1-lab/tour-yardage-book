@@ -23,6 +23,7 @@ export function editsToElements(edits) {
     if (h.par) tags.par = String(h.par);
     if (h.note) tags.note = String(h.note);
     if (h.dist) tags.dist = String(h.dist);
+    if (h.card) tags.card = String(h.card);
     if (h.name) tags.name = String(h.name);
     if (h.si) tags.handicap = String(h.si);
     if (h.source === 'verified') tags.verified = 'yes';
