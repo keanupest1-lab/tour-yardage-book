@@ -1,25 +1,5 @@
-2026-10-13T18:08:45.089Z skip Dainfern Golf Estate (already saved)
-2026-10-13T18:08:45.089Z skip Irene Country Club (already saved)
-2026-10-13T18:08:45.089Z skip Pretoria Country Club (already saved)
-2026-10-13T18:08:45.089Z fetch Wanderers Golf Club, Johannesburg
-2026-10-13T18:08:45.647Z   FAILED Wanderers Golf Club, Johannesburg: not found on OpenStreetMap search
-2026-10-13T18:08:50.481Z skip Bryanston Country Club (already saved)
-2026-10-13T18:08:50.481Z skip Old Course St Andrews (already saved)
-2026-10-13T18:08:50.482Z skip Royal Johannesburg & Kensington Golf Club, Johannesburg (already saved)
-2026-10-13T18:08:50.482Z skip Glendower Golf Club (already saved)
-2026-10-13T18:08:50.482Z fetch Houghton Golf Club, Johannesburg
-2026-10-13T18:08:51.028Z   FAILED Houghton Golf Club, Johannesburg: not found on OpenStreetMap search
-2026-10-13T18:08:55.619Z fetch Krugersdorp Golf Club
-2026-10-13T18:09:07.649Z   attempt 1 overpass-api.de: HTTP 504 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 
-2026-10-13T18:10:47.661Z   attempt 2 overpass.private.coffee: timeout
-2026-10-13T18:12:27.667Z   attempt 3 overpass.kumi.systems: timeout
-2026-10-13T18:12:38.996Z   attempt 4 maps.mail.ru: HTTP 504 <html>
-<head><title>504 Gateway Time-out</title></head>
-<body>
-<center><h1>50
-2026-10-13T18:12:56.956Z   attempt 5 overpass-api.de: HTTP 504 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 
-2026-10-13T18:14:36.967Z   attempt 6 overpass.private.coffee: timeout
-2026-10-13T18:15:24.087Z   overpass ok via overpass.kumi.systems on attempt 7
-2026-10-13T18:15:24.088Z   saved krugersdorp-golf-club: 0 holes ready; OSM has 0 hole lines, 0 greens, 0 fairways
+2026-10-19T05:22:43.024Z skip Dainfern Golf Estate (already saved)
+2026-10-19T05:22:43.024Z skip Irene Country Club (already saved)
+2026-10-19T05:22:43.024Z skip Pretoria Country Club (already saved)
+2026-10-19T05:22:43.024Z fetch Wanderers Golf Club, Johannesburg
+2026-10-19T05:22:43.209Z   FAILED Wanderers Golf Club, Johannesburg: not found on OpenStreetMap search
