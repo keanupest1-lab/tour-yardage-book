@@ -1,0 +1,32 @@
+name: Shape model on saved imagery
+on:
+  push:
+    paths: ['courses/shapes-requests.txt', 'ml/shapes.py']
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: shapes
+  cancel-in-progress: false
+jobs:
+  shapes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu && pip install segmentation-models-pytorch==0.3.4 pillow numpy scipy opencv-python-headless
+      - name: Shapes
+        env:
+          PYTHONUNBUFFERED: '1'
+        run: mkdir -p models && python3 ml/shapes.py 2>&1 | tee courses/shapes-last-run.log
+      - name: Save
+        if: always()
+        run: |
+          git config --global user.name "course-bot"; git config --global user.email "course-bot@users.noreply.github.com"
+          git add courses/verified courses/qa courses/shapes-last-run.log
+          git diff --cached --quiet && exit 0
+          git commit -m "Shape masks [skip ci]"
+          for i in 1 2 3; do git pull --rebase origin main && git push origin HEAD:main && break; sleep 5; done

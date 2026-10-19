@@ -1,0 +1,1 @@
+# slug [model branches...]  (runs the shape model on courses/imagery/<slug>/z18.jpg)
