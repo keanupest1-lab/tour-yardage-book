@@ -114,6 +114,30 @@
    }
   },
   {
+   "slug": "kyalami-country-club",
+   "query": "Kyalami Country Club",
+   "name": "Kyalami Country Club",
+   "place": "Kyalami Country Club",
+   "bbox": [
+    -25.984,
+    -25.968,
+    28.048,
+    28.0705
+   ],
+   "fetched": "2026-10-19T05:23:29.660Z",
+   "census": {
+    "holeLines": 18,
+    "greens": 0,
+    "fairways": 0,
+    "tees": 0,
+    "bunkers": 0,
+    "water": 1,
+    "trees": 235,
+    "holesReady": 18,
+    "skipped": []
+   }
+  },
+  {
    "slug": "old-course-st-andrews",
    "query": "Old Course St Andrews",
    "name": "Old Course",

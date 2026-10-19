@@ -9,3 +9,7 @@
 2026-10-19T05:22:47.638Z skip Glendower Golf Club (already saved)
 2026-10-19T05:22:47.638Z fetch Houghton Golf Club, Johannesburg
 2026-10-19T05:22:47.796Z   FAILED Houghton Golf Club, Johannesburg: not found on OpenStreetMap search
+2026-10-19T05:22:52.287Z skip Krugersdorp Golf Club (already saved)
+2026-10-19T05:22:52.287Z fetch Kyalami Country Club
+2026-10-19T05:23:29.639Z   overpass ok via overpass-api.de on attempt 1
+2026-10-19T05:23:29.660Z   saved kyalami-country-club: 18 holes ready; OSM has 18 hole lines, 0 greens, 0 fairways
