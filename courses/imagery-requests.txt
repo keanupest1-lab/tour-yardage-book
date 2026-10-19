@@ -5,3 +5,5 @@ krugersdorp-golf-club | -26.0900,-26.0745,27.7770,27.7935 | 18
 krugersdorp-golf-club | -26.0900,-26.0745,27.7770,27.7935 | 19
 glendower-golf-club | -26.1650,-26.1468,28.1255,28.1505 | 18
 glendower-golf-club | -26.1650,-26.1468,28.1255,28.1505 | 19
+kyalami-country-club | -25.9850,-25.9670,28.0465,28.0720 | 18
+kyalami-country-club | -25.9850,-25.9670,28.0465,28.0720 | 19
