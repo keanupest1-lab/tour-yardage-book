@@ -1,6 +1,7 @@
 import { searchCourses, loadCourseData, parseOverpass } from './osm.js';
 import { buildCourse } from './course.js';
-import { bookPages } from './clere.js';
+import { bookPages, PRINT } from './clere.js';
+import { coverFace, clubsFace, notesFace, backFace, turned, impose, SHEET } from './print.js';
 import { mergeEdits, slugify, hasEdits } from './edits.js';
 import { loadTerrain } from './terrain.js';
 
@@ -326,6 +327,72 @@ $('#mapItem').addEventListener('click', () => {
 function loadScript(src) {
   return new Promise((res, rej) => { const el = document.createElement('script'); el.src = src; el.onload = res; el.onerror = () => rej(new Error(`Couldn't load ${src}`)); document.head.appendChild(el); });
 }
+async function pdfDoc(format) {
+  if (!window.jspdf) await loadScript('src/vendor/jspdf.umd.min.js');
+  if (!window.svg2pdf) await loadScript('src/vendor/svg2pdf.umd.min.js');
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: 'mm', format, orientation: 'portrait', compress: true });
+  // the book face (Roboto Condensed, SIL OFL) embedded in the PDF
+  const b64 = async (url) => { const buf = new Uint8Array(await (await fetch(url)).arrayBuffer()); let bin = ''; for (let i = 0; i < buf.length; i += 0x8000) bin += String.fromCharCode.apply(null, buf.subarray(i, i + 0x8000)); return btoa(bin); };
+  for (const [file, style] of [['RobotoCondensed-Regular.ttf', 'normal'], ['RobotoCondensed-Bold.ttf', 'bold']]) {
+    doc.addFileToVFS(file, await b64(`src/vendor/fonts/${file}`)); doc.addFont(file, 'RobotoCondensed', style);
+  }
+  return doc;
+}
+// the view from the tee and where its markers fall, for the foot of each spread (courses that have them)
+async function teeViewFor(h) {
+  if (!state.meta?.slug) return {};
+  try {
+    const base = `courses/teeview/${state.meta.slug}-${encodeURIComponent(h.ref)}`;
+    const mr = await fetch(`${base}.json`, { cache: 'no-store' }); if (!mr.ok) return {};
+    const marks = await mr.json();
+    const r = await fetch(`${base}.jpg`, { cache: 'no-store' }); if (!r.ok) return {};
+    const blob = await r.blob();
+    const url = await new Promise((res) => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.onerror = () => res(null); fr.readAsDataURL(blob); });
+    return url ? { teeView: url, teeMarks: marks } : {};
+  } catch { return {}; }
+}
+// a page's base (rough, corridor, tree canopies) as a JPEG of pxW x pxH, turned 180 degrees if asked
+function pagePicture(svgText, pxW, pxH, turn = false) {
+  return new Promise((res, rej) => {
+    const sized = svgText.replace(/width="[\d.]+mm" height="[\d.]+mm"/, `width="${pxW}" height="${pxH}"`);
+    const url = URL.createObjectURL(new Blob([sized], { type: 'image/svg+xml' }));
+    const im = new Image();
+    im.onload = () => {
+      const cv = document.createElement('canvas'); cv.width = pxW; cv.height = pxH;
+      const g = cv.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, pxW, pxH);
+      if (turn) { g.translate(pxW, pxH); g.rotate(Math.PI); }
+      g.drawImage(im, 0, 0, pxW, pxH);
+      URL.revokeObjectURL(url);
+      const data = cv.toDataURL('image/jpeg', 0.9); cv.width = cv.height = 1; res(data);
+    };
+    im.onerror = () => { URL.revokeObjectURL(url); rej(new Error('a page picture would not draw')); };
+    im.src = url;
+  });
+}
+// one page (SVG) into the PDF at x, y (mm), w x h (mm)
+let facesReady = null;
+async function placeSvg(doc, box, svgText, x, y, w, h) {
+  facesReady = facesReady || Promise.all([document.fonts.load("700 40px 'Roboto Condensed'"), document.fonts.load("400 40px 'Roboto Condensed'")]).catch(() => null);
+  await facesReady;
+  box.innerHTML = svgText;
+  const svg = box.querySelector('svg');
+  // centred and right-aligned text: the PDF library measures letters wider than the face draws them, which pulls
+  // such text left; place it from its left end instead, measured here by the browser in the book face
+  svg.querySelectorAll('text[text-anchor="middle"], text[text-anchor="end"]').forEach((el) => {
+    const len = el.getComputedTextLength(), x0 = parseFloat(el.getAttribute('x'));
+    if (!isFinite(len) || !isFinite(x0) || len <= 0) return;
+    el.setAttribute('x', String(el.getAttribute('text-anchor') === 'middle' ? x0 - len / 2 : x0 - len));
+    el.setAttribute('text-anchor', 'start');
+  });
+  svg.querySelectorAll('[font-weight]').forEach((el) => el.setAttribute('font-weight', parseInt(el.getAttribute('font-weight')) >= 600 || el.getAttribute('font-weight') === 'bold' ? 'bold' : 'normal'));
+  svg.querySelectorAll('[font-family]').forEach((el) => el.setAttribute('font-family', 'RobotoCondensed'));
+  // the PDF library doesn't scale outline widths on text to the page: do it here (keeps the white halos thin)
+  const vbW = svg.viewBox?.baseVal?.width || parseFloat(svg.getAttribute('width')) || 1000;
+  svg.querySelectorAll('text[stroke]').forEach((el) => el.setAttribute('stroke-width', String(parseFloat(el.getAttribute('stroke-width') || '1') * (w / vbW))));
+  await doc.svg(svg, { x, y, width: w, height: h });
+  await new Promise((r) => setTimeout(r, 0));     // keep the page responsive
+}
 async function downloadBook(btn) {
   if (!state.course) return;
   const label = btn?.querySelector('span')?.firstChild || btn;
@@ -333,17 +400,9 @@ async function downloadBook(btn) {
   const say = (t) => { if (label) label.textContent = t; };
   try {
     say('Preparing…');
-    if (!window.jspdf) await loadScript('src/vendor/jspdf.umd.min.js');
-    if (!window.svg2pdf) await loadScript('src/vendor/svg2pdf.umd.min.js');
-    const { jsPDF } = window.jspdf;
     const W = 101.6, H = 177.8;
-    const doc = new jsPDF({ unit: 'mm', format: [W, H], orientation: 'portrait', compress: true });
+    const doc = await pdfDoc([W, H]);
     doc.setProperties({ title: `${state.name} yardage book`, subject: 'Tour yardage book: 4K pages, vector numbers', creator: 'Tour Yardage Books', author: 'Tour Yardage Books' });
-    // the book face (Roboto Condensed, SIL OFL) embedded in the PDF
-    const b64 = async (url) => { const buf = new Uint8Array(await (await fetch(url)).arrayBuffer()); let bin = ''; for (let i = 0; i < buf.length; i += 0x8000) bin += String.fromCharCode.apply(null, buf.subarray(i, i + 0x8000)); return btoa(bin); };
-    for (const [file, style] of [['RobotoCondensed-Regular.ttf', 'normal'], ['RobotoCondensed-Bold.ttf', 'bold']]) {
-      doc.addFileToVFS(file, await b64(`src/vendor/fonts/${file}`)); doc.addFont(file, 'RobotoCondensed', style);
-    }
     const holes = visibleHoles().map((i) => state.course.holes[i]);
     const gname = state.group != null ? state.course.groups[state.group].name : '';
     // ---- cover: white card, framed, gold band
@@ -413,56 +472,96 @@ async function downloadBook(btn) {
     document.body.appendChild(box);
     const opts = { units: state.units };
     let n = 0;
-    // the view from the tee and where its markers fall, for the foot of each spread
-    const teeView = async (h) => {
-      if (!state.meta?.slug) return {};
-      try {
-        const base = `courses/teeview/${state.meta.slug}-${encodeURIComponent(h.ref)}`;
-        const mr = await fetch(`${base}.json`, { cache: 'no-store' }); if (!mr.ok) return {};
-        const marks = await mr.json();
-        const r = await fetch(`${base}.jpg`, { cache: 'no-store' }); if (!r.ok) return {};
-        const blob = await r.blob();
-        const url = await new Promise((res) => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.onerror = () => res(null); fr.readAsDataURL(blob); });
-        return url ? { teeView: url, teeMarks: marks } : {};
-      } catch { return {}; }
-    };
     const all = [];
-    for (const h of holes) all.push(bookPages(h, state.course, { ...opts, pdf: true, ...(await teeView(h)) }));
+    for (const h of holes) all.push(bookPages(h, state.course, { ...opts, pdf: true, ...(await teeViewFor(h)) }));
     const total2 = all.reduce((a, p) => a + p.length, 0);
     // the base of a page (rough, corridor, tree canopies) as a 4K picture: 2194 x 3840 pixels, about 550 per inch
     const PX_W = 2194, PX_H = 3840;
-    const picture = (svgText) => new Promise((res, rej) => {
-      const sized = svgText.replace('width="101.6mm" height="177.8mm"', `width="${PX_W}" height="${PX_H}"`);
-      const url = URL.createObjectURL(new Blob([sized], { type: 'image/svg+xml' }));
-      const im = new Image();
-      im.onload = () => {
-        const cv = document.createElement('canvas'); cv.width = PX_W; cv.height = PX_H;
-        const g = cv.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, PX_W, PX_H); g.drawImage(im, 0, 0, PX_W, PX_H);
-        URL.revokeObjectURL(url);
-        const data = cv.toDataURL('image/jpeg', 0.9); cv.width = cv.height = 1; res(data);
-      };
-      im.onerror = () => { URL.revokeObjectURL(url); rej(new Error('a page picture would not draw')); };
-      im.src = url;
-    });
     for (const hp of all) {
       for (const pg of hp) {
         say(`Page ${++n} of ${total2}…`);
-        const base = pg.base ? await picture(pg.base) : null;
-        box.innerHTML = pg.base ? pg.overlay : pg.svg;
-        const svg = box.querySelector('svg');
-        svg.querySelectorAll('[font-weight]').forEach((el) => el.setAttribute('font-weight', parseInt(el.getAttribute('font-weight')) >= 600 || el.getAttribute('font-weight') === 'bold' ? 'bold' : 'normal'));
-        svg.querySelectorAll('[font-family]').forEach((el) => el.setAttribute('font-family', 'RobotoCondensed'));
-        // the PDF library doesn't scale outline widths on text to the page: do it here (keeps the white halos thin)
-        const vbW = svg.viewBox?.baseVal?.width || parseFloat(svg.getAttribute('width')) || 1000;
-        svg.querySelectorAll('text[stroke]').forEach((el) => el.setAttribute('stroke-width', String(parseFloat(el.getAttribute('stroke-width') || '1') * (W / vbW))));
+        const base = pg.base ? await pagePicture(pg.base, PX_W, PX_H) : null;
         doc.addPage([W, H], 'portrait');
         if (base) doc.addImage(base, 'JPEG', 0, 0, W, H, undefined, 'NONE');
-        await doc.svg(svg, { x: 0, y: 0, width: W, height: H });
-        await new Promise((r) => setTimeout(r, 0));     // keep the page responsive
+        await placeSvg(doc, box, pg.base ? pg.overlay : pg.svg, 0, 0, W, H);
       }
     }
     box.remove();
     const file = `${slugify(state.name)}${gname && gname !== state.name ? '-' + slugify(gname) : ''}-yardage-book.pdf`;
+    doc.save(file);
+    say('Downloaded');
+    setTimeout(() => say(was), 2500);
+  } catch (err) {
+    say(was); alert(`Couldn't build the PDF: ${err.message}`);
+  }
+}
+
+// ---------- print-and-cut book: four pages to an A4 side, two copies, cut and bound along the top ----------
+async function downloadPrintBook(btn) {
+  if (!state.course) return;
+  const label = btn?.querySelector('span')?.firstChild || btn;
+  const was = label?.textContent;
+  const say = (t) => { if (label) label.textContent = t; };
+  try {
+    say('Preparing…');
+    const doc = await pdfDoc('a4');
+    doc.setProperties({ title: `${state.name} yardage book (print and cut)`, subject: 'Yardage book to print on A4 both sides and cut: 90 x 148.5 mm pages, two copies', creator: 'Tour Yardage Books', author: 'Tour Yardage Books' });
+    // text widths for the cover, measured with the book face
+    try { await Promise.all([document.fonts.load("700 40px 'Roboto Condensed'"), document.fonts.load("400 40px 'Roboto Condensed'")]); } catch {}
+    const ctx = document.createElement('canvas').getContext('2d');
+    const measure = (t, size, bold) => { ctx.font = `${bold ? 700 : 400} ${size}px 'Roboto Condensed'`; return ctx.measureText(String(t)).width; };
+    const holes = visibleHoles().map((i) => state.course.holes[i]);
+    const gname = state.group != null ? state.course.groups[state.group].name : '';
+    const yd = state.units === 'yd', k = yd ? YD : 1, unitsLabel = yd ? 'yards' : 'metres';
+    const totPar = holes.reduce((a, h) => a + (h.par || 0), 0), totLen = Math.round(holes.reduce((a, h) => a + (h.cardDist || h.tagDist || h.playCentre || 0), 0) * k);
+    const place = shortPlace(state.meta?.place, state.name);
+    // every page in reading order: cover, each hole (green end above, tee end below), club distances and notes, back
+    const faces = [{ svg: coverFace({ name: state.name, place: gname && gname !== state.name ? `${gname} · ${place}` : place, par: totPar, total: totLen, unitsLabel, year: new Date().getFullYear(), measure }) }];
+    const opts = { units: state.units, pdf: true, pageH: PRINT.pageH, safe: PRINT.safe, pageMM: PRINT.pageMM };
+    for (const h of holes) faces.push(...bookPages(h, state.course, { ...opts, ...(await teeViewFor(h)) }));
+    faces.push({ svg: clubsFace({ unitsLabel, measure }) }, { svg: notesFace({ measure }) });
+    while ((faces.length + 1) % 4) faces.push({ svg: notesFace({ measure }) });
+    faces.push({ svg: backFace({ name: state.name, measure }) });
+    const plan = impose(faces);
+    const box = document.createElement('div');
+    box.style.cssText = 'position:fixed;left:-20000px;top:0;width:500px;pointer-events:none';
+    document.body.appendChild(box);
+    // 4K base pictures for the hole pages (3840 pixels tall, about 650 per inch at 148.5 mm)
+    const PX_H = 3840, PX_W = Math.round(PX_H * SHEET.pageW / SHEET.pageH);
+    const { w: SW, h: SH, colX, rowY, pageW: PW, pageH: PHm } = SHEET;
+    let pic = 0;
+    for (const [i, side] of plan.sides.entries()) {
+      say(`Sheet ${side.sheet} of ${plan.sheets} (${side.side})…`);
+      if (i > 0) doc.addPage('a4', 'portrait');
+      for (const slot of side.slots) {
+        const f = slot.face, y = rowY[slot.row];
+        const base = f.base ? await pagePicture(f.base, PX_W, PX_H, slot.turned) : null;
+        const alias = base ? `base${++pic}` : null;
+        const vec = f.base ? f.overlay : f.svg;
+        for (const x of colX) {
+          if (base) doc.addImage(base, 'JPEG', x, y, PW, PHm, alias, 'NONE');
+          await placeSvg(doc, box, slot.turned ? turned(vec) : vec, x, y, PW, PHm);
+        }
+      }
+      // cut lines: down the middle and across the middle (dashed), the two outer edges (fine)
+      doc.setLineDashPattern([], 0); doc.setDrawColor(150, 150, 150); doc.setLineWidth(0.18);
+      for (const x of [colX[0], colX[1] + PW]) doc.line(x, 0, x, SH);
+      doc.setLineDashPattern([2, 1.5], 0); doc.setDrawColor(80, 80, 80); doc.setLineWidth(0.25);
+      doc.line(colX[1], 0, colX[1], SH); doc.line(colX[0] - 3, rowY[1], colX[1] + PW + 3, rowY[1]);
+      doc.setLineDashPattern([], 0);
+      // which sheet and side this is, in the margin (cut away)
+      doc.setFont('RobotoCondensed', 'normal'); doc.setFontSize(6.5); doc.setTextColor(130, 130, 130);
+      const tag = `${state.name}  ·  sheet ${side.sheet} of ${plan.sheets}  ·  ${side.side}`;
+      doc.text(tag, colX[0] / 2 + 1, SH / 2 + doc.getTextWidth(tag) / 2, { angle: 90 });
+      if (i === 0) {
+        const how = ['PRINT on A4, both sides, flip on long edge, at actual size (100%, no scaling).   CUT on every line: each sheet gives four pages; the left and right columns make two identical books.',
+          'STACK the bottom halves in sheet order (sheet 1 on top), then turn the pile of top halves over (top edge to bottom) and put it underneath.   BIND along the top edge: each hole opens as one spread.'];
+        doc.setFontSize(6.2); doc.setTextColor(110, 110, 110);
+        how.forEach((ln, j) => doc.text(ln, SW - colX[0] / 2 - 2.6 + j * 3.4, SH / 2 + doc.getTextWidth(ln) / 2, { angle: 90 }));
+      }
+    }
+    box.remove();
+    const file = `${slugify(state.name)}${gname && gname !== state.name ? '-' + slugify(gname) : ''}-yardage-book-print-a4.pdf`;
     doc.save(file);
     say('Downloaded');
     setTimeout(() => say(was), 2500);
@@ -477,6 +576,8 @@ document.querySelectorAll('[data-units]').forEach((b) => b.addEventListener('cli
 setUnits(state.units);
 $('#pdfAll').addEventListener('click', (e) => downloadBook(e.currentTarget));
 $('#pdfAll2').addEventListener('click', (e) => downloadBook(e.currentTarget));
+$('#pdfPrint').addEventListener('click', (e) => downloadPrintBook(e.currentTarget));
+$('#pdfPrint2').addEventListener('click', (e) => downloadPrintBook(e.currentTarget));
 $('#printAll').addEventListener('click', () => printBook(true));
 $('#printHole2').addEventListener('click', () => printBook(false));
 $('#printAll2').addEventListener('click', () => printBook(true));

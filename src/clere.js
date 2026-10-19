@@ -8,7 +8,10 @@
 import * as G from './geo.js';
 
 export const PAGE_W = 1016, PAGE_H = 1778;          // 4" x 7" pocket pages; 1 unit = 0.1 mm
-const W = PAGE_W, PH = PAGE_H, TH = 2 * PH;
+// the print-and-cut format (four pages to an A4 side, cut and bound at the top): pages 90 x 148.5 mm, drawn on the
+// same 1016-unit width, with a band kept clear of numbers along the page edge that falls on the edge of the paper
+export const PRINT = { pageMM: [90, 148.5], pageH: Math.round(1016 * 148.5 / 90), safe: 62 };
+const W = PAGE_W;
 const MAX_DRIVE = 320;                               // metres (350 yds): no from-tee numbers past this
 const FONT = `font-family="'Roboto Condensed','Arial Narrow','Helvetica Neue',Arial,sans-serif"`;
 const C = {
@@ -98,6 +101,9 @@ const unitInfo = (units) => (units === 'yd' ? { k: 1.0936133, key: 'yd', label: 
 
 // ---------------------------------------------------------------- the spread
 export function bookPages(H, course, opts = {}) {
+  const PH = opts.pageH || PAGE_H, TH = 2 * PH;       // page height (units): 4 x 7 inch by default
+  const SAFE = opts.safe || 0;                       // band at the outer edges kept clear (printer margins)
+  const [mmW, mmH] = opts.pageMM || [101.6, 177.8];
   const U = unitInfo(opts.units);
   const n = (m) => Math.round(m * U.k), toM = (v) => v / U.k;
   const rings = RINGS[U.key].filter((rv) => toM(rv) < H.toFront - 12);
@@ -117,7 +123,7 @@ export function bookPages(H, course, opts = {}) {
 
   const photo = !!opts.teeView;
   const PHOTO_H = photo ? 300 : 0, FOOT_H = 104;
-  const FT = TH - PHOTO_H - FOOT_H;                  // map runs from the top of the spread down to the footer
+  const FT = TH - PHOTO_H - FOOT_H - SAFE;           // map runs from the top of the spread down to the footer
   // two layers: the base (rough, light-rough corridor, tree canopies), which the PDF carries as a 4K picture so the
   // soft shading stays smooth, and everything else, which stays vector (sharp at any zoom)
   const ob = [], o = [];
@@ -218,6 +224,7 @@ export function bookPages(H, course, opts = {}) {
   // ================= numbers
   const occ = new Occ();
   occ.take([0, PH - 20, W, PH + 20]);                 // the fold between the pages
+  if (SAFE) occ.take([0, -50, W, SAFE + 6]);          // nothing in the band along the top edge
   const INSET = [16, FT - 262, 206, FT - 16];
   occ.take(INSET);
   const blueOf = (p) => (H.B(p) <= cap ? `${n(H.B(p))}` : null);
@@ -455,7 +462,7 @@ export function bookPages(H, course, opts = {}) {
   }
 
   // ---- footer: run-outs (letters) and carries (numbers)
-  o.push(`<rect x="0" y="${FT}" width="${W}" height="${FOOT_H}" fill="#fff"/>`);
+  o.push(`<rect x="0" y="${FT}" width="${W}" height="${FOOT_H + (photo ? 0 : SAFE)}" fill="#fff"/>`);
   o.push(`<line x1="0" y1="${FT}" x2="${W}" y2="${FT}" stroke="#9b9b9b" stroke-width="1.4"/><line x1="0" y1="${FT + FOOT_H / 2}" x2="${W}" y2="${FT + FOOT_H / 2}" stroke="#d2d2d2" stroke-width="1.1"/>`);
   const row = (items, yy) => {
     const list = [...items].sort((a, b) => b.d - a.d);
@@ -475,7 +482,7 @@ export function bookPages(H, course, opts = {}) {
   }
 
   // ---- the view from the tee, with the plates on it
-  const y0p = TH - PHOTO_H;
+  const BOT = TH - SAFE, y0p = BOT - PHOTO_H;       // the photo ends above the safe band
   o.push('¤PHOTO¤');
   const ph = [];
   if (photo) {
@@ -495,7 +502,7 @@ export function bookPages(H, course, opts = {}) {
       const tags = [];
       plates.filter((pl) => pl.drive).forEach((pl) => {
         const q = at(H.B(pl.p)); if (!q) return;
-        if (q.x < 10 || q.x > W - 10 || q.y < y0p + 50 || q.y > TH - 6) return;
+        if (q.x < 10 || q.x > W - 10 || q.y < y0p + 50 || q.y > BOT - 6) return;
         tags.push({ pl, q, x: q.x });
       });
       // spread the tags so they never overlap (54 units apart), keeping them over their spots where possible
@@ -519,8 +526,9 @@ export function bookPages(H, course, opts = {}) {
       }
     }
     // hole number badge and the hole line
-    ph.push(`<circle cx="70" cy="${TH - 62}" r="46" fill="${C.badge}" stroke="#fff" stroke-width="6"/>` + txt(70, TH - 43, H.ref, 54, '#fff', 'middle', true, null));
-    ph.push(txt(130, TH - 26, `PAR ${H.par}  ·  ${n(H.tagDist || H.playCentre)} ${U.label.toUpperCase()}${H.si ? '  ·  SI ' + H.si : ''}`, 24, '#fff', 'start', true, '#1b1b1b'));
+    if (SAFE) ph.push(`<rect x="0" y="${BOT}" width="${W}" height="${SAFE}" fill="#fff"/>`);
+    ph.push(`<circle cx="70" cy="${BOT - 62}" r="46" fill="${C.badge}" stroke="#fff" stroke-width="6"/>` + txt(70, BOT - 43, H.ref, 54, '#fff', 'middle', true, null));
+    ph.push(txt(130, BOT - 26, `PAR ${H.par}  ·  ${n(H.tagDist || H.playCentre)} ${U.label.toUpperCase()}${H.si ? '  ·  SI ' + H.si : ''}`, 24, '#fff', 'start', true, '#1b1b1b'));
   } else {
     ph.push(`<circle cx="${W - 62}" cy="${FT - 58}" r="44" fill="${C.badge}" stroke="#fff" stroke-width="6"/>` + txt(W - 62, FT - 40, H.ref, 50, '#fff', 'middle', true, null));
     ph.push(txt(W - 118, FT - 30, `PAR ${H.par}  ·  ${n(H.tagDist || H.playCentre)} ${U.label.toUpperCase()}${H.si ? '  ·  SI ' + H.si : ''}`, 22, C.ink, 'end', true));
@@ -534,7 +542,7 @@ export function bookPages(H, course, opts = {}) {
   }
 
   const baseBody = ob.join(''), body = o.join(''), photoLayer = ph.join('');
-  const wrap = (k, inner) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 ${k * PH} ${W} ${PH}" width="101.6mm" height="177.8mm">${inner}</svg>`;
+  const wrap = (k, inner) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 ${k * PH} ${W} ${PH}" width="${mmW}mm" height="${mmH}mm">${inner}</svg>`;
   const ids = (str, k) => str.replace(/§/g, `${String(H.ref).replace(/\W/g, '')}p${k}`);
   // each page: the whole thing (screen, print), and its two layers (PDF)
   const page = (k) => {
