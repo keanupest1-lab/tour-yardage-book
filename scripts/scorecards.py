@@ -79,7 +79,17 @@ def main():
         p = [x.strip() for x in line.split("|")]
         slug, name = p[0], p[1]
         url = p[2] if len(p) > 2 and p[2] else None
+        files = [u for u in p[3:] if u]
         print("==", slug, flush=True)
+        # the club's own scorecard / course map pictures or PDFs, saved as they are (read by eye)
+        for k, f in enumerate(files):
+            try:
+                ext = os.path.splitext(urllib.parse.urlparse(f).path)[1].lower() or ".bin"
+                with urllib.request.urlopen(urllib.request.Request(f, headers=UA), timeout=60) as r: data = r.read()
+                dest = f"courses/scorecards/raw/{slug}-{k + 1}{ext}"
+                open(dest, "wb").write(data); print(f"  saved {dest} ({len(data)} bytes) from {f}")
+            except Exception as e:
+                print("  file FAILED", f, repr(e))
         try:
             url = url or find_golfpass(name)
             if not url: print("  no GolfPass page found"); continue
