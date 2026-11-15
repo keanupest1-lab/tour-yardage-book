@@ -138,6 +138,30 @@
    }
   },
   {
+   "slug": "lusaka-golf-club",
+   "query": "Lusaka Golf Club",
+   "name": "Lusaka Golf Club",
+   "place": "Lusaka Golf Club",
+   "bbox": [
+    -15.4245,
+    -15.4144,
+    28.319,
+    28.3325
+   ],
+   "fetched": "2026-11-15T10:16:33.212Z",
+   "census": {
+    "holeLines": 18,
+    "greens": 20,
+    "fairways": 22,
+    "tees": 32,
+    "bunkers": 31,
+    "water": 10,
+    "trees": 201,
+    "holesReady": 18,
+    "skipped": []
+   }
+  },
+  {
    "slug": "old-course-st-andrews",
    "query": "Old Course St Andrews",
    "name": "Old Course",

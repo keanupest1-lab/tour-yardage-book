@@ -9,3 +9,17 @@
 2026-11-15T10:12:07.781Z skip Glendower Golf Club (already saved)
 2026-11-15T10:12:07.781Z fetch Houghton Golf Club, Johannesburg
 2026-11-15T10:12:08.088Z   FAILED Houghton Golf Club, Johannesburg: not found on OpenStreetMap search
+2026-11-15T10:12:12.096Z skip Krugersdorp Golf Club (already saved)
+2026-11-15T10:12:12.096Z skip Kyalami Country Club (already saved)
+2026-11-15T10:12:12.096Z fetch Lusaka Golf Club
+2026-11-15T10:12:12.398Z   attempt 1 overpass-api.de: HTTP 502 # 502 Gateway Timeout
+
+This Overpass API server is currently at capacity. All qu
+2026-11-15T10:13:52.404Z   attempt 2 overpass.private.coffee: timeout
+2026-11-15T10:15:32.410Z   attempt 3 overpass.kumi.systems: timeout
+2026-11-15T10:15:43.351Z   attempt 4 maps.mail.ru: HTTP 504 <html>
+<head><title>504 Gateway Time-out</title></head>
+<body>
+<center><h1>50
+2026-11-15T10:16:33.140Z   overpass ok via overpass-api.de on attempt 5
+2026-11-15T10:16:33.212Z   saved lusaka-golf-club: 18 holes ready; OSM has 18 hole lines, 20 greens, 22 fairways
