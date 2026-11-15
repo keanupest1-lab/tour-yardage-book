@@ -60,3 +60,46 @@ for line in lines:
                     "missing_tiles": missing, "source": "Esri World Imagery", "requested_bbox": [s, n, w, e]}
     json.dump(meta, open(meta_path, "w"), indent=1)
     print("saved", slug, z, W, H, "missing", missing)
+
+# Capture dates: ask Esri's imagery metadata service which source and date each requested area shows at
+# the zooms we use (points on a 3 x 3 grid over the area). Saved to courses/imagery/<slug>/capture.json.
+import urllib.parse
+META_HOSTS = ["https://metadata.maptiles.arcgis.com/arcgis/rest/services/World_Imagery_Metadata/MapServer",
+              "https://services.arcgisonline.com/arcgis/rest/services/World_Imagery_Metadata/MapServer"]
+
+def get_json(url):
+    data = get(url, tries=3)
+    if not data: return None
+    try: return json.loads(data)
+    except Exception: return None
+
+done = set()
+for line in lines:
+    slug, bbox, zoom = [p.strip() for p in line.split("|")]
+    if slug in done or os.path.exists(f"courses/imagery/{slug}/capture.json"): continue
+    done.add(slug)
+    s, n, w, e = map(float, bbox.split(","))
+    out = {"points": [], "service": None, "layers": []}
+    for host in META_HOSTS:
+        svc = get_json(host + "?f=json")
+        if not svc or "layers" not in svc: print("metadata service unavailable:", host); continue
+        out["service"] = host
+        out["layers"] = [{k: L.get(k) for k in ("id", "name", "minScale", "maxScale")} for L in svc["layers"]]
+        for fy in (0.2, 0.5, 0.8):
+            for fx in (0.2, 0.5, 0.8):
+                lat, lon = s + (n - s) * fy, w + (e - w) * fx
+                pt = {"lat": round(lat, 6), "lon": round(lon, 6), "hits": []}
+                for L in svc["layers"]:
+                    q = urllib.parse.urlencode({"geometry": f"{lon},{lat}", "geometryType": "esriGeometryPoint",
+                                                "inSR": 4326, "spatialRel": "esriSpatialRelIntersects",
+                                                "outFields": "*", "returnGeometry": "false", "f": "json"})
+                    r = get_json(f"{host}/{L['id']}/query?{q}")
+                    for f in (r or {}).get("features", []):
+                        a = f.get("attributes", {})
+                        pt["hits"].append({"layer": L["id"], "name": L.get("name"),
+                                           **{k: a[k] for k in a if k.upper().startswith(("SRC", "NICE", "DATE", "RES", "MIN", "MAX"))}})
+                out["points"].append(pt)
+        break
+    json.dump(out, open(f"courses/imagery/{slug}/capture.json", "w"), indent=1)
+    centre = out["points"][4]["hits"] if len(out["points"]) > 4 else []
+    print("capture", slug, [(h.get("name"), h.get("SRC_DATE"), h.get("SRC_DESC"), h.get("SRC_RES")) for h in centre][:12])
