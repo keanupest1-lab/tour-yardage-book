@@ -1,14 +1,14 @@
 From https://github.com/keanupest1-lab/tour-yardage-book
  * branch            models     -> FETCH_HEAD
  * [new branch]      models     -> origin/models
-/opt/hostedtoolcache/Python/3.11.17/x64/lib/python3.11/site-packages/torch/jit/_script.py:1491: FutureWarning: `torch.jit.script` is deprecated. Please switch to `torch.compile` or `torch.export`.
+/opt/hostedtoolcache/Python/3.11.18/x64/lib/python3.11/site-packages/torch/jit/_script.py:1491: FutureWarning: `torch.jit.script` is deprecated. Please switch to `torch.compile` or `torch.export`.
   warnings.warn(
-/opt/hostedtoolcache/Python/3.11.17/x64/lib/python3.11/site-packages/torch/jit/_script.py:1491: FutureWarning: `torch.jit.script` is deprecated. Please switch to `torch.compile` or `torch.export`.
+/opt/hostedtoolcache/Python/3.11.18/x64/lib/python3.11/site-packages/torch/jit/_script.py:1491: FutureWarning: `torch.jit.script` is deprecated. Please switch to `torch.compile` or `torch.export`.
   warnings.warn(
-/opt/hostedtoolcache/Python/3.11.17/x64/lib/python3.11/site-packages/torch/jit/_script.py:1643: FutureWarning: `torch.jit.interface` is deprecated. Please use `torch.compile` instead.
+/opt/hostedtoolcache/Python/3.11.18/x64/lib/python3.11/site-packages/torch/jit/_script.py:1643: FutureWarning: `torch.jit.interface` is deprecated. Please use `torch.compile` instead.
   warnings.warn(
-kyalami-country-club models: 5120x3840 in 48s, pixels per class {'none': 18661534, 'fairway': 473781, 'green': 64588, 'tee': 212869, 'bunker': 33466, 'water': 214562}
+lusaka-golf-club models: 3072x2560 in 30s, pixels per class {'none': 7425774, 'fairway': 146843, 'green': 32533, 'tee': 157759, 'bunker': 6852, 'water': 94559}
 From https://github.com/keanupest1-lab/tour-yardage-book
  * branch            models-v2  -> FETCH_HEAD
  * [new branch]      models-v2  -> origin/models-v2
-kyalami-country-club models-v2: 5120x3840 in 47s, pixels per class {'none': 18729707, 'fairway': 491547, 'green': 55375, 'tee': 155317, 'bunker': 36429, 'water': 192425}
+lusaka-golf-club models-v2: 3072x2560 in 25s, pixels per class {'none': 7466758, 'fairway': 156351, 'green': 32595, 'tee': 111950, 'bunker': 9072, 'water': 87594}
