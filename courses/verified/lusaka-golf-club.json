@@ -1,0 +1,135 @@
+{
+ "slug": "lusaka-golf-club",
+ "name": "Lusaka Golf Club",
+ "base": "osm",
+ "imagery": "courses/imagery/lusaka-golf-club/meta.json",
+ "level": "z18",
+ "shift_m": [
+  -0.7,
+  -0.85
+ ],
+ "card": {
+  "source": "Club scorecard (GolfPass), yards; tournament par 72 as the Sunshine Tour set it up in 2023 (the 14th a par 4)",
+  "tees": "White (back) 7070 yd / Yellow 6607 yd / Blue 6505 yd / Red 6038 yd"
+ },
+ "designer": null,
+ "verified": "Every hole checked on 0.27 m satellite imagery against the club scorecard (2026-11-15): back tees where the white card length falls on the tee (17 of 18 holes; the 14th from the back of its tee), greens, bunkers and water as mapped and checked on the photo",
+ "holes": [
+  {
+   "hole": 1,
+   "card_yd": 416,
+   "tee": "card"
+  },
+  {
+   "hole": 2,
+   "card_yd": 521,
+   "tee": "card"
+  },
+  {
+   "hole": 3,
+   "card_yd": 446,
+   "tee": "card"
+  },
+  {
+   "hole": 4,
+   "card_yd": 401,
+   "tee": "card"
+  },
+  {
+   "hole": 5,
+   "card_yd": 405,
+   "tee": "card"
+  },
+  {
+   "hole": 6,
+   "card_yd": 189,
+   "tee": "card"
+  },
+  {
+   "hole": 7,
+   "card_yd": 420,
+   "tee": "card"
+  },
+  {
+   "hole": 8,
+   "card_yd": 396,
+   "tee": "card"
+  },
+  {
+   "hole": 9,
+   "card_yd": 180,
+   "tee": "card"
+  },
+  {
+   "hole": 10,
+   "card_yd": 517,
+   "tee": "card"
+  },
+  {
+   "hole": 11,
+   "card_yd": 153,
+   "tee": "card"
+  },
+  {
+   "hole": 12,
+   "card_yd": 405,
+   "tee": "card"
+  },
+  {
+   "hole": 13,
+   "card_yd": 510,
+   "tee": "card"
+  },
+  {
+   "hole": 14,
+   "par": 4,
+   "card_yd": 529,
+   "tee": {
+    "along": -8.0,
+    "lat": 0
+   },
+   "note": "Club card: par 5, 529 yd; no tee that far back on the photo. Measured from the back of today's tee; a par 4 for the tour in 2023.",
+   "card_m": 430
+  },
+  {
+   "hole": 15,
+   "card_yd": 396,
+   "tee": "card"
+  },
+  {
+   "hole": 16,
+   "card_yd": 178,
+   "tee": "card"
+  },
+  {
+   "hole": 17,
+   "card_yd": 445,
+   "tee": "card"
+  },
+  {
+   "hole": 18,
+   "card_yd": 563,
+   "tee": "card"
+  }
+ ],
+ "drop": [
+  {
+   "kind": "bunker",
+   "px": [
+    931,
+    1219
+   ],
+   "r": 10,
+   "why": "no sand on the photo: dry rough with a small tree"
+  },
+  {
+   "kind": "bunker",
+   "px": [
+    1418,
+    1645
+   ],
+   "r": 6,
+   "why": "no sand on the photo (beside the practice green)"
+  }
+ ]
+}

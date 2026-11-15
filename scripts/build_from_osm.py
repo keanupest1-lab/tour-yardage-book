@@ -13,9 +13,11 @@ and "retag" fixes for mis-tagged map shapes. This writes courses/edits/<slug>.js
 the app uses this set alone. Greens and bunkers are then sharpened with scripts/refine_z19.py.
 With "base": "mask" (a course the map has no shapes for) the shapes come from the shape model run on the course's
 saved imagery ("mask", aligned with "imagery"/"level"), each hole's line of play is given in pixels of that imagery
-("px", back tee first, green last), lengths may be given in metres ("yellow_m"), and the spec can add shapes the
-model missed or drop ones it got wrong ("add": [{"kind", "px"}], "drop": [{"kind", "px", "r"}], pixels of the same
-imagery).
+("px", back tee first, green last) and lengths may be given in metres ("yellow_m").
+Either way the spec can add shapes ("add": [{"kind", "px"}]), drop wrong ones ("drop": [{"kind", "px", "r"}]),
+leave out a kind of map shape ("skip_kinds") and replace tee shapes with boxes traced on the photo ("tee_boxes"),
+all in pixels of "imagery"/"level"; "shift_m": [east, north] moves a map drawn on other imagery onto ours; the
+back-tee card length is "card_m" / "card_yd" (older specs "yellow_m" / "yellow_yd") and "par" overrides the map's.
 Usage: python3 scripts/build_from_osm.py <slug>
 """
 import datetime, json, math, os, sys
@@ -42,24 +44,45 @@ def main(slug):
     ky = 6378137 * (1 - 0.00669437999014) / w_ ** 1.5 * math.pi / 180
     fwd = lambda la, lo: np.array([(lo - lon0) * kx, (la - lat0) * ky])
     inv = lambda p: [round(float(p[1] / ky + lat0), 7), round(float(p[0] / kx + lon0), 7)]
+    # the map may be drawn on other imagery than ours: "shift_m": [east, north] moves all of it onto our photo
+    # (measured from the bunkers, whose sand edges are sharp on both)
+    sh_ = spec.get("shift_m")
+    if sh_:
+        dlat, dlon = sh_[1] / ky, sh_[0] / kx
+        for e in base["elements"]:
+            for g_ in [e.get("geometry")] + [m_.get("geometry") for m_ in e.get("members", []) or []]:
+                for p in (g_ or []):
+                    if p: p["lat"] += dlat; p["lon"] += dlon
+        print(f"  map moved {sh_[0]:+.2f} m east, {sh_[1]:+.2f} m north onto the photo")
 
     shapes, holes, trees_osm, boundary = [], {}, [], None
     WATER = {"water_hazard", "lateral_water_hazard"}
     from_mask = spec.get("base") == "mask"
+    # the imagery the spec's pixel coordinates refer to ("add", "drop", "tee_boxes", and "px" lines in mask mode)
+    lvl = spec.get("level", "z18")
+    mm = json.load(open(spec["imagery"]))[lvl]
+    im_m = Image.open(os.path.join(os.path.dirname(spec["imagery"]), f"{lvl}.jpg"))
+    MM = A.Mosaic(im_m, mm["zoom"], mm["tile_x0"], mm["tile_y0"]); mpp_m = MM.mpp
+    skip_kinds = set(spec.get("skip_kinds", []))
+    # multipolygon relations (a fairway drawn as one, say) count as their outer rings
+    elements = []
     for e in base["elements"]:
+        if e.get("type") == "relation" and not e.get("geometry") and e.get("tags", {}).get("golf"):
+            for k_, m_ in enumerate(e.get("members", [])):
+                if m_.get("role") == "outer" and m_.get("geometry"):
+                    elements.append({"type": "way", "id": f"{e['id']}r{k_}", "tags": e["tags"], "geometry": m_["geometry"]})
+        else:
+            elements.append(e)
+    for e in elements:
         t = e.get("tags", {}); g = [(p["lat"], p["lon"]) for p in (e.get("geometry") or []) if p]
         k = t.get("golf")
         if k == "hole" and t.get("ref") and not from_mask: holes[int(t["ref"])] = {"line": g, "par": int(t.get("par") or 0)}
-        elif k in ("green", "tee", "fairway", "bunker") and len(g) > 3 and not from_mask: shapes.append({"kind": k, "ll": g[:-1] if g[0] == g[-1] else g, "id": f"osm{e['id']}"})
+        elif k in ("green", "tee", "fairway", "bunker") and len(g) > 3 and not from_mask and k not in skip_kinds: shapes.append({"kind": k, "ll": g[:-1] if g[0] == g[-1] else g, "id": f"osm{e['id']}"})
         elif (k in WATER or t.get("natural") == "water") and len(g) > 3: shapes.append({"kind": "water", "ll": g[:-1] if g[0] == g[-1] else g, "id": f"osm{e['id']}"})
         elif t.get("leisure") == "golf_course" and len(g) > 3: boundary = g
     if from_mask:
         # shapes traced by the model on the saved imagery, holes from the checked lines of play (pixels of it)
         from automap import polygons
-        lvl = spec.get("level", "z18")
-        mm = json.load(open(spec["imagery"]))[lvl]
-        im_m = Image.open(os.path.join(os.path.dirname(spec["imagery"]), f"{lvl}.jpg"))
-        MM = A.Mosaic(im_m, mm["zoom"], mm["tile_x0"], mm["tile_y0"]); mpp_m = MM.mpp
         lab = np.array(Image.open(spec["mask"]))
         osm_water = [sh for sh in shapes if sh["kind"] == "water"]
         shapes = []
@@ -73,9 +96,7 @@ def main(slug):
                 shapes.append({"kind": kind, "ll": [tuple(MM.px2ll(x, y)) for x, y in pp], "id": f"m{kind}{n_m}"}); n_m += 1
         for hs in spec["holes"]:
             holes[int(hs["hole"])] = {"line": [tuple(MM.px2ll(x, y)) for x, y in hs["px"]], "par": int(hs["par"])}
-        for k_, a_ in enumerate(spec.get("add", [])):
-            shapes.append({"kind": a_["kind"], "ll": [tuple(MM.px2ll(x, y)) for x, y in a_["px"]], "id": f"add{a_['kind']}{k_}", "added": True})
-        print(f"  {n_m} shapes from the model, {len(spec.get('add', []))} added by hand")
+        print(f"  {n_m} shapes from the model")
         # tee boxes are built as rectangles: the model's tee blobs become the rectangle of the same area and heading
         import cv2
         for sh in shapes:
@@ -87,6 +108,10 @@ def main(slug):
             k_ = math.sqrt(area_ / (w_ * h_))
             box = cv2.boxPoints(((cx_, cy_), (w_ * k_, h_ * k_), ang))
             sh["ll"] = [tuple(MM.px2ll(float(x), float(y))) for x, y in box]
+    for k_, a_ in enumerate(spec.get("add", [])):
+        shapes.append({"kind": a_["kind"], "ll": [tuple(MM.px2ll(x, y)) for x, y in a_["px"]], "id": f"add{a_['kind']}{k_}", "added": True,
+                       **({"traced": True} if a_["kind"] == "green" else {})})
+    if spec.get("add"): print(f"  {len(spec['add'])} shapes added by hand" + (f" ({', '.join(sorted(skip_kinds))} from the map left out)" if skip_kinds else ""))
     def centroid(P):
         x, y = P[:, 0], P[:, 1]; x1, y1 = np.roll(x, -1), np.roll(y, -1)
         cr = x * y1 - x1 * y; A2 = cr.sum()
@@ -95,20 +120,22 @@ def main(slug):
     for s in shapes:
         s["xy"] = np.array([fwd(*p) for p in s["ll"]])
         s["c"] = centroid(s["xy"])
+    from shapely.geometry import Polygon as _P
     if from_mask:
-        # map water the model didn't trace (kept only where it doesn't overlap the model's), then the hand drops
-        from shapely.geometry import Polygon as _P
+        # map water the model didn't trace (kept only where it doesn't overlap the model's)
         mw = [_P(sh["xy"]).buffer(0) for sh in shapes if sh["kind"] == "water"]
         for ow in osm_water:
             ow["xy"] = np.array([fwd(*p) for p in ow["ll"]]); ow["c"] = centroid(ow["xy"])
             pg = _P(ow["xy"]).buffer(0)
             if not any(pg.intersects(m_) for m_ in mw): shapes.append(ow)
-        for d_ in spec.get("drop", []):
-            q = fwd(*MM.px2ll(*d_["px"])); r_ = d_.get("r", 6)
-            before = len(shapes)
-            shapes = [sh for sh in shapes if not (sh["kind"] == d_["kind"] and not sh.get("added") and
-                      (np.linalg.norm(sh["c"] - q) < r_ or _P(sh["xy"]).buffer(0).distance(__import__("shapely.geometry", fromlist=["Point"]).Point(q)) < 0.5))]
-            if len(shapes) == before: print(f"  drop {d_['kind']} at {d_['px']}: nothing there")
+    # shapes the spec drops (wrong on the map or the model): any shape of that kind within r metres of the point
+    for d_ in spec.get("drop", []):
+        q = fwd(*MM.px2ll(*d_["px"])); r_ = d_.get("r", 6)
+        before = len(shapes)
+        shapes = [sh for sh in shapes if not (sh["kind"] == d_["kind"] and not sh.get("added") and
+                  (np.linalg.norm(sh["c"] - q) < r_ or _P(sh["xy"]).buffer(0).distance(__import__("shapely.geometry", fromlist=["Point"]).Point(q)) < 0.5))]
+        if len(shapes) == before: print(f"  drop {d_['kind']} at {d_['px']}: nothing there")
+    if from_mask:
         # sand the model sees inside a pond is a fountain or a reflection, not a bunker
         ponds = [_P(sh["xy"]).buffer(0) for sh in shapes if sh["kind"] == "water"]
         from shapely.geometry import Point as _Pt
@@ -136,6 +163,8 @@ def main(slug):
         for e in json.load(open(xp)).get("elements", []):
             t = e.get("tags", {}); g = [(p["lat"], p["lon"]) for p in (e.get("geometry") or []) if p]
             if len(g) < 2: continue
+            if sh_: g = [(la + dlat, lo + dlon) for la, lo in g]          # the same map, so the same move
+            if t.get("tunnel") or t.get("location") == "underground": continue   # culverts run under the ground
             if t.get("waterway") in WIDTH:
                 try: wd = float(str(t.get("width", "")).replace(",", ".").split()[0])
                 except (ValueError, IndexError): wd = WIDTH[t["waterway"]]
@@ -192,6 +221,21 @@ def main(slug):
         n0 = len(shapes)
         shapes = [sh for sh in shapes if sh["kind"] != "tee" or tee_ok(sh)]
         print(f"  {n0 - len(shapes)} stray tee-like patches dropped, {sum(1 for sh in shapes if sh['kind'] == 'tee')} tee boxes kept")
+    from shapely.geometry import Polygon as _PG, Point as _Pt
+    from shapely.ops import unary_union as _UU
+    # tee boxes traced on the high-res photo (spec "tee_boxes": rectangles in imagery px) replace the map's or the
+    # model's tee shapes they sit on; one that sits on none is added ("new": true)
+    tb = spec.get("tee_boxes") or []
+    if tb:
+        n_rep = n_new = 0
+        for box in tb:
+            xy = np.array([fwd(*MM.px2ll(*q)) for q in box["px"]]); c_ = centroid(xy)
+            hit = [sh for sh in shapes if sh["kind"] == "tee" and (_PG(sh["xy"]).buffer(0).contains(_Pt(*c_)) or np.linalg.norm(sh["c"] - c_) < 6)]
+            for sh in hit:
+                sh["xy"] = xy; sh["ll"] = [tuple(inv(q)) for q in xy]; sh["c"] = c_; sh["traced"] = True; n_rep += 1
+            if not hit and box.get("new"):
+                shapes.append({"kind": "tee", "xy": xy, "ll": [tuple(inv(q)) for q in xy], "c": c_, "id": f"teebox{n_new}", "added": True, "traced": True}); n_new += 1
+        print(f"  {n_rep} tee boxes replaced by ones traced on the photo, {n_new} added")
     greens = [s for s in shapes if s["kind"] == "green"]
     out_holes, added_pads, extended, report = {}, [], [], []
     for hs in spec["holes"]:
@@ -203,7 +247,8 @@ def main(slug):
         t0 = P[0]; u = (P[1] - t0) / np.linalg.norm(P[1] - t0); v = np.array([u[1], -u[0]])   # v: right of the line
         bend = P[1] if len(P) >= 3 else P[-1]
         rest = sum(np.linalg.norm(P[i + 1] - P[i]) for i in range(1, len(P) - 1)) if len(P) >= 3 else 0.0
-        card = hs["yellow_m"] if hs.get("yellow_m") else hs["yellow_yd"] * YD
+        # the back-tee card length: "card_m" / "card_yd" (older specs: "yellow_m" / "yellow_yd")
+        card = hs.get("card_m") or hs.get("yellow_m") or (hs.get("card_yd") or hs.get("yellow_yd")) * YD
         tee = hs["tee"]
         if tee == "card" or (isinstance(tee, dict) and tee.get("card")):
             lat = tee.get("lat", 0) if isinstance(tee, dict) else 0
@@ -218,7 +263,7 @@ def main(slug):
         P[0] = T
         L = sum(np.linalg.norm(P[i + 1] - P[i]) for i in range(len(P) - 1))
         dist = round(card) if mode == "card" else round(L)
-        out_holes[str(r)] = {"par": h["par"], "si": hs.get("si"), "dist": dist, "card": round(card), "line": [inv(p) for p in P], "source": "verified",
+        out_holes[str(r)] = {"par": int(hs.get("par") or h["par"]), "si": hs.get("si"), "dist": dist, "card": round(card), "line": [inv(p) for p in P], "source": "verified",
                              **({"note": hs["note"]} if hs.get("note") and mode == "fixed" else {})}
         report.append((r, mode, round(a, 1), round(L), round(card)))
         # tee pad: the back tee must stand on one
@@ -240,19 +285,6 @@ def main(slug):
     print("  tee pads added for holes", added_pads, "extended for holes", extended)
 
     if from_mask:
-        from shapely.geometry import Polygon as _PG, Point as _Pt
-        from shapely.ops import unary_union as _UU
-        # tee boxes traced on the high-res photo (spec "tee_boxes": rectangles in imagery px) replace the model's
-        # rough blobs they sit on
-        tb = spec.get("tee_boxes") or []
-        if tb:
-            n_rep = 0
-            for box in tb:
-                xy = np.array([fwd(*MM.px2ll(*q)) for q in box["px"]]); c_ = centroid(xy)
-                hit = [sh for sh in shapes if sh["kind"] == "tee" and (_PG(sh["xy"]).buffer(0).contains(_Pt(*c_)) or np.linalg.norm(sh["c"] - c_) < 6)]
-                for sh in hit:
-                    sh["xy"] = xy; sh["ll"] = [tuple(inv(q)) for q in xy]; sh["c"] = c_; sh["traced"] = True; n_rep += 1
-            print(f"  {n_rep} tee boxes replaced by ones traced on the photo")
         # fairways stop at the green: the model's fairway class runs on round the collar, which would draw as a second
         # ring around the green. Keep the approach (in front of the green, as wide as the green's front) and trim the
         # fairway away beside and behind the green, then round off the corners the cut leaves
