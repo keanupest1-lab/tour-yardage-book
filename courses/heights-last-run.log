@@ -1,11 +1,9 @@
-SlideRule {'server': {'version': 'v5.6.3', 'launch': '2026-10-19T04:43:36Z', 'cluster': 'sliderule-20261009183035', 'build': 'v5.6.3-0-ge620b550-dirty, 6.1.174-217.345.amzn2023.aarch64, Thu Oct  1 10:32:23 UTC 2026', 'duration': 2709632, 'environment': 'v5.6.3-5-g35e70248'}, 'client': {'version': 'v5.6.3', 'organization': 'sliderule'}}
-== kyalami-country-club  (-25.9880,28.0440)-(-25.9640,28.0745)  all sources
+SlideRule {'server': {'version': 'v5.8.0', 'duration': 104942172, 'launch': '2026-11-14T05:08:49Z', 'build': 'v5.8.0-0-g93e05390, 6.1.188-233.393.amzn2023.aarch64, Thu Oct 29 17:52:36 UTC 2026', 'cluster': 'sliderule-20261029175805', 'environment': 'v5.6.3-38-g74489d16'}, 'client': {'version': 'v5.8.1', 'organization': 'sliderule'}}
+== lusaka-golf-club  (-15.4285,28.3150)-(-15.4104,28.3365)  all sources
   aw3d30: 1 tiles
-    110x86 px, 1414.0-1532.0 m
+    77x65 px, 1262.0-1308.0 m
   nasadem: 1 tiles
-    110x86 px, 1415.0-1531.0 m
-  ICESat-2 ground fits: 3714 segments in 233s; columns ['segment_id', 'w_surface_window_final', 'h_mean', 'cycle', 'rgt', 'n_fit_photons', 'dh_fit_dx', 'spot', 'y_atc', 'x_atc', 'rms_misfit', 'region', 'gt', 'h_sigma', 'pflags', 'geometry']
-  ICESat-2 ground photons: 41113 in 270s; columns ['track', 'segment_dist', 'solar_elevation', 'region', 'segment_id', 'rgt', 'sc_orient', 'pair', 'cycle', 'background_rate', 'atl08_class', 'atl03_cnf', 'snowcover', 'yapc_score', 'landcover', 'relief', 'height', 'quality_ph', 'x_atc', 'y_atc', 'geometry', 'spot']
-Alert <-7>: Failure on resource GEDI02_A_2024150071017_O30931_01_T03987_02_004_02_V002.h5 beam 8: H5Coro::Future read failure on BEAM1000/lat_lowestmode
-Alert <-7>: Failure on resource GEDI02_A_2024150071017_O30931_01_T03987_02_004_02_V002.h5 beam 11: H5Coro::Future read failure on BEAM1011/lat_lowestmode
-  GEDI L2A: 1849 footprints in 34s; columns ['track', 'elevation_hr', 'elevation_lm', 'orbit', 'beam', 'sensitivity', 'flags', 'solar_elevation', 'geometry']
+    77x65 px, 1262.0-1311.0 m
+  ICESat-2 ground fits: 1911 segments in 50s; columns ['x_atc', 'spot', 'rgt', 'gt', 'h_sigma', 'pflags', 'region', 'rms_misfit', 'segment_id', 'w_surface_window_final', 'dh_fit_dx', 'cycle', 'y_atc', 'n_fit_photons', 'h_mean', 'geometry']
+  ICESat-2 ground photons: 17916 in 110s; columns ['cycle', 'region', 'sc_orient', 'segment_dist', 'pair', 'background_rate', 'solar_elevation', 'track', 'rgt', 'segment_id', 'yapc_score', 'landcover', 'quality_ph', 'atl03_cnf', 'y_atc', 'x_atc', 'snowcover', 'relief', 'height', 'atl08_class', 'geometry', 'spot']
+  GEDI L2A: 1067 footprints in 37s; columns ['flags', 'track', 'orbit', 'sensitivity', 'beam', 'elevation_lm', 'elevation_hr', 'solar_elevation', 'geometry']
