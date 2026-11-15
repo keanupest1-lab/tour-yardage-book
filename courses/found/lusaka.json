@@ -1,0 +1,78 @@
+[
+ {
+  "type": "way",
+  "id": 283609819,
+  "name": "Chilanga Golf Course",
+  "tags": {
+   "leisure": "golf_course",
+   "name": "Chilanga Golf Course"
+  },
+  "bounds": {
+   "minlat": -15.5529888,
+   "minlon": 28.269714,
+   "maxlat": -15.5475701,
+   "maxlon": 28.2767915
+  },
+  "holes": [],
+  "greens": 0
+ },
+ {
+  "type": "relation",
+  "id": 9397059,
+  "name": "Lusaka Golf Club",
+  "tags": {
+   "check_date": "2023-05-16",
+   "golf:course": "18_hole",
+   "leisure": "golf_course",
+   "name": "Lusaka Golf Club",
+   "type": "multipolygon",
+   "wikidata": "Q15408725"
+  },
+  "bounds": {
+   "minlat": -15.4240393,
+   "minlon": 28.3196005,
+   "maxlat": -15.414859,
+   "maxlon": 28.3319436
+  },
+  "holes": [
+   "1",
+   "10",
+   "11",
+   "12",
+   "13",
+   "14",
+   "15",
+   "16",
+   "17",
+   "18",
+   "2",
+   "3",
+   "4",
+   "5",
+   "6",
+   "7",
+   "8",
+   "9"
+  ],
+  "greens": 20
+ },
+ {
+  "type": "relation",
+  "id": 14223167,
+  "name": "Chainama Hills Golf Club",
+  "tags": {
+   "leisure": "golf_course",
+   "name": "Chainama Hills Golf Club",
+   "type": "multipolygon",
+   "wikidata": "Q15408792"
+  },
+  "bounds": {
+   "minlat": -15.3988657,
+   "minlon": 28.3410447,
+   "maxlat": -15.3866955,
+   "maxlon": 28.351813
+  },
+  "holes": [],
+  "greens": 0
+ }
+]
