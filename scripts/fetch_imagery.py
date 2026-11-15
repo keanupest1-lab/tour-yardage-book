@@ -68,10 +68,21 @@ META_HOSTS = ["https://metadata.maptiles.arcgis.com/arcgis/rest/services/World_I
               "https://services.arcgisonline.com/arcgis/rest/services/World_Imagery_Metadata/MapServer"]
 
 def get_json(url):
-    data = get(url, tries=3)
-    if not data: return None
+    try:
+        with urllib.request.urlopen(urllib.request.Request(url, headers=UA), timeout=30) as r:
+            data = r.read()
+    except Exception as ex:
+        print("   ", url[:120], "->", repr(ex)[:200]); return None
     try: return json.loads(data)
-    except Exception: return None
+    except Exception:
+        print("   ", url[:120], "-> not JSON:", data[:200]); return None
+
+# Esri's Wayback archive lists every World Imagery release with its own metadata service (release dates, sources)
+wb = get_json("https://s3-us-west-2.amazonaws.com/config.maptiles.arcgis.com/waybackconfig.json")
+if wb:
+    rel = sorted(wb.items(), key=lambda kv: kv[1].get("itemTitle", ""))[-3:]
+    for k, v in rel: print("wayback release", k, v.get("itemTitle"), v.get("metadataLayerUrl"))
+    META_HOSTS = [v["metadataLayerUrl"].rstrip("/") for k, v in rel[::-1] if v.get("metadataLayerUrl")] + META_HOSTS
 
 done = set()
 for line in lines:
