@@ -100,6 +100,7 @@ for line in lines:
                                            **{k: a[k] for k in a if k.upper().startswith(("SRC", "NICE", "DATE", "RES", "MIN", "MAX"))}})
                 out["points"].append(pt)
         break
+    if not out["service"]: continue          # nothing learned: leave no file, so a later run asks again
     json.dump(out, open(f"courses/imagery/{slug}/capture.json", "w"), indent=1)
     centre = out["points"][4]["hits"] if len(out["points"]) > 4 else []
     print("capture", slug, [(h.get("name"), h.get("SRC_DATE"), h.get("SRC_DESC"), h.get("SRC_RES")) for h in centre][:12])
